@@ -1,0 +1,9 @@
+language: go
+go:
+- 1.8.1
+go_import_path: v2ray.com/ext
+git:
+  depth: 5
+script:
+- go test -p 1 -v v2ray.com/ext/...
+
