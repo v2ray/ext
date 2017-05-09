@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"os"
 
 	"github.com/golang/protobuf/proto"
-	json_reader "v2ray.com/ext/encoding/json"
-	"v2ray.com/ext/tools/conf"
+	"v2ray.com/ext/tools/conf/serial"
 )
 
 /*
@@ -22,17 +20,7 @@ var (
 func main() {
 	flag.Parse()
 
-	jsonConfig := &conf.Config{}
-	decoder := json.NewDecoder(&json_reader.Reader{
-		Reader: os.Stdin,
-	})
-
-	if err := decoder.Decode(jsonConfig); err != nil {
-		os.Stderr.WriteString("failed to read json config: " + err.Error())
-		return
-	}
-
-	pbConfig, err := jsonConfig.Build()
+	pbConfig, err := serial.LoadJSONConfig(os.Stdin)
 	if err != nil {
 		os.Stderr.WriteString("failed to parse json config: " + err.Error())
 		return
