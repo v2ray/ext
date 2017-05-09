@@ -1,9 +1,8 @@
 package json_test
 
 import (
-	"testing"
-
 	"bytes"
+	"testing"
 
 	"v2ray.com/core/testing/assert"
 	. "v2ray.com/core/tools/conf/json"
