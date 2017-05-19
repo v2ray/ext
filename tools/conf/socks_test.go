@@ -8,7 +8,7 @@ import (
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/proxy/socks"
 	"v2ray.com/core/testing/assert"
-	. "v2ray.com/core/tools/conf"
+	. "v2ray.com/ext/tools/conf"
 )
 
 func TestSocksInboundConfig(t *testing.T) {

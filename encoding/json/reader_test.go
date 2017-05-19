@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"v2ray.com/core/testing/assert"
-	. "v2ray.com/core/tools/conf/json"
+	. "v2ray.com/ext/encoding/json"
 )
 
 func TestReader(t *testing.T) {

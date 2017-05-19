@@ -6,7 +6,7 @@ import (
 
 	"v2ray.com/core/proxy/blackhole"
 	"v2ray.com/core/testing/assert"
-	. "v2ray.com/core/tools/conf"
+	. "v2ray.com/ext/tools/conf"
 )
 
 func TestHTTPResponseJSON(t *testing.T) {

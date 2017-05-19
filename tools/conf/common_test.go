@@ -6,7 +6,7 @@ import (
 
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/testing/assert"
-	. "v2ray.com/core/tools/conf"
+	. "v2ray.com/ext/tools/conf"
 )
 
 func TestStringListUnmarshalError(t *testing.T) {

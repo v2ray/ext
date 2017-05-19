@@ -5,13 +5,13 @@ import (
 	"testing"
 
 	"v2ray.com/core/testing/assert"
-	. "v2ray.com/core/tools/conf"
 	"v2ray.com/core/transport/internet"
 	"v2ray.com/core/transport/internet/headers/http"
 	"v2ray.com/core/transport/internet/headers/noop"
 	"v2ray.com/core/transport/internet/kcp"
 	"v2ray.com/core/transport/internet/tcp"
 	"v2ray.com/core/transport/internet/websocket"
+	. "v2ray.com/ext/tools/conf"
 )
 
 func TestTransportConfig(t *testing.T) {
