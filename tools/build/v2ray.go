@@ -23,5 +23,5 @@ func BuildV2RayCore(target string, goOS GoOS, goArch GoArch, disableConsoleForWi
 			ldFlags = append(ldFlags, " -X v2ray.com/ext/tools/conf.bUser="+bUser)
 		}
 	}
-	return GoBuild("v2ray.com/core/main", target, goOS, goArch, strings.Join(ldFlags, " "))
+	return GoBuild("v2ray.com/core/main", target, goOS, goArch, strings.Join(ldFlags, " "), "json")
 }
