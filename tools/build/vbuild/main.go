@@ -83,11 +83,11 @@ func main() {
 	}
 
 	if *flagSignBinary {
-		gpgPass, err := build.GetGCloudProjectMetadata("sign_key_pass")
-		if err != nil {
-			fmt.Println("Unable get GPG pass: " + err.Error())
-			return
-		}
+		gpgPass := os.Getenv("GPG_SIGN_PASS")
+		//if err != nil {
+		//	fmt.Println("Unable get GPG pass: " + err.Error())
+		//	return
+		//}
 		if err := build.GPGSignFile(targetFileFull, gpgPass); err != nil {
 			fmt.Println("Unable to sign V2Ray binary: " + err.Error())
 		}
