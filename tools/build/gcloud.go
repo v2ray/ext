@@ -1,7 +1,10 @@
 package build
 
-import "net/http"
-import "io/ioutil"
+import (
+	"io/ioutil"
+	"net/http"
+	"strings"
+)
 
 func getGCloudMetadata(name string, scope string) (string, error) {
 	response, err := http.Get("http://metadata.google.internal/computeMetadata/v1/" + scope + "/attributes/" + name)
@@ -12,7 +15,7 @@ func getGCloudMetadata(name string, scope string) (string, error) {
 	if err != nil {
 		return "", newError("failed to read gcloud attribute: ", name, " in ", scope).Base(err)
 	}
-	return string(body), nil
+	return strings.TrimSpace(string(body)), nil
 }
 
 func GetGCloudInstanceMetadata(name string) (string, error) {
