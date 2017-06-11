@@ -38,12 +38,12 @@ func createTargetDirectory(version string, goOS build.GoOS, goArch build.GoArch)
 	return targetDir, err
 }
 
-func getTargetFile(goOS build.GoOS) string {
+func getTargetFile(name string, goOS build.GoOS) string {
 	suffix := ""
 	if goOS == build.Windows {
 		suffix += ".exe"
 	}
-	return "v2ray" + suffix
+	return name + suffix
 }
 
 func getBinPath() string {
@@ -71,15 +71,24 @@ func main() {
 		fmt.Println("Unable to create directory " + targetDir + ": " + err.Error())
 	}
 
-	targetFile := getTargetFile(v2rayOS)
+	targetFile := getTargetFile("v2ray", v2rayOS)
 	targetFileFull := filepath.Join(targetDir, targetFile)
 	if err := build.BuildV2RayCore(targetFileFull, v2rayOS, v2rayArch, false); err != nil {
 		fmt.Println("Unable to build V2Ray: " + err.Error())
+		return
 	}
 	if v2rayOS == build.Windows {
 		if err := build.BuildV2RayCore(filepath.Join(targetDir, "w"+targetFile), v2rayOS, v2rayArch, true); err != nil {
 			fmt.Println("Unable to build V2Ray no console: " + err.Error())
+			return
 		}
+	}
+
+	confUtil := getTargetFile("conf", v2rayOS)
+	confUtilFull := filepath.Join(targetDir, confUtil)
+	if err := build.BuildV2RayCore(confUtilFull, v2rayOS, v2rayArch, false); err != nil {
+		fmt.Println("Unable to build V2Ray config: " + err.Error())
+		return
 	}
 
 	if *flagSignBinary {
@@ -90,6 +99,12 @@ func main() {
 		//}
 		if err := build.GPGSignFile(targetFileFull, gpgPass); err != nil {
 			fmt.Println("Unable to sign V2Ray binary: " + err.Error())
+			return
+		}
+
+		if err := build.GPGSignFile(confUtilFull, gpgPass); err != nil {
+			fmt.Println("Unable to sign conf util: " + err.Error())
+			return
 		}
 
 		if v2rayOS == build.Windows {
