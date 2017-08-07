@@ -460,6 +460,7 @@ func init() {
 		"zastatic.com",
 		"zbjimg.com",
 		"zdfans.com",
+		"zdmimg.com",
 		"zhenai.com",
 		"zhanqi.tv",
 		"zhaopin.com",
