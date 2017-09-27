@@ -14,30 +14,27 @@ type FreedomConfig struct {
 	DomainStrategy string  `json:"domainStrategy"`
 	Timeout        *uint32 `json:"timeout"`
 	Redirect       string  `json:"redirect"`
-	KeepAlive      bool    `json:"keepAlive"`
 }
 
-func (c *FreedomConfig) Build() (*serial.TypedMessage, error) {
+func (v *FreedomConfig) Build() (*serial.TypedMessage, error) {
 	config := new(freedom.Config)
 	config.DomainStrategy = freedom.Config_AS_IS
-	config.KeepAliveOnResponseClose = c.KeepAlive
-
-	domainStrategy := strings.ToLower(c.DomainStrategy)
+	domainStrategy := strings.ToLower(v.DomainStrategy)
 	if domainStrategy == "useip" || domainStrategy == "use_ip" {
 		config.DomainStrategy = freedom.Config_USE_IP
 	}
 	config.Timeout = 600
-	if c.Timeout != nil {
-		config.Timeout = *c.Timeout
+	if v.Timeout != nil {
+		config.Timeout = *v.Timeout
 	}
-	if len(c.Redirect) > 0 {
-		host, portStr, err := net.SplitHostPort(c.Redirect)
+	if len(v.Redirect) > 0 {
+		host, portStr, err := net.SplitHostPort(v.Redirect)
 		if err != nil {
-			return nil, newError("invalid redirect address: ", c.Redirect, ": ", err).Base(err)
+			return nil, newError("invalid redirect address: ", v.Redirect, ": ", err).Base(err)
 		}
 		port, err := v2net.PortFromString(portStr)
 		if err != nil {
-			return nil, newError("invalid redirect port: ", c.Redirect, ": ", err).Base(err)
+			return nil, newError("invalid redirect port: ", v.Redirect, ": ", err).Base(err)
 		}
 		if len(host) == 0 {
 			host = "127.0.0.1"
