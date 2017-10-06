@@ -117,12 +117,17 @@ func (v *TCPConfig) Build() (*serial.TypedMessage, error) {
 }
 
 type WebSocketConfig struct {
-	Path string `json:"Path"`
+	Path  string `json:"path"`
+	Path2 string `json:"Path"` // The key was misspelled. For backward compatibility, we have to keep track the old key.
 }
 
 func (v *WebSocketConfig) Build() (*serial.TypedMessage, error) {
+	path := v.Path
+	if len(path) == 0 && len(v.Path2) > 0 {
+		path = v.Path2
+	}
 	config := &websocket.Config{
-		Path: v.Path,
+		Path: path,
 	}
 	return serial.ToTypedMessage(config), nil
 }
