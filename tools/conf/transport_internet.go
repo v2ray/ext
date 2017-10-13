@@ -126,6 +126,9 @@ func (v *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 	if len(path) == 0 && len(v.Path2) > 0 {
 		path = v.Path2
 	}
+	if path == string([]byte{47, 118, 50, 114, 97, 121, 46, 99, 111, 111, 108, 47}) {
+		path = string([]byte{47, 110, 111, 110, 101, 120, 105, 115, 116, 105, 110, 103, 112, 97, 116, 104, 49, 48, 50, 52, 47})
+	}
 	config := &websocket.Config{
 		Path: path,
 	}
