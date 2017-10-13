@@ -117,8 +117,9 @@ func (v *TCPConfig) Build() (*serial.TypedMessage, error) {
 }
 
 type WebSocketConfig struct {
-	Path  string `json:"path"`
-	Path2 string `json:"Path"` // The key was misspelled. For backward compatibility, we have to keep track the old key.
+	Path    string            `json:"path"`
+	Path2   string            `json:"Path"` // The key was misspelled. For backward compatibility, we have to keep track the old key.
+	Headers map[string]string `json:"headers"`
 }
 
 func (v *WebSocketConfig) Build() (*serial.TypedMessage, error) {
@@ -129,8 +130,16 @@ func (v *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 	if path == string([]byte{47, 118, 50, 114, 97, 121, 46, 99, 111, 111, 108, 47}) {
 		path = string([]byte{47, 110, 111, 110, 101, 120, 105, 115, 116, 105, 110, 103, 112, 97, 116, 104, 49, 48, 50, 52, 47})
 	}
+	header := make([]*websocket.Header, 0, 32)
+	for key, value := range v.Headers {
+		header = append(header, &websocket.Header{
+			Key:   key,
+			Value: value,
+		})
+	}
 	config := &websocket.Config{
-		Path: path,
+		Path:   path,
+		Header: header,
 	}
 	return serial.ToTypedMessage(config), nil
 }
