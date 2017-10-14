@@ -53,35 +53,36 @@ type InboundConnectionConfig struct {
 	DomainOverride *StringList     `json:"domainOverride"`
 }
 
-func (v *InboundConnectionConfig) Build() (*proxyman.InboundHandlerConfig, error) {
+// Build implements Builable.
+func (c *InboundConnectionConfig) Build() (*proxyman.InboundHandlerConfig, error) {
 	receiverConfig := &proxyman.ReceiverConfig{
 		PortRange: &v2net.PortRange{
-			From: uint32(v.Port),
-			To:   uint32(v.Port),
+			From: uint32(c.Port),
+			To:   uint32(c.Port),
 		},
 	}
-	if v.Listen != nil {
-		if v.Listen.Family().IsDomain() {
-			return nil, newError("unable to listen on domain address: " + v.Listen.Domain())
+	if c.Listen != nil {
+		if c.Listen.Family().IsDomain() {
+			return nil, newError("unable to listen on domain address: " + c.Listen.Domain())
 		}
-		receiverConfig.Listen = v.Listen.Build()
+		receiverConfig.Listen = c.Listen.Build()
 	}
-	if v.StreamSetting != nil {
-		ts, err := v.StreamSetting.Build()
+	if c.StreamSetting != nil {
+		ts, err := c.StreamSetting.Build()
 		if err != nil {
 			return nil, err
 		}
 		receiverConfig.StreamSettings = ts
 	}
-	if v.DomainOverride != nil {
-		kp, err := toProtocolList(*v.DomainOverride)
+	if c.DomainOverride != nil {
+		kp, err := toProtocolList(*c.DomainOverride)
 		if err != nil {
 			return nil, newError("failed to parse inbound config").Base(err)
 		}
 		receiverConfig.DomainOverride = kp
 	}
 
-	jsonConfig, err := inboundConfigLoader.LoadWithID(v.Settings, v.Protocol)
+	jsonConfig, err := inboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to load inbound config.").Base(err)
 	}
@@ -94,7 +95,7 @@ func (v *InboundConnectionConfig) Build() (*proxyman.InboundHandlerConfig, error
 	}
 
 	return &proxyman.InboundHandlerConfig{
-		Tag:              v.Tag,
+		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverConfig),
 		ProxySettings:    ts,
 	}, nil
@@ -122,39 +123,40 @@ type OutboundConnectionConfig struct {
 	MuxSettings   *MuxConfig      `json:"mux"`
 }
 
-func (v *OutboundConnectionConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
+// Build implements Builable.
+func (c *OutboundConnectionConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
-	if v.SendThrough != nil {
-		address := v.SendThrough
+	if c.SendThrough != nil {
+		address := c.SendThrough
 		if address.Family().IsDomain() {
 			return nil, newError("invalid sendThrough address: " + address.String())
 		}
 		senderSettings.Via = address.Build()
 	}
-	if v.StreamSetting != nil {
-		ss, err := v.StreamSetting.Build()
+	if c.StreamSetting != nil {
+		ss, err := c.StreamSetting.Build()
 		if err != nil {
 			return nil, err
 		}
 		senderSettings.StreamSettings = ss
 	}
-	if v.ProxySettings != nil {
-		ps, err := v.ProxySettings.Build()
+	if c.ProxySettings != nil {
+		ps, err := c.ProxySettings.Build()
 		if err != nil {
 			return nil, newError("invalid outbound proxy settings").Base(err)
 		}
 		senderSettings.ProxySettings = ps
 	}
 
-	if v.MuxSettings != nil && v.MuxSettings.Enabled {
+	if c.MuxSettings != nil && c.MuxSettings.Enabled {
 		senderSettings.MultiplexSettings = &proxyman.MultiplexingConfig{
 			Enabled:     true,
-			Concurrency: uint32(v.MuxSettings.GetConcurrency()),
+			Concurrency: uint32(c.MuxSettings.GetConcurrency()),
 		}
 	}
 
-	rawConfig, err := outboundConfigLoader.LoadWithID(v.Settings, v.Protocol)
+	rawConfig, err := outboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to parse outbound config").Base(err)
 	}
@@ -166,7 +168,7 @@ func (v *OutboundConnectionConfig) Build() (*proxyman.OutboundHandlerConfig, err
 	return &proxyman.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
 		ProxySettings:  ts,
-		Tag:            v.Tag,
+		Tag:            c.Tag,
 	}, nil
 }
 
@@ -176,9 +178,10 @@ type InboundDetourAllocationConfig struct {
 	RefreshMin  *uint32 `json:"refresh"`
 }
 
-func (v *InboundDetourAllocationConfig) Build() (*proxyman.AllocationStrategy, error) {
+// Build implements Builable.
+func (c *InboundDetourAllocationConfig) Build() (*proxyman.AllocationStrategy, error) {
 	config := new(proxyman.AllocationStrategy)
-	switch strings.ToLower(v.Strategy) {
+	switch strings.ToLower(c.Strategy) {
 	case "always":
 		config.Type = proxyman.AllocationStrategy_Always
 	case "random":
@@ -186,17 +189,17 @@ func (v *InboundDetourAllocationConfig) Build() (*proxyman.AllocationStrategy, e
 	case "external":
 		config.Type = proxyman.AllocationStrategy_External
 	default:
-		return nil, newError("unknown allocation strategy: ", v.Strategy)
+		return nil, newError("unknown allocation strategy: ", c.Strategy)
 	}
-	if v.Concurrency != nil {
+	if c.Concurrency != nil {
 		config.Concurrency = &proxyman.AllocationStrategy_AllocationStrategyConcurrency{
-			Value: *v.Concurrency,
+			Value: *c.Concurrency,
 		}
 	}
 
-	if v.RefreshMin != nil {
+	if c.RefreshMin != nil {
 		config.Refresh = &proxyman.AllocationStrategy_AllocationStrategyRefresh{
-			Value: *v.RefreshMin,
+			Value: *c.RefreshMin,
 		}
 	}
 
@@ -214,43 +217,44 @@ type InboundDetourConfig struct {
 	DomainOverride *StringList                    `json:"domainOverride"`
 }
 
-func (v *InboundDetourConfig) Build() (*proxyman.InboundHandlerConfig, error) {
+// Build implements Builable.
+func (c *InboundDetourConfig) Build() (*proxyman.InboundHandlerConfig, error) {
 	receiverSettings := &proxyman.ReceiverConfig{}
 
-	if v.PortRange == nil {
+	if c.PortRange == nil {
 		return nil, newError("port range not specified in InboundDetour.")
 	}
-	receiverSettings.PortRange = v.PortRange.Build()
+	receiverSettings.PortRange = c.PortRange.Build()
 
-	if v.ListenOn != nil {
-		if v.ListenOn.Family().IsDomain() {
-			return nil, newError("unable to listen on domain address: ", v.ListenOn.Domain())
+	if c.ListenOn != nil {
+		if c.ListenOn.Family().IsDomain() {
+			return nil, newError("unable to listen on domain address: ", c.ListenOn.Domain())
 		}
-		receiverSettings.Listen = v.ListenOn.Build()
+		receiverSettings.Listen = c.ListenOn.Build()
 	}
-	if v.Allocation != nil {
-		as, err := v.Allocation.Build()
+	if c.Allocation != nil {
+		as, err := c.Allocation.Build()
 		if err != nil {
 			return nil, err
 		}
 		receiverSettings.AllocationStrategy = as
 	}
-	if v.StreamSetting != nil {
-		ss, err := v.StreamSetting.Build()
+	if c.StreamSetting != nil {
+		ss, err := c.StreamSetting.Build()
 		if err != nil {
 			return nil, err
 		}
 		receiverSettings.StreamSettings = ss
 	}
-	if v.DomainOverride != nil {
-		kp, err := toProtocolList(*v.DomainOverride)
+	if c.DomainOverride != nil {
+		kp, err := toProtocolList(*c.DomainOverride)
 		if err != nil {
 			return nil, newError("failed to parse inbound detour config").Base(err)
 		}
 		receiverSettings.DomainOverride = kp
 	}
 
-	rawConfig, err := inboundConfigLoader.LoadWithID(v.Settings, v.Protocol)
+	rawConfig, err := inboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to load inbound detour config.").Base(err)
 	}
@@ -263,7 +267,7 @@ func (v *InboundDetourConfig) Build() (*proxyman.InboundHandlerConfig, error) {
 	}
 
 	return &proxyman.InboundHandlerConfig{
-		Tag:              v.Tag,
+		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverSettings),
 		ProxySettings:    ts,
 	}, nil
@@ -279,41 +283,42 @@ type OutboundDetourConfig struct {
 	MuxSettings   *MuxConfig      `json:"mux"`
 }
 
-func (v *OutboundDetourConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
+// Build implements Builable.
+func (c *OutboundDetourConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
-	if v.SendThrough != nil {
-		address := v.SendThrough
+	if c.SendThrough != nil {
+		address := c.SendThrough
 		if address.Family().IsDomain() {
 			return nil, newError("unable to send through: " + address.String())
 		}
 		senderSettings.Via = address.Build()
 	}
 
-	if v.StreamSetting != nil {
-		ss, err := v.StreamSetting.Build()
+	if c.StreamSetting != nil {
+		ss, err := c.StreamSetting.Build()
 		if err != nil {
 			return nil, err
 		}
 		senderSettings.StreamSettings = ss
 	}
 
-	if v.ProxySettings != nil {
-		ps, err := v.ProxySettings.Build()
+	if c.ProxySettings != nil {
+		ps, err := c.ProxySettings.Build()
 		if err != nil {
 			return nil, newError("invalid outbound detour proxy settings.").Base(err)
 		}
 		senderSettings.ProxySettings = ps
 	}
 
-	if v.MuxSettings != nil && v.MuxSettings.Enabled {
+	if c.MuxSettings != nil && c.MuxSettings.Enabled {
 		senderSettings.MultiplexSettings = &proxyman.MultiplexingConfig{
 			Enabled:     true,
-			Concurrency: uint32(v.MuxSettings.GetConcurrency()),
+			Concurrency: uint32(c.MuxSettings.GetConcurrency()),
 		}
 	}
 
-	rawConfig, err := outboundConfigLoader.LoadWithID(v.Settings, v.Protocol)
+	rawConfig, err := outboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to parse to outbound detour config.").Base(err)
 	}
@@ -324,7 +329,7 @@ func (v *OutboundDetourConfig) Build() (*proxyman.OutboundHandlerConfig, error) 
 
 	return &proxyman.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
-		Tag:            v.Tag,
+		Tag:            c.Tag,
 		ProxySettings:  ts,
 	}, nil
 }
@@ -341,48 +346,49 @@ type Config struct {
 	Transport       *TransportConfig          `json:"transport"`
 }
 
-func (v *Config) Build() (*core.Config, error) {
+// Build implements Builable.
+func (c *Config) Build() (*core.Config, error) {
 	config := new(core.Config)
 
-	if v.LogConfig != nil {
-		config.App = append(config.App, serial.ToTypedMessage(v.LogConfig.Build()))
+	if c.LogConfig != nil {
+		config.App = append(config.App, serial.ToTypedMessage(c.LogConfig.Build()))
 	}
 
-	if v.Transport != nil {
-		ts, err := v.Transport.Build()
+	if c.Transport != nil {
+		ts, err := c.Transport.Build()
 		if err != nil {
 			return nil, err
 		}
 		config.Transport = ts
 	}
 
-	if v.RouterConfig != nil {
-		routerConfig, err := v.RouterConfig.Build()
+	if c.RouterConfig != nil {
+		routerConfig, err := c.RouterConfig.Build()
 		if err != nil {
 			return nil, err
 		}
 		config.App = append(config.App, serial.ToTypedMessage(routerConfig))
 	}
 
-	if v.DNSConfig != nil {
-		config.App = append(config.App, serial.ToTypedMessage(v.DNSConfig.Build()))
+	if c.DNSConfig != nil {
+		config.App = append(config.App, serial.ToTypedMessage(c.DNSConfig.Build()))
 	}
 
-	if v.InboundConfig == nil {
+	if c.InboundConfig == nil {
 		return nil, newError("no inbound config specified")
 	}
 
-	if v.InboundConfig.Port == 0 && v.Port > 0 {
-		v.InboundConfig.Port = v.Port
+	if c.InboundConfig.Port == 0 && c.Port > 0 {
+		c.InboundConfig.Port = c.Port
 	}
 
-	ic, err := v.InboundConfig.Build()
+	ic, err := c.InboundConfig.Build()
 	if err != nil {
 		return nil, err
 	}
 	config.Inbound = append(config.Inbound, ic)
 
-	for _, rawInboundConfig := range v.InboundDetours {
+	for _, rawInboundConfig := range c.InboundDetours {
 		ic, err := rawInboundConfig.Build()
 		if err != nil {
 			return nil, err
@@ -390,16 +396,16 @@ func (v *Config) Build() (*core.Config, error) {
 		config.Inbound = append(config.Inbound, ic)
 	}
 
-	if v.OutboundConfig == nil {
+	if c.OutboundConfig == nil {
 		return nil, newError("no outbound config specified")
 	}
-	oc, err := v.OutboundConfig.Build()
+	oc, err := c.OutboundConfig.Build()
 	if err != nil {
 		return nil, err
 	}
 	config.Outbound = append(config.Outbound, oc)
 
-	for _, rawOutboundConfig := range v.OutboundDetours {
+	for _, rawOutboundConfig := range c.OutboundDetours {
 		oc, err := rawOutboundConfig.Build()
 		if err != nil {
 			return nil, err
