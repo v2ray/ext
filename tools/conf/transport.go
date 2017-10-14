@@ -11,11 +11,12 @@ type TransportConfig struct {
 	WSConfig  *WebSocketConfig `json:"wsSettings"`
 }
 
-func (v *TransportConfig) Build() (*transport.Config, error) {
+// Build implements Builable.
+func (c *TransportConfig) Build() (*transport.Config, error) {
 	config := new(transport.Config)
 
-	if v.TCPConfig != nil {
-		ts, err := v.TCPConfig.Build()
+	if c.TCPConfig != nil {
+		ts, err := c.TCPConfig.Build()
 		if err != nil {
 			return nil, newError("failed to build TCP config").Base(err).AtError()
 		}
@@ -25,8 +26,8 @@ func (v *TransportConfig) Build() (*transport.Config, error) {
 		})
 	}
 
-	if v.KCPConfig != nil {
-		ts, err := v.KCPConfig.Build()
+	if c.KCPConfig != nil {
+		ts, err := c.KCPConfig.Build()
 		if err != nil {
 			return nil, newError("failed to build mKCP config").Base(err).AtError()
 		}
@@ -36,8 +37,8 @@ func (v *TransportConfig) Build() (*transport.Config, error) {
 		})
 	}
 
-	if v.WSConfig != nil {
-		ts, err := v.WSConfig.Build()
+	if c.WSConfig != nil {
+		ts, err := c.WSConfig.Build()
 		if err != nil {
 			return nil, newError("failed to build WebSocket config").Base(err)
 		}

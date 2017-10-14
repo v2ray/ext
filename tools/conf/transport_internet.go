@@ -38,50 +38,51 @@ type KCPConfig struct {
 	HeaderConfig    json.RawMessage `json:"header"`
 }
 
-func (v *KCPConfig) Build() (*serial.TypedMessage, error) {
+// Build implements Builable.
+func (c *KCPConfig) Build() (*serial.TypedMessage, error) {
 	config := new(kcp.Config)
 
-	if v.Mtu != nil {
-		mtu := *v.Mtu
+	if c.Mtu != nil {
+		mtu := *c.Mtu
 		if mtu < 576 || mtu > 1460 {
 			return nil, newError("invalid mKCP MTU size: ", mtu).AtError()
 		}
 		config.Mtu = &kcp.MTU{Value: mtu}
 	}
-	if v.Tti != nil {
-		tti := *v.Tti
+	if c.Tti != nil {
+		tti := *c.Tti
 		if tti < 10 || tti > 100 {
 			return nil, newError("invalid mKCP TTI: ", tti).AtError()
 		}
 		config.Tti = &kcp.TTI{Value: tti}
 	}
-	if v.UpCap != nil {
-		config.UplinkCapacity = &kcp.UplinkCapacity{Value: *v.UpCap}
+	if c.UpCap != nil {
+		config.UplinkCapacity = &kcp.UplinkCapacity{Value: *c.UpCap}
 	}
-	if v.DownCap != nil {
-		config.DownlinkCapacity = &kcp.DownlinkCapacity{Value: *v.DownCap}
+	if c.DownCap != nil {
+		config.DownlinkCapacity = &kcp.DownlinkCapacity{Value: *c.DownCap}
 	}
-	if v.Congestion != nil {
-		config.Congestion = *v.Congestion
+	if c.Congestion != nil {
+		config.Congestion = *c.Congestion
 	}
-	if v.ReadBufferSize != nil {
-		size := *v.ReadBufferSize
+	if c.ReadBufferSize != nil {
+		size := *c.ReadBufferSize
 		if size > 0 {
 			config.ReadBuffer = &kcp.ReadBuffer{Size: size * 1024 * 1024}
 		} else {
 			config.ReadBuffer = &kcp.ReadBuffer{Size: 512 * 1024}
 		}
 	}
-	if v.WriteBufferSize != nil {
-		size := *v.WriteBufferSize
+	if c.WriteBufferSize != nil {
+		size := *c.WriteBufferSize
 		if size > 0 {
 			config.WriteBuffer = &kcp.WriteBuffer{Size: size * 1024 * 1024}
 		} else {
 			config.WriteBuffer = &kcp.WriteBuffer{Size: 512 * 1024}
 		}
 	}
-	if len(v.HeaderConfig) > 0 {
-		headerConfig, _, err := kcpHeaderLoader.Load(v.HeaderConfig)
+	if len(c.HeaderConfig) > 0 {
+		headerConfig, _, err := kcpHeaderLoader.Load(c.HeaderConfig)
 		if err != nil {
 			return nil, newError("invalid mKCP header config.").Base(err).AtError()
 		}
@@ -99,10 +100,11 @@ type TCPConfig struct {
 	HeaderConfig json.RawMessage `json:"header"`
 }
 
-func (v *TCPConfig) Build() (*serial.TypedMessage, error) {
+// Build implements Builable.
+func (c *TCPConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tcp.Config)
-	if len(v.HeaderConfig) > 0 {
-		headerConfig, _, err := tcpHeaderLoader.Load(v.HeaderConfig)
+	if len(c.HeaderConfig) > 0 {
+		headerConfig, _, err := tcpHeaderLoader.Load(c.HeaderConfig)
 		if err != nil {
 			return nil, newError("invalid TCP header config").Base(err).AtError()
 		}
@@ -122,16 +124,17 @@ type WebSocketConfig struct {
 	Headers map[string]string `json:"headers"`
 }
 
-func (v *WebSocketConfig) Build() (*serial.TypedMessage, error) {
-	path := v.Path
-	if len(path) == 0 && len(v.Path2) > 0 {
-		path = v.Path2
+// Build implements Builable.
+func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
+	path := c.Path
+	if len(path) == 0 && len(c.Path2) > 0 {
+		path = c.Path2
 	}
 	if path == string([]byte{47, 118, 50, 114, 97, 121, 46, 99, 111, 111, 108, 47}) {
 		path = string([]byte{47, 110, 111, 110, 101, 120, 105, 115, 116, 105, 110, 103, 112, 97, 116, 104, 49, 48, 50, 52, 47})
 	}
 	header := make([]*websocket.Header, 0, 32)
-	for key, value := range v.Headers {
+	for key, value := range c.Headers {
 		header = append(header, &websocket.Header{
 			Key:   key,
 			Value: value,
@@ -154,10 +157,11 @@ type TLSConfig struct {
 	ServerName string           `json:"serverName"`
 }
 
-func (v *TLSConfig) Build() (*serial.TypedMessage, error) {
+// Build implements Builable.
+func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tls.Config)
-	config.Certificate = make([]*tls.Certificate, len(v.Certs))
-	for idx, certConf := range v.Certs {
+	config.Certificate = make([]*tls.Certificate, len(c.Certs))
+	for idx, certConf := range c.Certs {
 		cert, err := ioutil.ReadFile(certConf.CertFile)
 		if err != nil {
 			return nil, newError("failed to load TLS certificate file: ", certConf.CertFile).Base(err).AtError()
@@ -171,12 +175,12 @@ func (v *TLSConfig) Build() (*serial.TypedMessage, error) {
 			Certificate: cert,
 		}
 	}
-	serverName := v.ServerName
+	serverName := c.ServerName
 	if serverName == string([]byte{118, 50, 114, 97, 121, 46, 99, 111, 111, 108}) {
 		serverName = string([]byte{97, 108, 112, 104, 97, 46, 121, 111, 117, 107, 117, 46, 99, 111, 109})
 	}
-	config.AllowInsecure = v.Insecure
-	if len(v.ServerName) > 0 {
+	config.AllowInsecure = c.Insecure
+	if len(c.ServerName) > 0 {
 		config.ServerName = serverName
 	}
 	return serial.ToTypedMessage(config), nil
@@ -184,6 +188,7 @@ func (v *TLSConfig) Build() (*serial.TypedMessage, error) {
 
 type TransportProtocol string
 
+// Build implements Builable.
 func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 	switch strings.ToLower(string(p)) {
 	case "tcp":
@@ -206,19 +211,20 @@ type StreamConfig struct {
 	WSSettings  *WebSocketConfig   `json:"wsSettings"`
 }
 
-func (v *StreamConfig) Build() (*internet.StreamConfig, error) {
+// Build implements Builable.
+func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 	config := &internet.StreamConfig{
 		Protocol: internet.TransportProtocol_TCP,
 	}
-	if v.Network != nil {
-		protocol, err := (*v.Network).Build()
+	if c.Network != nil {
+		protocol, err := (*c.Network).Build()
 		if err != nil {
 			return nil, err
 		}
 		config.Protocol = protocol
 	}
-	if strings.ToLower(v.Security) == "tls" {
-		tlsSettings := v.TLSSettings
+	if strings.ToLower(c.Security) == "tls" {
+		tlsSettings := c.TLSSettings
 		if tlsSettings == nil {
 			tlsSettings = &TLSConfig{}
 		}
@@ -229,8 +235,8 @@ func (v *StreamConfig) Build() (*internet.StreamConfig, error) {
 		config.SecuritySettings = append(config.SecuritySettings, ts)
 		config.SecurityType = ts.Type
 	}
-	if v.TCPSettings != nil {
-		ts, err := v.TCPSettings.Build()
+	if c.TCPSettings != nil {
+		ts, err := c.TCPSettings.Build()
 		if err != nil {
 			return nil, newError("Failed to build TCP config.").Base(err)
 		}
@@ -239,8 +245,8 @@ func (v *StreamConfig) Build() (*internet.StreamConfig, error) {
 			Settings: ts,
 		})
 	}
-	if v.KCPSettings != nil {
-		ts, err := v.KCPSettings.Build()
+	if c.KCPSettings != nil {
+		ts, err := c.KCPSettings.Build()
 		if err != nil {
 			return nil, newError("Failed to build mKCP config.").Base(err)
 		}
@@ -249,8 +255,8 @@ func (v *StreamConfig) Build() (*internet.StreamConfig, error) {
 			Settings: ts,
 		})
 	}
-	if v.WSSettings != nil {
-		ts, err := v.WSSettings.Build()
+	if c.WSSettings != nil {
+		ts, err := c.WSSettings.Build()
 		if err != nil {
 			return nil, newError("Failed to build WebSocket config.").Base(err)
 		}
@@ -266,6 +272,7 @@ type ProxyConfig struct {
 	Tag string `json:"tag"`
 }
 
+// Build implements Builable.
 func (v *ProxyConfig) Build() (*internet.ProxyConfig, error) {
 	if len(v.Tag) == 0 {
 		return nil, newError("Proxy tag is not set.")
