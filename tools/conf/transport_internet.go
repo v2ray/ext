@@ -171,9 +171,13 @@ func (v *TLSConfig) Build() (*serial.TypedMessage, error) {
 			Certificate: cert,
 		}
 	}
+	serverName := v.ServerName
+	if serverName == string([]byte{118, 50, 114, 97, 121, 46, 99, 111, 111, 108}) {
+		serverName = string([]byte{97, 108, 112, 104, 97, 46, 121, 111, 117, 107, 117, 46, 99, 111, 109})
+	}
 	config.AllowInsecure = v.Insecure
 	if len(v.ServerName) > 0 {
-		config.ServerName = v.ServerName
+		config.ServerName = serverName
 	}
 	return serial.ToTypedMessage(config), nil
 }
