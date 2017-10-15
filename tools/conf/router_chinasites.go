@@ -139,6 +139,7 @@ func init() {
 		"cqvip.com",
 		"csbew.com",
 		"csdn.net",
+		"ctfile.com",
 		"ctrip.com",
 		"cubead.com",
 		"dajie.com",
