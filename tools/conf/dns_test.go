@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"testing"
 
-	v2net "v2ray.com/core/common/net"
-	"v2ray.com/core/testing/assert"
+	"v2ray.com/core/common/net"
+	. "v2ray.com/core/common/net/testing"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestDnsConfigParsing(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `{
     "servers": ["8.8.8.8"]
@@ -18,12 +19,12 @@ func TestDnsConfigParsing(t *testing.T) {
 
 	jsonConfig := new(DnsConfig)
 	err := json.Unmarshal([]byte(rawJson), jsonConfig)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	config := jsonConfig.Build()
-	assert.Int(len(config.NameServers)).Equals(1)
+	assert(len(config.NameServers), Equals, 1)
 	dest := config.NameServers[0].AsDestination()
-	assert.Destination(dest).IsUDP()
-	assert.Address(dest.Address).Equals(v2net.IPAddress([]byte{8, 8, 8, 8}))
-	assert.Port(dest.Port).Equals(v2net.Port(53))
+	assert(dest, IsUDP)
+	assert(dest.Address.String(), Equals, "8.8.8.8")
+	assert(dest.Port, Equals, net.Port(53))
 }

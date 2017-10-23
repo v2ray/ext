@@ -5,162 +5,162 @@ import (
 	"testing"
 
 	v2net "v2ray.com/core/common/net"
-	"v2ray.com/core/testing/assert"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestStringListUnmarshalError(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `1234`
 	list := new(StringList)
 	err := json.Unmarshal([]byte(rawJson), list)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }
 
 func TestStringListLen(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `"a, b, c, d"`
 	list := new(StringList)
 	err := json.Unmarshal([]byte(rawJson), list)
-	assert.Error(err).IsNil()
-	assert.Int(list.Len()).Equals(4)
+	assert(err, IsNil)
+	assert(list.Len(), Equals, 4)
 }
 
 func TestIPParsing(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := "\"8.8.8.8\""
 	var address Address
 	err := json.Unmarshal([]byte(rawJson), &address)
-	assert.Error(err).IsNil()
-	assert.Bytes([]byte(address.IP())).Equals([]byte{8, 8, 8, 8})
+	assert(err, IsNil)
+	assert([]byte(address.IP()), Equals, []byte{8, 8, 8, 8})
 }
 
 func TestDomainParsing(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := "\"v2ray.com\""
 	var address Address
 	err := json.Unmarshal([]byte(rawJson), &address)
-	assert.Error(err).IsNil()
-	assert.String(address.Domain()).Equals("v2ray.com")
+	assert(err, IsNil)
+	assert(address.Domain(), Equals, "v2ray.com")
 }
 
 func TestInvalidAddressJson(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := "1234"
 	var address Address
 	err := json.Unmarshal([]byte(rawJson), &address)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }
 
 func TestStringNetwork(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var network Network
 	err := json.Unmarshal([]byte(`"tcp"`), &network)
-	assert.Error(err).IsNil()
-	assert.Bool(network.Build() == v2net.Network_TCP).IsTrue()
+	assert(err, IsNil)
+	assert(network.Build() == v2net.Network_TCP, IsTrue)
 }
 
 func TestArrayNetworkList(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var list NetworkList
 	err := json.Unmarshal([]byte("[\"Tcp\"]"), &list)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert.Bool(nlist.HasNetwork(v2net.ParseNetwork("tcp"))).IsTrue()
-	assert.Bool(nlist.HasNetwork(v2net.ParseNetwork("udp"))).IsFalse()
+	assert(nlist.HasNetwork(v2net.ParseNetwork("tcp")), IsTrue)
+	assert(nlist.HasNetwork(v2net.ParseNetwork("udp")), IsFalse)
 }
 
 func TestStringNetworkList(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var list NetworkList
 	err := json.Unmarshal([]byte("\"TCP, ip\""), &list)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert.Bool(nlist.HasNetwork(v2net.ParseNetwork("tcp"))).IsTrue()
-	assert.Bool(nlist.HasNetwork(v2net.ParseNetwork("udp"))).IsFalse()
+	assert(nlist.HasNetwork(v2net.ParseNetwork("tcp")), IsTrue)
+	assert(nlist.HasNetwork(v2net.ParseNetwork("udp")), IsFalse)
 }
 
 func TestInvalidNetworkJson(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var list NetworkList
 	err := json.Unmarshal([]byte("0"), &list)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }
 
 func TestIntPort(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var portRange PortRange
 	err := json.Unmarshal([]byte("1234"), &portRange)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
-	assert.Uint32(portRange.From).Equals(1234)
-	assert.Uint32(portRange.To).Equals(1234)
+	assert(portRange.From, Equals, uint32(1234))
+	assert(portRange.To, Equals, uint32(1234))
 }
 
 func TestOverRangeIntPort(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var portRange PortRange
 	err := json.Unmarshal([]byte("70000"), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 
 	err = json.Unmarshal([]byte("-1"), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }
 
 func TestSingleStringPort(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var portRange PortRange
 	err := json.Unmarshal([]byte("\"1234\""), &portRange)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
-	assert.Uint32(portRange.From).Equals(1234)
-	assert.Uint32(portRange.To).Equals(1234)
+	assert(portRange.From, Equals, uint32(1234))
+	assert(portRange.To, Equals, uint32(1234))
 }
 
 func TestStringPairPort(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var portRange PortRange
 	err := json.Unmarshal([]byte("\"1234-5678\""), &portRange)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
-	assert.Uint32(portRange.From).Equals(1234)
-	assert.Uint32(portRange.To).Equals(5678)
+	assert(portRange.From, Equals, uint32(1234))
+	assert(portRange.To, Equals, uint32(5678))
 }
 
 func TestOverRangeStringPort(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	var portRange PortRange
 	err := json.Unmarshal([]byte("\"65536\""), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 
 	err = json.Unmarshal([]byte("\"70000-80000\""), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 
 	err = json.Unmarshal([]byte("\"1-90000\""), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 
 	err = json.Unmarshal([]byte("\"700-600\""), &portRange)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }
 
 func TestUserParsing(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	user := new(User)
 	err := json.Unmarshal([]byte(`{
@@ -169,17 +169,17 @@ func TestUserParsing(t *testing.T) {
     "level": 1,
     "alterId": 100
   }`), user)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	nUser := user.Build()
-	assert.Byte(byte(nUser.Level)).Equals(1)
-	assert.String(nUser.Email).Equals("love@v2ray.com")
+	assert(byte(nUser.Level), Equals, byte(1))
+	assert(nUser.Email, Equals, "love@v2ray.com")
 }
 
 func TestInvalidUserJson(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	user := new(User)
 	err := json.Unmarshal([]byte(`{"email": 1234}`), user)
-	assert.Error(err).IsNotNil()
+	assert(err, IsNotNil)
 }

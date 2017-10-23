@@ -159,6 +159,15 @@ var IsFalse = CreateOperator(reflect.TypeOf(true), reflect.ValueOf(func(v bool) 
 	return !v
 }), 1, "is false")
 
+func Not(op *Operator) *Operator {
+	return &Operator{
+		method: reflect.MakeFunc(op.method.Type(), func(v []reflect.Value) []reflect.Value {
+			return []reflect.Value{reflect.ValueOf(!op.method.Call(v)[0].Bool())}
+		}),
+		verb: "not " + op.verb,
+	}
+}
+
 func init() {
 	RegisterEqualsOperator(reflect.TypeOf(true), reflect.ValueOf(func(v, exp bool) bool {
 		return v == exp

@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"v2ray.com/core/proxy/blackhole"
-	"v2ray.com/core/testing/assert"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestHTTPResponseJSON(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `{
     "response": {
@@ -19,16 +19,16 @@ func TestHTTPResponseJSON(t *testing.T) {
   }`
 	rawConfig := new(BlackholeConfig)
 	err := json.Unmarshal([]byte(rawJson), rawConfig)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	ts, err := rawConfig.Build()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 	iConfig, err := ts.GetInstance()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 	config := iConfig.(*blackhole.Config)
 	response, err := config.GetInternalResponse()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	_, ok := response.(*blackhole.HTTPResponse)
-	assert.Bool(ok).IsTrue()
+	assert(ok, IsTrue)
 }
