@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"testing"
 
-	"v2ray.com/core/testing/assert"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/encoding/json"
 )
 
 func TestReader(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	data := []struct {
 		input  string
@@ -43,7 +43,7 @@ text text 2*`},
 
 		actual := make([]byte, 1024)
 		n, err := reader.Read(actual)
-		assert.Error(err).IsNil()
-		assert.String(string(actual[:n])).Equals(testCase.output)
+		assert(err, IsNil)
+		assert(string(actual[:n]), Equals, testCase.output)
 	}
 }
