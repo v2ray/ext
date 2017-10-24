@@ -42,7 +42,10 @@ type Assert func(value interface{}, op *Matcher, expectations ...interface{})
 func With(t *testing.T) Assert {
 	return func(value interface{}, op *Matcher, expectations ...interface{}) {
 		if !op.call(value, expectations) {
-			fmt.Println(decorate(fmt.Sprint("Not true that ", value, " ", op.verb, " ", expectations)))
+			msgs := []interface{}{"Not true that (", value, ") ", op.verb, " ("}
+			msgs = append(msgs, expectations...)
+			msgs = append(msgs, ")")
+			fmt.Println(decorate(fmt.Sprint(msgs...)))
 			t.FailNow()
 		}
 	}
@@ -82,7 +85,7 @@ func callInternal(m map[reflect.Type]*Matcher, v interface{}, exp interface{}) b
 	vt := reflect.TypeOf(v)
 	op, found := m[vt]
 	if !found {
-		panic(fmt.Sprint("Type", vt, "not registered."))
+		panic(fmt.Sprint("Type (", vt, ") not registered."))
 	}
 	return op.call(v, []interface{}{exp})
 }
