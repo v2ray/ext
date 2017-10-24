@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"testing"
 
-	"v2ray.com/core/testing/assert"
 	"v2ray.com/core/transport/internet"
 	"v2ray.com/core/transport/internet/headers/http"
 	"v2ray.com/core/transport/internet/headers/noop"
 	"v2ray.com/core/transport/internet/kcp"
 	"v2ray.com/core/transport/internet/tcp"
+	_ "v2ray.com/core/transport/internet/testing"
 	"v2ray.com/core/transport/internet/websocket"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestTransportConfig(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `{
     "tcpSettings": {
@@ -49,26 +50,26 @@ func TestTransportConfig(t *testing.T) {
   }`
 
 	var transportSettingsConf TransportConfig
-	assert.Error(json.Unmarshal([]byte(rawJson), &transportSettingsConf)).IsNil()
+	assert(json.Unmarshal([]byte(rawJson), &transportSettingsConf), IsNil)
 
 	ts, err := transportSettingsConf.Build()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
-	assert.Int(len(ts.TransportSettings)).Equals(3)
+	assert(len(ts.TransportSettings), Equals, 3)
 	var settingsCount uint32
 	for _, settingsWithProtocol := range ts.TransportSettings {
 		rawSettings, err := settingsWithProtocol.Settings.GetInstance()
-		assert.Error(err).IsNil()
+		assert(err, IsNil)
 		switch settings := rawSettings.(type) {
 		case *tcp.Config:
 			settingsCount++
-			assert.Bool(settingsWithProtocol.Protocol == internet.TransportProtocol_TCP).IsTrue()
+			assert(settingsWithProtocol.Protocol == internet.TransportProtocol_TCP, IsTrue)
 			rawHeader, err := settings.HeaderSettings.GetInstance()
-			assert.Error(err).IsNil()
+			assert(err, IsNil)
 			header := rawHeader.(*http.Config)
-			assert.String(header.Request.GetVersionValue()).Equals("1.1")
-			assert.String(header.Request.Uri[0]).Equals("/b")
-			assert.String(header.Request.Method.Value).Equals("GET")
+			assert(header.Request.GetVersionValue(), Equals, "1.1")
+			assert(header.Request.Uri[0], Equals, "/b")
+			assert(header.Request.Method.Value, Equals, "GET")
 			var va, vc string
 			for _, h := range header.Request.Header {
 				switch h.Name {
@@ -80,26 +81,26 @@ func TestTransportConfig(t *testing.T) {
 					t.Error("Unknown header ", h.String())
 				}
 			}
-			assert.String(va).Equals("b")
-			assert.String(vc).Equals("d")
-			assert.String(header.Response.Version.Value).Equals("1.0")
-			assert.String(header.Response.Status.Code).Equals("404")
-			assert.String(header.Response.Status.Reason).Equals("Not Found")
+			assert(va, Equals, "b")
+			assert(vc, Equals, "d")
+			assert(header.Response.Version.Value, Equals, "1.0")
+			assert(header.Response.Status.Code, Equals, "404")
+			assert(header.Response.Status.Reason, Equals, "Not Found")
 		case *kcp.Config:
 			settingsCount++
-			assert.Bool(settingsWithProtocol.Protocol == internet.TransportProtocol_MKCP).IsTrue()
-			assert.Uint32(settings.GetMTUValue()).Equals(1200)
+			assert(settingsWithProtocol.Protocol, Equals, internet.TransportProtocol_MKCP)
+			assert(settings.GetMTUValue(), Equals, uint32(1200))
 			rawHeader, err := settings.HeaderConfig.GetInstance()
-			assert.Error(err).IsNil()
+			assert(err, IsNil)
 			header := rawHeader.(*noop.Config)
-			assert.Pointer(header).IsNotNil()
+			assert(header, IsNotNil)
 		case *websocket.Config:
 			settingsCount++
-			assert.Bool(settingsWithProtocol.Protocol == internet.TransportProtocol_WebSocket).IsTrue()
-			assert.String(settings.Path).Equals("/t")
+			assert(settingsWithProtocol.Protocol, Equals, internet.TransportProtocol_WebSocket)
+			assert(settings.Path, Equals, "/t")
 		default:
 			t.Error("Unknown type of settings.")
 		}
 	}
-	assert.Uint32(settingsCount).Equals(3)
+	assert(settingsCount, Equals, uint32(3))
 }

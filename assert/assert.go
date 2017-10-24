@@ -56,7 +56,7 @@ func RegisterEqualsMatcher(t reflect.Type, f reflect.Value) {
 	equals[t] = op
 }
 
-func RegisterLessThanOperator(t reflect.Type, f reflect.Value) {
+func RegisterLessThanMatcher(t reflect.Type, f reflect.Value) {
 	op := CreateMatcher(t, f, 2, "less than")
 	less[t] = op
 }
@@ -220,43 +220,43 @@ func init() {
 		return v == exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
 		return v < exp
 	}))
 
-	RegisterLessThanOperator(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
+	RegisterLessThanMatcher(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
 		return v < exp
 	}))
 

@@ -6,12 +6,12 @@ import (
 
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/proxy/vmess/outbound"
-	"v2ray.com/core/testing/assert"
+	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestConfigTargetParsing(t *testing.T) {
-	assert := assert.On(t)
+	assert := With(t)
 
 	rawJson := `{
     "vnext": [{
@@ -29,16 +29,16 @@ func TestConfigTargetParsing(t *testing.T) {
 
 	rawConfig := new(VMessOutboundConfig)
 	err := json.Unmarshal([]byte(rawJson), &rawConfig)
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	ts, err := rawConfig.Build()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	iConfig, err := ts.GetInstance()
-	assert.Error(err).IsNil()
+	assert(err, IsNil)
 
 	config := iConfig.(*outbound.Config)
 	specPB := config.Receiver[0]
 	spec := protocol.NewServerSpecFromPB(*specPB)
-	assert.Destination(spec.Destination()).EqualsString("tcp:127.0.0.1:80")
+	assert(spec.Destination().String(), Equals, "tcp:127.0.0.1:80")
 }
