@@ -111,7 +111,7 @@ var LessThan = &Matcher{
 	verb: "less than",
 }
 
-var LessThanOrEqualsTo = &Matcher{
+var AtMost = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return !callInternal(greater, v, exp)
 	}),
@@ -125,7 +125,7 @@ var GreaterThan = &Matcher{
 	verb: "less than",
 }
 
-var GreaterThanOrEqualsTo = &Matcher{
+var AtLeast = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return !callInternal(less, v, exp)
 	}),
