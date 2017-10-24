@@ -135,7 +135,7 @@ var IsPositive = CreateMatcher(func(v interface{}, exp interface{}) bool {
 }, "is positive")
 
 var IsNil = CreateMatcher(func(v interface{}) bool {
-	return v == nil
+	return v == nil || reflect.ValueOf(v).IsNil()
 }, "is nil")
 
 var IsNotNil = CreateMatcher(func(v interface{}) bool {
