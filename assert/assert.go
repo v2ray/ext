@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	equals  = make(map[reflect.Type]*Operator)
-	less    = make(map[reflect.Type]*Operator)
-	greater = make(map[reflect.Type]*Operator)
+	equals  = make(map[reflect.Type]*Matcher)
+	less    = make(map[reflect.Type]*Matcher)
+	greater = make(map[reflect.Type]*Matcher)
 )
 
-type Operator struct {
+type Matcher struct {
 	method reflect.Value
 	verb   string
 }
@@ -27,7 +27,7 @@ func zeroValueOrReal(v interface{}, t reflect.Type) reflect.Value {
 	return reflect.ValueOf(v)
 }
 
-func (op *Operator) call(value interface{}, expectations []interface{}) bool {
+func (op *Matcher) call(value interface{}, expectations []interface{}) bool {
 	input := make([]reflect.Value, op.method.Type().NumIn())
 	input[0] = zeroValueOrReal(value, op.method.Type().In(0))
 	for i, v := range expectations {
@@ -37,10 +37,10 @@ func (op *Operator) call(value interface{}, expectations []interface{}) bool {
 	return ret[0].Bool()
 }
 
-type Assert func(value interface{}, op *Operator, expectations ...interface{})
+type Assert func(value interface{}, op *Matcher, expectations ...interface{})
 
 func With(t *testing.T) Assert {
-	return func(value interface{}, op *Operator, expectations ...interface{}) {
+	return func(value interface{}, op *Matcher, expectations ...interface{}) {
 		if !op.call(value, expectations) {
 			fmt.Println(decorate(fmt.Sprint("Not true that ", value, " ", op.verb, " ", expectations)))
 			t.FailNow()
@@ -48,22 +48,22 @@ func With(t *testing.T) Assert {
 	}
 }
 
-func RegisterEqualsOperator(t reflect.Type, f reflect.Value) {
-	op := CreateOperator(t, f, 2, "equals to")
+func RegisterEqualsMatcher(t reflect.Type, f reflect.Value) {
+	op := CreateMatcher(t, f, 2, "equals to")
 	equals[t] = op
 }
 
 func RegisterLessThanOperator(t reflect.Type, f reflect.Value) {
-	op := CreateOperator(t, f, 2, "less than")
+	op := CreateMatcher(t, f, 2, "less than")
 	less[t] = op
 }
 
-func RegisterGreaterThanOperator(t reflect.Type, f reflect.Value) {
-	op := CreateOperator(t, f, 2, "greater than")
+func RegisterGreaterThanMatcher(t reflect.Type, f reflect.Value) {
+	op := CreateMatcher(t, f, 2, "greater than")
 	greater[t] = op
 }
 
-func CreateOperator(t reflect.Type, f reflect.Value, numInput int, verb string) *Operator {
+func CreateMatcher(t reflect.Type, f reflect.Value, numInput int, verb string) *Matcher {
 	if f.Kind() != reflect.Func {
 		panic("Operator is not a function.")
 	}
@@ -72,13 +72,13 @@ func CreateOperator(t reflect.Type, f reflect.Value, numInput int, verb string) 
 		panic(fmt.Sprint("Operator accepts ", f.Type().NumIn(), " parameters, but expect to be ", numInput))
 	}
 
-	return &Operator{
+	return &Matcher{
 		method: f,
 		verb:   verb,
 	}
 }
 
-func callInternal(m map[reflect.Type]*Operator, v interface{}, exp interface{}) bool {
+func callInternal(m map[reflect.Type]*Matcher, v interface{}, exp interface{}) bool {
 	vt := reflect.TypeOf(v)
 	op, found := m[vt]
 	if !found {
@@ -87,80 +87,80 @@ func callInternal(m map[reflect.Type]*Operator, v interface{}, exp interface{}) 
 	return op.call(v, []interface{}{exp})
 }
 
-var Equals = &Operator{
+var Equals = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return callInternal(equals, v, exp)
 	}),
 	verb: "equals to",
 }
 
-var NotEquals = &Operator{
+var NotEquals = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return !callInternal(equals, v, exp)
 	}),
 	verb: "not equals to",
 }
 
-var LessThan = &Operator{
+var LessThan = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return callInternal(less, v, exp)
 	}),
 	verb: "less than",
 }
 
-var LessThanOrEqualsTo = &Operator{
+var LessThanOrEqualsTo = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return !callInternal(greater, v, exp)
 	}),
 	verb: "less than or equals to",
 }
 
-var GreaterThan = &Operator{
+var GreaterThan = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return callInternal(greater, v, exp)
 	}),
 	verb: "less than",
 }
 
-var GreaterThanOrEqualsTo = &Operator{
+var GreaterThanOrEqualsTo = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return !callInternal(less, v, exp)
 	}),
 	verb: "less than",
 }
 
-var IsNegative = &Operator{
+var IsNegative = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return callInternal(less, v, 0)
 	}),
 	verb: "is negative",
 }
 
-var IsPositive = &Operator{
+var IsPositive = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
 		return callInternal(greater, v, 0)
 	}),
 	verb: "is positive",
 }
 
-var IsNil = CreateOperator(reflect.TypeOf(interface{}(nil)), reflect.ValueOf(func(v interface{}) bool {
+var IsNil = CreateMatcher(reflect.TypeOf(interface{}(nil)), reflect.ValueOf(func(v interface{}) bool {
 	return v == nil
 }), 1, "is nil")
 
-var IsNotNil = CreateOperator(reflect.TypeOf(interface{}(nil)), reflect.ValueOf(func(v interface{}) bool {
+var IsNotNil = CreateMatcher(reflect.TypeOf(interface{}(nil)), reflect.ValueOf(func(v interface{}) bool {
 	return v != nil
 }), 1, "is not nil")
 
-var IsTrue = CreateOperator(reflect.TypeOf(true), reflect.ValueOf(func(v bool) bool {
+var IsTrue = CreateMatcher(reflect.TypeOf(true), reflect.ValueOf(func(v bool) bool {
 	return v
 }), 1, "is true")
 
-var IsFalse = CreateOperator(reflect.TypeOf(true), reflect.ValueOf(func(v bool) bool {
+var IsFalse = CreateMatcher(reflect.TypeOf(true), reflect.ValueOf(func(v bool) bool {
 	return !v
 }), 1, "is false")
 
-func Not(op *Operator) *Operator {
-	return &Operator{
+func Not(op *Matcher) *Matcher {
+	return &Matcher{
 		method: reflect.MakeFunc(op.method.Type(), func(v []reflect.Value) []reflect.Value {
 			return []reflect.Value{reflect.ValueOf(!op.method.Call(v)[0].Bool())}
 		}),
@@ -169,51 +169,51 @@ func Not(op *Operator) *Operator {
 }
 
 func init() {
-	RegisterEqualsOperator(reflect.TypeOf(true), reflect.ValueOf(func(v, exp bool) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(true), reflect.ValueOf(func(v, exp bool) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(uint(0)), reflect.ValueOf(func(v uint, exp uint) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(uint(0)), reflect.ValueOf(func(v uint, exp uint) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
 		return v == exp
 	}))
 
@@ -257,51 +257,51 @@ func init() {
 		return v < exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(byte(0)), reflect.ValueOf(func(v, exp byte) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(int8(0)), reflect.ValueOf(func(v, exp int8) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(uint8(0)), reflect.ValueOf(func(v, exp uint8) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(int16(0)), reflect.ValueOf(func(v, exp int16) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(uint16(0)), reflect.ValueOf(func(v, exp uint16) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(int(0)), reflect.ValueOf(func(v int, exp int) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(int32(0)), reflect.ValueOf(func(v, exp int32) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(uint32(0)), reflect.ValueOf(func(v, exp uint32) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(int64(0)), reflect.ValueOf(func(v, exp int64) bool {
 		return v > exp
 	}))
 
-	RegisterGreaterThanOperator(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
+	RegisterGreaterThanMatcher(reflect.TypeOf(uint64(0)), reflect.ValueOf(func(v, exp uint64) bool {
 		return v > exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf(""), reflect.ValueOf(func(v, exp string) bool {
+	RegisterEqualsMatcher(reflect.TypeOf(""), reflect.ValueOf(func(v, exp string) bool {
 		return v == exp
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf([]byte(nil)), reflect.ValueOf(func(v, exp []byte) bool {
+	RegisterEqualsMatcher(reflect.TypeOf([]byte(nil)), reflect.ValueOf(func(v, exp []byte) bool {
 		if len(v) != len(exp) {
 			return false
 		}
@@ -314,7 +314,7 @@ func init() {
 		return true
 	}))
 
-	RegisterEqualsOperator(reflect.TypeOf([]string(nil)), reflect.ValueOf(func(v, exp []string) bool {
+	RegisterEqualsMatcher(reflect.TypeOf([]string(nil)), reflect.ValueOf(func(v, exp []string) bool {
 		if len(v) != len(exp) {
 			return false
 		}
