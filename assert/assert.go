@@ -92,14 +92,24 @@ func callInternal(m map[reflect.Type]*Matcher, v interface{}, exp interface{}) b
 
 var Equals = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
-		return callInternal(equals, v, exp)
+		vt := reflect.TypeOf(v)
+		op, found := equals[vt]
+		if found {
+			return op.call(v, []interface{}{exp})
+		}
+		return v == exp
 	}),
 	verb: "equals to",
 }
 
 var NotEquals = &Matcher{
 	method: reflect.ValueOf(func(v interface{}, exp interface{}) bool {
-		return !callInternal(equals, v, exp)
+		vt := reflect.TypeOf(v)
+		op, found := equals[vt]
+		if found {
+			return !op.call(v, []interface{}{exp})
+		}
+		return v != exp
 	}),
 	verb: "not equals to",
 }
