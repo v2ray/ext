@@ -15,6 +15,10 @@ type FileMetadata struct {
 	checksum string
 }
 
+func (meta *FileMetadata) Checksum() string {
+	return meta.checksum
+}
+
 func GenerateFileMetadata(file string) (*FileMetadata, error) {
 	fileReader, err := os.Open(file)
 	if err != nil {
