@@ -19,3 +19,18 @@ func SevenZipBuild(folder string, targetFile string, password string) error {
 
 	return err
 }
+
+func SevenZipFolder(folder string, targetFile string) error {
+	args := []string{
+		"a", "-t=zip", "-mx=9", targetFile, folder,
+	}
+
+	cmd := exec.Command("7z", args...)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+	output, err := cmd.CombinedOutput()
+	if len(output) > 0 {
+		os.Stdout.Write(output)
+	}
+
+	return err
+}
