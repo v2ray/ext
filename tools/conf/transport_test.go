@@ -9,7 +9,6 @@ import (
 	"v2ray.com/core/transport/internet/headers/noop"
 	"v2ray.com/core/transport/internet/kcp"
 	"v2ray.com/core/transport/internet/tcp"
-	_ "v2ray.com/core/transport/internet/testing"
 	"v2ray.com/core/transport/internet/websocket"
 	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
