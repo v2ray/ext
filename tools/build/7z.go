@@ -22,7 +22,7 @@ func SevenZipBuild(folder string, targetFile string, password string) error {
 
 func SevenZipFolder(folder string, targetFile string) error {
 	args := []string{
-		"a", "-t=zip", "-mx=9", targetFile, folder,
+		"a", "-tzip", "-mx=9", targetFile, folder,
 	}
 
 	cmd := exec.Command("7z", args...)
