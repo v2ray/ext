@@ -8,14 +8,25 @@ import (
 	"v2ray.com/ext/tools/control"
 )
 
-func main() {
-	args := os.Args
+func getCommandName() string {
+	if len(os.Args) > 2 {
+		return os.Args[1]
+	}
+	return ""
+}
 
-	cmd := control.GetCommand(args[1])
+func main() {
+	name := getCommandName()
+	cmd := control.GetCommand(name)
 	if cmd == nil {
-		fmt.Fprintln(os.Stderr, "Unknown command:", args[1])
+		fmt.Fprintln(os.Stderr, "Unknown command:", name)
+		fmt.Fprintln(os.Stderr)
+
+		fmt.Println("v2ctl <command>")
+		fmt.Println("Available commands:")
+		control.PrintUsage()
 		return
 	}
 
-	cmd(args[2:])
+	cmd(os.Args[2:])
 }

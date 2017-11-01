@@ -76,7 +76,7 @@ func firstIdentity(m map[string]*openpgp.Identity) string {
 
 func init() {
 	const name = "verify"
-	common.Must(RegisterCommand(name, func(args []string) {
+	common.Must(RegisterCommand(name, "Verify if a binary is officially signed.", func(args []string) {
 		fs := flag.NewFlagSet(name, flag.ContinueOnError)
 
 		sigFile := fs.String("sig", "", "Path to the signature file")

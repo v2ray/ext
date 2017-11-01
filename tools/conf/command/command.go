@@ -11,7 +11,7 @@ import (
 
 func init() {
 	const name = "config"
-	common.Must(control.RegisterCommand(name, func(args []string) {
+	common.Must(control.RegisterCommand(name, "Convert config among different formats.", func(args []string) {
 		pbConfig, err := serial.LoadJSONConfig(os.Stdin)
 		if err != nil {
 			os.Stderr.WriteString("failed to parse json config: " + err.Error())
