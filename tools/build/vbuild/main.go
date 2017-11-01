@@ -85,10 +85,10 @@ func main() {
 		}
 	}
 
-	confUtil := getTargetFile("conf", v2rayOS)
+	confUtil := getTargetFile("v2ctl", v2rayOS)
 	confUtilFull := filepath.Join(targetDir, confUtil)
-	if err := build.GoBuild("v2ray.com/ext/tools/conf/main", confUtilFull, v2rayOS, v2rayArch, ""); err != nil {
-		fmt.Println("Unable to build V2Ray config: " + err.Error())
+	if err := build.GoBuild("v2ray.com/ext/tools/control/main", confUtilFull, v2rayOS, v2rayArch, ""); err != nil {
+		fmt.Println("Unable to build V2Ray control: " + err.Error())
 		return
 	}
 
@@ -104,7 +104,7 @@ func main() {
 		}
 
 		if err := build.GPGSignFile(confUtilFull, gpgPass); err != nil {
-			fmt.Println("Unable to sign conf util: " + err.Error())
+			fmt.Println("Unable to sign control util: " + err.Error())
 			return
 		}
 

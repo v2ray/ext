@@ -88,13 +88,13 @@ func init() {
 			fmt.Println("v2ctl verify [--sig=<sig-file>] file")
 			fmt.Println("Verify the file officially signed by V2Ray.")
 		default:
-			fmt.Println("Error parsing arguments: ", err)
+			fmt.Fprintln(os.Stderr, "Error parsing arguments:", err)
 			return
 		}
 
 		target := fs.Arg(0)
 		if len(target) == 0 {
-			fmt.Println("Empty file path.")
+			fmt.Fprintln(os.Stderr, "Empty file path.")
 			return
 		}
 
@@ -104,25 +104,25 @@ func init() {
 
 		targetReader, err := os.Open(os.ExpandEnv(target))
 		if err != nil {
-			fmt.Println("Error opening file (", target, "): ", err)
+			fmt.Fprintln(os.Stderr, "Error opening file (", target, "):", err)
 			return
 		}
 
 		sigReader, err := os.Open(os.ExpandEnv(*sigFile))
 		if err != nil {
-			fmt.Println("Error opening file (", *sigFile, "): ", err)
+			fmt.Fprintln(os.Stderr, "Error opening file (", *sigFile, "): ", err)
 			return
 		}
 
 		keyring, err := openpgp.ReadArmoredKeyRing(strings.NewReader(pubkey))
 		if err != nil {
-			fmt.Println("Error creating keyring: ", err)
+			fmt.Fprintln(os.Stderr, "Error creating keyring:", err)
 			return
 		}
 
 		entity, err := openpgp.CheckDetachedSignature(keyring, targetReader, sigReader)
 		if err != nil {
-			fmt.Println("Error verifying signature: ", err)
+			fmt.Fprintln(os.Stderr, "Error verifying signature:", err)
 			return
 		}
 

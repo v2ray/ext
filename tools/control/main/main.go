@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	_ "v2ray.com/ext/tools/conf/command"
 	"v2ray.com/ext/tools/control"
 )
 
@@ -12,7 +13,7 @@ func main() {
 
 	cmd := control.GetCommand(args[1])
 	if cmd == nil {
-		fmt.Println("Unknown command: ", args[1])
+		fmt.Fprintln(os.Stderr, "Unknown command:", args[1])
 		return
 	}
 
