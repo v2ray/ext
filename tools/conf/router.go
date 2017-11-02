@@ -2,6 +2,9 @@ package conf
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -100,6 +103,36 @@ func ParseIP(s string) (*router.CIDR, error) {
 	}
 }
 
+func loadGeoIP(country string) ([]*router.CIDR, error) {
+	path, err := os.Executable()
+	if err != nil {
+		return nil, err
+	}
+	geoipFile := filepath.Join(filepath.Dir(path), "geoip.dat")
+	geoipReader, err := os.Open(geoipFile)
+	if err != nil {
+		return nil, err
+	}
+	defer geoipReader.Close()
+
+	geoipBytes, err := ioutil.ReadAll(geoipReader)
+	if err != nil {
+		return nil, err
+	}
+	var geoipList router.GeoIPList
+	if err := proto.Unmarshal(geoipBytes, &geoipList); err != nil {
+		return nil, err
+	}
+
+	for _, geoip := range geoipList.Entry {
+		if geoip.CountryCode == country {
+			return geoip.Cidr, nil
+		}
+	}
+
+	return nil, newError("country not found: " + country)
+}
+
 func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	type RawFieldRule struct {
 		RouterRule
@@ -145,6 +178,16 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.IP != nil {
 		for _, ip := range *rawFieldRule.IP {
+			if strings.HasPrefix(ip, "geoip:") {
+				country := ip[6:]
+				geoip, err := loadGeoIP(strings.ToUpper(country))
+				if err != nil {
+					return nil, newError("failed to load GeoIP: ", country).Base(err)
+				}
+				rule.Cidr = append(rule.Cidr, geoip...)
+				continue
+			}
+
 			ipRule, err := ParseIP(ip)
 			if err != nil {
 				return nil, newError("invalid IP: ", ip).Base(err)
