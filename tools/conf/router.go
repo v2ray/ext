@@ -52,7 +52,7 @@ type RouterRule struct {
 	OutboundTag string `json:"outboundTag"`
 }
 
-func parseIP(s string) (*router.CIDR, error) {
+func ParseIP(s string) (*router.CIDR, error) {
 	var addr, mask string
 	i := strings.Index(s, "/")
 	if i < 0 {
@@ -140,7 +140,7 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.IP != nil {
 		for _, ip := range *rawFieldRule.IP {
-			ipRule, err := parseIP(ip)
+			ipRule, err := ParseIP(ip)
 			if err != nil {
 				return nil, newError("invalid IP: ", ip).Base(err)
 			}
@@ -158,7 +158,7 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.SourceIP != nil {
 		for _, ip := range *rawFieldRule.SourceIP {
-			ipRule, err := parseIP(ip)
+			ipRule, err := ParseIP(ip)
 			if err != nil {
 				return nil, newError("invalid IP: ", ip).Base(err)
 			}
