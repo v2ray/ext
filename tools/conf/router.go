@@ -122,6 +122,11 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.Domain != nil {
 		for _, domain := range *rawFieldRule.Domain {
+			if domain == "geosite:cn" {
+				rule.Domain = append(rule.Domain, chinaSitesDomains...)
+				continue
+			}
+
 			domainRule := new(router.Domain)
 			switch {
 			case strings.HasPrefix(domain, "regexp:"):
