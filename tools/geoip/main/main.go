@@ -29,6 +29,7 @@ func getCountryCodeMap() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer countryCodeReader.Close()
 
 	m := make(map[string]string)
 	reader := csv.NewReader(countryCodeReader)
@@ -52,6 +53,7 @@ func getCidrPerCountry(file string, m map[string]string, list map[string][]*rout
 	if err != nil {
 		return err
 	}
+	defer fileReader.Close()
 
 	reader := csv.NewReader(fileReader)
 	lines, err := reader.ReadAll()
