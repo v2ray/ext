@@ -12,6 +12,7 @@ import (
 	"v2ray.com/core/app/router"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/tools/geoip"
+	"v2ray.com/ext/assets"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -104,11 +105,11 @@ func ParseIP(s string) (*router.CIDR, error) {
 }
 
 func loadGeoIP(country string) ([]*router.CIDR, error) {
-	path, err := os.Executable()
+	path, err := assets.GetEffectiveAssetsPath()
 	if err != nil {
 		return nil, err
 	}
-	geoipFile := filepath.Join(filepath.Dir(path), "geoip.dat")
+	geoipFile := filepath.Join(path, "geoip.dat")
 	geoipReader, err := os.Open(geoipFile)
 	if err != nil {
 		return nil, err
