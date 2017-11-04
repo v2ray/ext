@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"v2ray.com/ext/sysio"
 )
 
 type CopyOption func([]byte) []byte
@@ -24,7 +26,7 @@ func FormatLineEnding(goOS GoOS) CopyOption {
 }
 
 func CopyFile(src string, dest string, options ...CopyOption) error {
-	content, err := ioutil.ReadFile(src)
+	content, err := sysio.ReadFile(src)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,6 @@ package conf
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -12,6 +9,7 @@ import (
 	"v2ray.com/core/app/router"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/tools/geoip"
+	"v2ray.com/ext/sysio"
 
 	"github.com/golang/protobuf/proto"
 )
@@ -104,18 +102,7 @@ func ParseIP(s string) (*router.CIDR, error) {
 }
 
 func loadGeoIP(country string) ([]*router.CIDR, error) {
-	path, err := os.Executable()
-	if err != nil {
-		return nil, err
-	}
-	geoipFile := filepath.Join(filepath.Dir(path), "geoip.dat")
-	geoipReader, err := os.Open(geoipFile)
-	if err != nil {
-		return nil, err
-	}
-	defer geoipReader.Close()
-
-	geoipBytes, err := ioutil.ReadAll(geoipReader)
+	geoipBytes, err := sysio.ReadAsset("geoip.dat")
 	if err != nil {
 		return nil, err
 	}

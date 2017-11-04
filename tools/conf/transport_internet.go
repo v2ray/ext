@@ -2,7 +2,6 @@ package conf
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"strings"
 
 	"v2ray.com/core/common/serial"
@@ -11,6 +10,7 @@ import (
 	"v2ray.com/core/transport/internet/tcp"
 	"v2ray.com/core/transport/internet/tls"
 	"v2ray.com/core/transport/internet/websocket"
+	"v2ray.com/ext/sysio"
 )
 
 var (
@@ -167,11 +167,11 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tls.Config)
 	config.Certificate = make([]*tls.Certificate, len(c.Certs))
 	for idx, certConf := range c.Certs {
-		cert, err := ioutil.ReadFile(certConf.CertFile)
+		cert, err := sysio.ReadFile(certConf.CertFile)
 		if err != nil {
 			return nil, newError("failed to load TLS certificate file: ", certConf.CertFile).Base(err).AtError()
 		}
-		key, err := ioutil.ReadFile(certConf.KeyFile)
+		key, err := sysio.ReadFile(certConf.KeyFile)
 		if err != nil {
 			return nil, newError("failed to load TLS key file: ", certConf.KeyFile).Base(err).AtError()
 		}
