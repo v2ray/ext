@@ -8,7 +8,6 @@ import (
 	"v2ray.com/core/app/log"
 	"v2ray.com/core/app/router"
 	v2net "v2ray.com/core/common/net"
-	"v2ray.com/core/tools/geoip"
 	"v2ray.com/ext/sysio"
 
 	"github.com/golang/protobuf/proto"
@@ -252,13 +251,13 @@ func parseChinaIPRule(data []byte) (*router.RoutingRule, error) {
 	if err != nil {
 		return nil, newError("invalid router rule").Base(err)
 	}
-	var chinaIPs geoip.CountryIPRange
-	if err := proto.Unmarshal(geoip.ChinaIPs, &chinaIPs); err != nil {
-		return nil, newError("invalid china ips").Base(err)
+	chinaIPs, err := loadGeoIP("CN")
+	if err != nil {
+		return nil, newError("failed to load geoip:cn").Base(err)
 	}
 	return &router.RoutingRule{
 		Tag:  rawRule.OutboundTag,
-		Cidr: chinaIPs.Ips,
+		Cidr: chinaIPs,
 	}, nil
 }
 
