@@ -119,6 +119,25 @@ func loadGeoIP(country string) ([]*router.CIDR, error) {
 	return nil, newError("country not found: " + country)
 }
 
+func loadGeoSite(country string) ([]*router.Domain, error) {
+	geositeBytes, err := sysio.ReadAsset("geosite.dat")
+	if err != nil {
+		return nil, err
+	}
+	var geositeList router.GeoSiteList
+	if err := proto.Unmarshal(geositeBytes, &geositeList); err != nil {
+		return nil, err
+	}
+
+	for _, site := range geositeList.Entry {
+		if site.CountryCode == country {
+			return site.Domain, nil
+		}
+	}
+
+	return nil, newError("country not found: " + country)
+}
+
 func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	type RawFieldRule struct {
 		RouterRule
@@ -141,8 +160,13 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.Domain != nil {
 		for _, domain := range *rawFieldRule.Domain {
-			if domain == "geosite:cn" {
-				rule.Domain = append(rule.Domain, chinaSitesDomains...)
+			if strings.HasPrefix(domain, "geosite:") {
+				country := strings.ToUpper(domain[8:])
+				domains, err := loadGeoSite(country)
+				if err != nil {
+					return nil, newError("failed to load geosite: ", country).Base(err)
+				}
+				rule.Domain = append(rule.Domain, domains...)
 				continue
 			}
 
@@ -268,8 +292,12 @@ func parseChinaSitesRule(data []byte) (*router.RoutingRule, error) {
 		log.Trace(newError("invalid router rule: ", err).AtError())
 		return nil, err
 	}
+	domains, err := loadGeoSite("CN")
+	if err != nil {
+		return nil, newError("failed to load geosite:cn.").Base(err)
+	}
 	return &router.RoutingRule{
 		Tag:    rawRule.OutboundTag,
-		Domain: chinaSitesDomains,
+		Domain: domains,
 	}, nil
 }

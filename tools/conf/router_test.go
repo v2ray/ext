@@ -2,9 +2,15 @@ package conf_test
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"v2ray.com/ext/sysio"
+
 	"v2ray.com/core/common/net"
+	"v2ray.com/core/common/platform"
 	"v2ray.com/core/proxy"
 	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
@@ -20,6 +26,11 @@ func makeDomainDestination(domain string) net.Destination {
 
 func TestChinaIPJson(t *testing.T) {
 	assert := With(t)
+
+	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "tools", "release", "config", "geoip.dat"))
+	assert(err, IsNil)
+
+	assert(ioutil.WriteFile(platform.GetAssetLocation("geoip.dat"), fileBytes, 0666), IsNil)
 
 	rule, err := ParseRule([]byte(`{
     "type": "chinaip",
@@ -39,6 +50,11 @@ func TestChinaIPJson(t *testing.T) {
 
 func TestChinaSitesJson(t *testing.T) {
 	assert := With(t)
+
+	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "tools", "release", "config", "geosite.dat"))
+	assert(err, IsNil)
+
+	assert(ioutil.WriteFile(platform.GetAssetLocation("geosite.dat"), fileBytes, 0666), IsNil)
 
 	rule, err := ParseRule([]byte(`{
     "type": "chinasites",
