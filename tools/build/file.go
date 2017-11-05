@@ -56,6 +56,13 @@ func CopyAllConfigFiles(destDir string, goOS GoOS) error {
 		return err
 	}
 
+	src = filepath.Join(srcDir, "geosite.dat")
+	dest = filepath.Join(destDir, "geosite.dat")
+
+	if err := CopyFile(src, dest); err != nil {
+		return err
+	}
+
 	src = filepath.Join(GOPATH, "src", "v2ray.com", "core", "tools", "release", "doc", "readme.md")
 	dest = filepath.Join(destDir, "readme.md")
 
