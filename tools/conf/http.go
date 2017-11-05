@@ -11,13 +11,15 @@ type HttpAccount struct {
 }
 
 type HttpServerConfig struct {
-	Timeout  uint32         `json:"timeout"`
-	Accounts []*HttpAccount `json:"accounts"`
+	Timeout     uint32         `json:"timeout"`
+	Accounts    []*HttpAccount `json:"accounts"`
+	Transparent bool           `json:"allowTransparent"`
 }
 
 func (c *HttpServerConfig) Build() (*serial.TypedMessage, error) {
 	config := &http.ServerConfig{
-		Timeout: c.Timeout,
+		Timeout:          c.Timeout,
+		AllowTransparent: c.Transparent,
 	}
 
 	if len(c.Accounts) > 0 {
