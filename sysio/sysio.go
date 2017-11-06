@@ -2,6 +2,7 @@ package sysio
 
 import (
 	"io"
+	"io/ioutil"
 	"os"
 
 	"v2ray.com/core/common/buf"
@@ -26,4 +27,12 @@ func ReadFile(path string) ([]byte, error) {
 
 func ReadAsset(file string) ([]byte, error) {
 	return ReadFile(platform.GetAssetLocation(file))
+}
+
+func CopyFile(dst string, src string) error {
+	bytes, err := ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(dst, bytes, 0644)
 }
