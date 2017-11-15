@@ -32,10 +32,13 @@ func (c *RouterConfig) Build() (*router.Config, error) {
 	config.DomainStrategy = router.Config_AsIs
 	config.Rule = make([]*router.RoutingRule, len(settings.RuleList))
 	domainStrategy := strings.ToLower(settings.DomainStrategy)
-	if domainStrategy == "alwaysip" {
+	switch domainStrategy {
+	case "alwaysip":
 		config.DomainStrategy = router.Config_UseIp
-	} else if domainStrategy == "ipifnonmatch" {
+	case "ipifnonmatch":
 		config.DomainStrategy = router.Config_IpIfNonMatch
+	case "ipondemand":
+		config.DomainStrategy = router.Config_IpOnDemand
 	}
 	for idx, rawRule := range settings.RuleList {
 		rule, err := ParseRule(rawRule)
