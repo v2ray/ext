@@ -31,3 +31,9 @@ func TestNil(t *testing.T) {
 	var err error
 	assert(err, IsNil)
 }
+
+func TestPanic(t *testing.T) {
+	assert := With(t)
+
+	assert(func() { panic("panic on purpose.") }, Panics)
+}

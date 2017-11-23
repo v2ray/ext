@@ -154,6 +154,18 @@ var IsEmpty = CreateMatcher(func(v interface{}) bool {
 	return reflect.ValueOf(v).Len() == 0
 }, "is empty")
 
+var Panics = CreateMatcher(func(v interface{}) (ret bool) {
+	defer func() {
+		if x := recover(); x != nil {
+			ret = true
+		}
+	}()
+	if vf, ok := v.(func()); ok {
+		vf()
+	}
+	return false
+}, "panics")
+
 func Not(op *Matcher) *Matcher {
 	return &Matcher{
 		method: reflect.MakeFunc(op.method.Type(), func(v []reflect.Value) []reflect.Value {
