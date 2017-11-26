@@ -45,6 +45,12 @@ func (v *ShadowsocksServerConfig) Build() (*serial.TypedMessage, error) {
 		account.CipherType = shadowsocks.CipherType_CHACHA20
 	case "chacha20-ietf":
 		account.CipherType = shadowsocks.CipherType_CHACHA20_IETF
+	case "aes-128-gcm":
+		account.CipherType = shadowsocks.CipherType_AES_128_GCM
+	case "aes-256-gcm":
+		account.CipherType = shadowsocks.CipherType_AES_256_GCM
+	case "chacha20-poly1305":
+		account.CipherType = shadowsocks.CipherType_CHACHA20_POLY1305
 	default:
 		return nil, newError("unknown cipher method: " + cipher)
 	}
