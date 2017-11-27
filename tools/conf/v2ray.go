@@ -344,6 +344,7 @@ type Config struct {
 	InboundDetours  []InboundDetourConfig     `json:"inboundDetour"`
 	OutboundDetours []OutboundDetourConfig    `json:"outboundDetour"`
 	Transport       *TransportConfig          `json:"transport"`
+	Policy          *Policy                   `json:"policy"`
 }
 
 // Build implements Builable.
@@ -372,6 +373,14 @@ func (c *Config) Build() (*core.Config, error) {
 
 	if c.DNSConfig != nil {
 		config.App = append(config.App, serial.ToTypedMessage(c.DNSConfig.Build()))
+	}
+
+	if c.Policy != nil {
+		pc, err := c.Policy.Build()
+		if err != nil {
+			return nil, err
+		}
+		config.App = append(config.App, serial.ToTypedMessage(pc))
 	}
 
 	if c.InboundConfig == nil {

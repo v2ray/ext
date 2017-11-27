@@ -14,12 +14,14 @@ type HttpServerConfig struct {
 	Timeout     uint32         `json:"timeout"`
 	Accounts    []*HttpAccount `json:"accounts"`
 	Transparent bool           `json:"allowTransparent"`
+	UserLevel   uint32         `json:"userLevel"`
 }
 
 func (c *HttpServerConfig) Build() (*serial.TypedMessage, error) {
 	config := &http.ServerConfig{
 		Timeout:          c.Timeout,
 		AllowTransparent: c.Transparent,
+		UserLevel:        c.UserLevel,
 	}
 
 	if len(c.Accounts) > 0 {

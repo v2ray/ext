@@ -11,6 +11,7 @@ type DokodemoConfig struct {
 	NetworkList  *NetworkList `json:"network"`
 	TimeoutValue uint32       `json:"timeout"`
 	Redirect     bool         `json:"followRedirect"`
+	UserLevel    uint32       `json:"userLevel"`
 }
 
 func (v *DokodemoConfig) Build() (*serial.TypedMessage, error) {
@@ -22,5 +23,6 @@ func (v *DokodemoConfig) Build() (*serial.TypedMessage, error) {
 	config.NetworkList = v.NetworkList.Build()
 	config.Timeout = v.TimeoutValue
 	config.FollowRedirect = v.Redirect
+	config.UserLevel = v.UserLevel
 	return serial.ToTypedMessage(config), nil
 }

@@ -31,6 +31,7 @@ type SocksServerConfig struct {
 	UDP        bool            `json:"udp"`
 	Host       *Address        `json:"ip"`
 	Timeout    uint32          `json:"timeout"`
+	UserLevel  uint32          `json:"userLevel"`
 }
 
 func (v *SocksServerConfig) Build() (*serial.TypedMessage, error) {
@@ -56,6 +57,7 @@ func (v *SocksServerConfig) Build() (*serial.TypedMessage, error) {
 	}
 
 	config.Timeout = v.Timeout
+	config.UserLevel = v.UserLevel
 	return serial.ToTypedMessage(config), nil
 }
 
