@@ -344,7 +344,7 @@ type Config struct {
 	InboundDetours  []InboundDetourConfig     `json:"inboundDetour"`
 	OutboundDetours []OutboundDetourConfig    `json:"outboundDetour"`
 	Transport       *TransportConfig          `json:"transport"`
-	Policy          *Policy                   `json:"policy"`
+	Policy          *PolicyConfig             `json:"policy"`
 }
 
 // Build implements Builable.
