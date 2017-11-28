@@ -4,14 +4,14 @@ import (
 	"v2ray.com/core/app/policy"
 )
 
-type Timeout struct {
+type Policy struct {
 	Handshake      *uint32 `json:"handshake"`
 	ConnectionIdle *uint32 `json:"connIdle"`
 	UplinkOnly     *uint32 `json:"uplinkOnly"`
 	DownlinkOnly   *uint32 `json:"downlinkOnly"`
 }
 
-func (t *Timeout) Build() (*policy.Policy_Timeout, error) {
+func (t *Policy) Build() (*policy.Policy, error) {
 	config := new(policy.Policy_Timeout)
 	if t.Handshake != nil {
 		config.Handshake = &policy.Second{Value: *t.Handshake}
@@ -25,23 +25,9 @@ func (t *Timeout) Build() (*policy.Policy_Timeout, error) {
 	if t.DownlinkOnly != nil {
 		config.DownlinkOnly = &policy.Second{Value: *t.DownlinkOnly}
 	}
-	return config, nil
-}
-
-type Policy struct {
-	Timeout *Timeout `json:"timeout"`
-}
-
-func (p *Policy) Build() (*policy.Policy, error) {
-	c := new(policy.Policy)
-	if p.Timeout != nil {
-		timeout, err := p.Timeout.Build()
-		if err != nil {
-			return nil, err
-		}
-		c.Timeout = timeout
-	}
-	return c, nil
+	return &policy.Policy{
+		Timeout: config,
+	}, nil
 }
 
 type PolicyConfig struct {
