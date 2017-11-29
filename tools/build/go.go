@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"fmt"
 )
 
 type GoOS string
@@ -141,6 +142,10 @@ func GoBuild(source string, targetFile string, goOS GoOS, goArch GoArch, ldFlags
 		args = append(args, "-tags", strings.Join(tags, ","))
 	}
 	args = append(args, source)
+
+	for index, value := range args {
+		fmt.Printf("args[%d]=%d \n", index, value)
+	}
 
 	cmd := exec.Command("go", args...)
 	cmd.Env = append(cmd.Env, "GOOS="+string(goOS), "GOARCH="+string(goArch), "CGO_ENABLED=0")
