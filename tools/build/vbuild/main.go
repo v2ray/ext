@@ -87,7 +87,7 @@ func main() {
 
 	confUtil := getTargetFile("v2ctl", v2rayOS)
 	confUtilFull := filepath.Join(targetDir, confUtil)
-	if err := build.GoBuild("v2ray.com/ext/tools/control/main", confUtilFull, v2rayOS, v2rayArch, ""); err != nil {
+	if err := build.GoBuild("v2ray.com/ext/tools/control/main", confUtilFull, v2rayOS, v2rayArch, "-s -w"); err != nil {
 		fmt.Println("Unable to build V2Ray control: " + err.Error())
 		return
 	}

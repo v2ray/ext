@@ -8,7 +8,7 @@ import (
 )
 
 func BuildV2RayCore(target string, goOS GoOS, goArch GoArch, disableConsoleForWindows bool) error {
-	ldFlags := []string{"-s"}
+	ldFlags := []string{"-s -w"}
 	if disableConsoleForWindows {
 		ldFlags = append(ldFlags, "-H windowsgui")
 	}
