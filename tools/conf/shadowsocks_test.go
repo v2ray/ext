@@ -30,7 +30,7 @@ func TestShadowsocksServerConfigParsing(t *testing.T) {
 	rawAccount, err := config.User.GetTypedAccount()
 	assert(err, IsNil)
 
-	account, ok := rawAccount.(*shadowsocks.ShadowsocksAccount)
+	account, ok := rawAccount.(*shadowsocks.MemoryAccount)
 	assert(ok, IsTrue)
 
 	assert(account.Cipher.KeySize(), Equals, 16)
