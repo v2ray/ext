@@ -8,6 +8,27 @@ import (
 	"v2ray.com/core/proxy/shadowsocks"
 )
 
+func cipherFromString(c string) shadowsocks.CipherType {
+	switch strings.ToLower(c) {
+	case "aes-256-cfb":
+		return shadowsocks.CipherType_AES_256_CFB
+	case "aes-128-cfb":
+		return shadowsocks.CipherType_AES_128_CFB
+	case "chacha20":
+		return shadowsocks.CipherType_CHACHA20
+	case "chacha20-ietf":
+		return shadowsocks.CipherType_CHACHA20_IETF
+	case "aes-128-gcm":
+		return shadowsocks.CipherType_AES_128_GCM
+	case "aes-256-gcm":
+		return shadowsocks.CipherType_AES_256_GCM
+	case "chacha20-poly1305":
+		return shadowsocks.CipherType_CHACHA20_POLY1305
+	default:
+		return shadowsocks.CipherType_UNKNOWN
+	}
+}
+
 type ShadowsocksServerConfig struct {
 	Cipher   string `json:"method"`
 	Password string `json:"password"`
@@ -35,24 +56,9 @@ func (v *ShadowsocksServerConfig) Build() (*serial.TypedMessage, error) {
 			account.Ota = shadowsocks.Account_Disabled
 		}
 	}
-	cipher := strings.ToLower(v.Cipher)
-	switch cipher {
-	case "aes-256-cfb":
-		account.CipherType = shadowsocks.CipherType_AES_256_CFB
-	case "aes-128-cfb":
-		account.CipherType = shadowsocks.CipherType_AES_128_CFB
-	case "chacha20":
-		account.CipherType = shadowsocks.CipherType_CHACHA20
-	case "chacha20-ietf":
-		account.CipherType = shadowsocks.CipherType_CHACHA20_IETF
-	case "aes-128-gcm":
-		account.CipherType = shadowsocks.CipherType_AES_128_GCM
-	case "aes-256-gcm":
-		account.CipherType = shadowsocks.CipherType_AES_256_GCM
-	case "chacha20-poly1305":
-		account.CipherType = shadowsocks.CipherType_CHACHA20_POLY1305
-	default:
-		return nil, newError("unknown cipher method: " + cipher)
+	account.CipherType = cipherFromString(v.Cipher)
+	if account.CipherType == shadowsocks.CipherType_UNKNOWN {
+		return nil, newError("unknown cipher method: ", v.Cipher)
 	}
 
 	config.User = &protocol.User{
@@ -102,18 +108,9 @@ func (v *ShadowsocksClientConfig) Build() (*serial.TypedMessage, error) {
 		if !server.Ota {
 			account.Ota = shadowsocks.Account_Disabled
 		}
-		cipher := strings.ToLower(server.Cipher)
-		switch cipher {
-		case "aes-256-cfb":
-			account.CipherType = shadowsocks.CipherType_AES_256_CFB
-		case "aes-128-cfb":
-			account.CipherType = shadowsocks.CipherType_AES_128_CFB
-		case "chacha20":
-			account.CipherType = shadowsocks.CipherType_CHACHA20
-		case "chacha20-ietf":
-			account.CipherType = shadowsocks.CipherType_CHACHA20_IETF
-		default:
-			return nil, newError("unknown cipher method: " + cipher)
+		account.CipherType = cipherFromString(server.Cipher)
+		if account.CipherType == shadowsocks.CipherType_UNKNOWN {
+			return nil, newError("unknown cipher method: ", server.Cipher)
 		}
 
 		ss := &protocol.ServerEndpoint{
