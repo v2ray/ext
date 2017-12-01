@@ -18,11 +18,11 @@ func cipherFromString(c string) shadowsocks.CipherType {
 		return shadowsocks.CipherType_CHACHA20
 	case "chacha20-ietf":
 		return shadowsocks.CipherType_CHACHA20_IETF
-	case "aes-128-gcm":
+	case "aes-128-gcm", "aead_aes_128_gcm":
 		return shadowsocks.CipherType_AES_128_GCM
-	case "aes-256-gcm":
+	case "aes-256-gcm", "aead_aes_256_gcm":
 		return shadowsocks.CipherType_AES_256_GCM
-	case "chacha20-poly1305":
+	case "chacha20-poly1305", "aead_chacha20_poly1305", "chacha20-ietf-poly1305":
 		return shadowsocks.CipherType_CHACHA20_POLY1305
 	default:
 		return shadowsocks.CipherType_UNKNOWN
