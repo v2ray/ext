@@ -68,7 +68,7 @@ QmiNis0frjeycM6B60UYVbvzlnGi/+TCqjlFIoXNtmff/Bpyh9YLHAYaCBfnKqjn
 )
 
 func firstIdentity(m map[string]*openpgp.Identity) string {
-	for k, _ := range m {
+	for k := range m {
 		return k
 	}
 	return ""
