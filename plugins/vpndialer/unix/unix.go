@@ -13,7 +13,7 @@ import (
 	"v2ray.com/ext/plugins/vpndialer"
 )
 
-//go:generate go run $GOPATH/src/v2ray.com/core/tools/generrorgen/main.go -pkg unix -path Ext,Plugins,VPNDialer,Unix
+//go:generate go run $GOPATH/src/v2ray.com/core/common/errors/errorgen/main.go -pkg unix -path Ext,Plugins,VPNDialer,Unix
 
 type status int
 
