@@ -166,6 +166,10 @@ var Panics = CreateMatcher(func(v interface{}) (ret bool) {
 	return false
 }, "panics")
 
+var Implements = CreateMatcher(func (v interface{}, exp interface{}) bool {
+	return reflect.TypeOf(v).Implements(reflect.TypeOf(exp).Elem())
+}, "implements")
+
 func Not(op *Matcher) *Matcher {
 	return &Matcher{
 		method: reflect.MakeFunc(op.method.Type(), func(v []reflect.Value) []reflect.Value {
