@@ -1,0 +1,60 @@
+name: v2ray
+version: '3.0'
+summary: An unified platform for anti-censorship.
+description: |
+  V2Ray helps to build your own private network. It supports various proxy protocols such as Socks5, HTTP, VMess and Shadowsocks.
+  It also provides internal routing mechansim to dynamically accelarate your connection.
+
+grade: devel
+confinement: strict
+
+parts:
+  core:
+    plugin: nil
+    stage-packages:
+      - curl
+      - unzip
+    build: |
+      set -x
+      ARCH=$(uname -m)
+      VDIS=64
+
+      if [ "$ARCH" = "i686" ] || [ "$ARCH" = "i386" ]; then
+          VDIS="32"
+      elif [ "$ARCH" = *"armv7"* ] || [ "$ARCH" = "armv6l" ]; then
+          VDIS="arm"
+      elif [ "$ARCH" = *"armv8"* ] || [ "$ARCH" = "aarch64" ]; then
+          VDIS="arm64"
+      elif [ "$ARCH" = *"mips64le"* ]; then
+          VDIS="mips64le"
+      elif [ "$ARCH" = *"mips64"* ]; then
+          VDIS="mips64"
+      elif [ "$ARCH" = *"mipsle"* ]; then
+          VDIS="mipsle"
+      elif [ "$ARCH" = *"mips"* ]; then
+          VDIS="mips"
+      fi
+      URL="https://github.com/v2ray/v2ray-core/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/v2ray-linux-${VDIS}.zip"
+      curl -L -o v2ray.zip "$URL"
+      unzip v2ray.zip -d /tmp/
+      cp /tmp/v2ray-v${SNAPCRAFT_PROJECT_VERSION}-linux-${VDIS}/v2ray $SNAPCRAFT_PART_INSTALL
+      cp /tmp/v2ray-v${SNAPCRAFT_PROJECT_VERSION}-linux-${VDIS}/v2ctl $SNAPCRAFT_PART_INSTALL
+      cp /tmp/v2ray-v${SNAPCRAFT_PROJECT_VERSION}-linux-${VDIS}/geoip.dat $SNAPCRAFT_PART_INSTALL
+      cp /tmp/v2ray-v${SNAPCRAFT_PROJECT_VERSION}-linux-${VDIS}/geosite.dat $SNAPCRAFT_PART_INSTALL 
+      cp /tmp/v2ray-v${SNAPCRAFT_PROJECT_VERSION}-linux-${VDIS}/vpoint_vmess_freedom.json $SNAPCRAFT_PART_INSTALL/config.json 
+    
+    organize:
+      v2ray: bin/v2ray
+      v2ctl: bin/v2ctl
+      geoip.dat: bin/geoip.dat
+      geosite.dat: bin/geosite.dat
+      config.json: etc/config.json
+    prime:
+      - bin
+      - etc
+
+apps:
+  v2ray:
+    command: bin/v2ray
+  v2ctl:
+    command: bin/v2ctl
