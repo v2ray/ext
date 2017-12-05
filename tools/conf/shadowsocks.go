@@ -77,6 +77,7 @@ type ShadowsocksServerTarget struct {
 	Password string   `json:"password"`
 	Email    string   `json:"email"`
 	Ota      bool     `json:"ota"`
+	Level    byte     `json:"level"`
 }
 
 type ShadowsocksClientConfig struct {
@@ -118,6 +119,7 @@ func (v *ShadowsocksClientConfig) Build() (*serial.TypedMessage, error) {
 			Port:    uint32(server.Port),
 			User: []*protocol.User{
 				{
+					Level:   uint32(server.Level),
 					Email:   server.Email,
 					Account: serial.ToTypedMessage(account),
 				},
