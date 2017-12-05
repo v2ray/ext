@@ -48,10 +48,9 @@ parts:
       v2ctl: bin/v2ctl
       geoip.dat: bin/geoip.dat
       geosite.dat: bin/geosite.dat
-      config.json: etc/config.json
+      config.json: bin/config.json
     prime:
       - bin
-      - etc
 
 apps:
   v2ray:
