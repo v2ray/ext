@@ -56,5 +56,9 @@ parts:
 apps:
   v2ray:
     command: bin/v2ray
+    daemon: forking
+    plugs: 
+      - network
+      - network-bind
   v2ctl:
     command: bin/v2ctl
