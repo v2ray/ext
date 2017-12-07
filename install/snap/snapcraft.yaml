@@ -1,5 +1,5 @@
 name: v2ray
-version: '3.0'
+version: '3.1'
 summary: An unified platform for anti-censorship.
 description: |
   V2Ray helps to build your own private network. It supports various proxy protocols such as Socks5, HTTP, VMess and Shadowsocks.
@@ -59,5 +59,7 @@ apps:
     plugs: 
       - network
       - network-bind
+      - home
+      - content
   v2ctl:
     command: bin/v2ctl
