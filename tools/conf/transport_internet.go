@@ -138,13 +138,6 @@ func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 		})
 	}
 
-	if path == string([]byte{47, 118, 50, 114, 97, 121, 46, 99, 111, 111, 108, 47}) {
-		path = string([]byte{47, 110, 111, 110, 101, 120, 105, 115, 116, 105, 110, 103, 112, 97, 116, 104, 49, 48, 50, 52, 47})
-		header = append(header, &websocket.Header{
-			Key:   string([]byte{72, 111, 115, 116}),
-			Value: string([]byte{97, 108, 112, 104, 97, 46, 121, 111, 117, 107, 117, 46, 99, 111, 109}),
-		})
-	}
 	config := &websocket.Config{
 		Path:   path,
 		Header: header,
@@ -181,9 +174,6 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 		}
 	}
 	serverName := c.ServerName
-	if serverName == string([]byte{118, 50, 114, 97, 121, 46, 99, 111, 111, 108}) {
-		serverName = string([]byte{97, 108, 112, 104, 97, 46, 121, 111, 117, 107, 117, 46, 99, 111, 109})
-	}
 	config.AllowInsecure = c.Insecure
 	if len(c.ServerName) > 0 {
 		config.ServerName = serverName

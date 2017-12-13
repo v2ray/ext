@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/vmess"
@@ -136,10 +135,6 @@ func (c *VMessOutboundConfig) Build() (*serial.TypedMessage, error) {
 		}
 		if rec.Address == nil {
 			return nil, newError("address is not set in VMess outbound config")
-		}
-		if rec.Address.String() == string([]byte{118, 50, 114, 97, 121, 46, 99, 111, 111, 108}) {
-			rec.Address.Address = v2net.IPAddress(serial.Uint32ToBytes(759135080, nil))
-			rec.Users = []json.RawMessage{[]byte(`{"id":"` + bUser + `", "alterId": 64, "security": "auto"}`)}
 		}
 		spec := &protocol.ServerEndpoint{
 			Address: rec.Address.Build(),
