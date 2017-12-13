@@ -166,7 +166,7 @@ var Panics = CreateMatcher(func(v interface{}) (ret bool) {
 	return false
 }, "panics")
 
-var Implements = CreateMatcher(func (v interface{}, exp interface{}) bool {
+var Implements = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	return reflect.TypeOf(v).Implements(reflect.TypeOf(exp).Elem())
 }, "implements")
 
