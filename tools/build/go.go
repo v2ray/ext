@@ -28,6 +28,7 @@ const (
 	Mips64LE    = GoArch("mips64le")
 	Mips        = GoArch("mips")
 	MipsLE      = GoArch("mipsle")
+	S390X       = GoArch("s390x")
 	UnknownArch = GoArch("unknown")
 )
 
@@ -68,6 +69,8 @@ func ParseArch(rawArch string) GoArch {
 		return Mips64
 	case "mips64le":
 		return Mips64LE
+	case "s390x":
+		return S390X
 	default:
 		return UnknownArch
 	}
@@ -103,6 +106,8 @@ func GetSuffix(os GoOS, arch GoArch) string {
 			suffix = "-linux-mips"
 		case MipsLE:
 			suffix = "-linux-mipsle"
+		case S390X:
+			suffix = "-linux-s390x"
 		}
 	case FreeBSD:
 		switch arch {
