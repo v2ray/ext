@@ -11,3 +11,7 @@ var HasSubstring = CreateMatcher(func(a, b string) bool {
 var HasSuffix = CreateMatcher(func(a, b string) bool {
 	return strings.HasSuffix(a, b)
 }, "has suffix")
+
+var HasPrefix = CreateMatcher(func(a, b string) bool {
+	return strings.HasPrefix(a, b)
+}, "has prefix")
