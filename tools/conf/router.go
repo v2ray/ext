@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"v2ray.com/core/app/log"
 	"v2ray.com/core/app/router"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/ext/sysio"
@@ -292,7 +291,7 @@ func parseChinaSitesRule(data []byte) (*router.RoutingRule, error) {
 	rawRule := new(RouterRule)
 	err := json.Unmarshal(data, rawRule)
 	if err != nil {
-		log.Trace(newError("invalid router rule: ", err).AtError())
+		newError("invalid router rule: ", err).AtError().WriteToLog()
 		return nil, err
 	}
 	domains, err := loadGeoSite("CN")

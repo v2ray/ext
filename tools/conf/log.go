@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"v2ray.com/core/app/log"
+	clog "v2ray.com/core/common/log"
 )
 
 type LogConfig struct {
@@ -33,16 +34,16 @@ func (v *LogConfig) Build() *log.Config {
 	level := strings.ToLower(v.LogLevel)
 	switch level {
 	case "debug":
-		config.ErrorLogLevel = log.LogLevel_Debug
+		config.ErrorLogLevel = clog.Severity_Debug
 	case "info":
-		config.ErrorLogLevel = log.LogLevel_Info
+		config.ErrorLogLevel = clog.Severity_Info
 	case "error":
-		config.ErrorLogLevel = log.LogLevel_Error
+		config.ErrorLogLevel = clog.Severity_Error
 	case "none":
 		config.ErrorLogType = log.LogType_None
 		config.AccessLogType = log.LogType_None
 	default:
-		config.ErrorLogLevel = log.LogLevel_Warning
+		config.ErrorLogLevel = clog.Severity_Warning
 	}
 	return config
 }
