@@ -36,12 +36,14 @@ type SocksServerConfig struct {
 
 func (v *SocksServerConfig) Build() (*serial.TypedMessage, error) {
 	config := new(socks.ServerConfig)
-	if v.AuthMethod == AuthMethodNoAuth {
+	switch v.AuthMethod {
+	case AuthMethodNoAuth:
 		config.AuthType = socks.AuthType_NO_AUTH
-	} else if v.AuthMethod == AuthMethodUserPass {
+	case AuthMethodUserPass:
 		config.AuthType = socks.AuthType_PASSWORD
-	} else {
-		return nil, newError("unknown socks auth method: " + v.AuthMethod).AtError()
+	default:
+		newError("unknown socks auth method: ", v.AuthMethod, ". Default to noauth.").AtWarning().WriteToLog()
+		config.AuthType = socks.AuthType_NO_AUTH
 	}
 
 	if len(v.Accounts) > 0 {
