@@ -38,7 +38,7 @@ func CopyFile(src string, dest string, options ...CopyOption) error {
 
 func CopyAllConfigFiles(destDir string, goOS GoOS) error {
 	GOPATH := os.Getenv("GOPATH")
-	srcDir := filepath.Join(GOPATH, "src", "v2ray.com", "core", "tools", "release", "config")
+	srcDir := filepath.Join(GOPATH, "src", "v2ray.com", "core", "release", "config")
 	src := filepath.Join(srcDir, "vpoint_socks_vmess.json")
 	dest := filepath.Join(destDir, "vpoint_socks_vmess.json")
 	if goOS == Windows || goOS == MacOS {
@@ -63,7 +63,7 @@ func CopyAllConfigFiles(destDir string, goOS GoOS) error {
 		return err
 	}
 
-	src = filepath.Join(GOPATH, "src", "v2ray.com", "core", "tools", "release", "doc", "readme.md")
+	src = filepath.Join(GOPATH, "src", "v2ray.com", "core", "release", "doc", "readme.md")
 	dest = filepath.Join(destDir, "readme.md")
 
 	if err := CopyFile(src, dest, option); err != nil {
