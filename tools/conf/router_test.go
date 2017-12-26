@@ -27,7 +27,7 @@ func makeDomainDestination(domain string) net.Destination {
 func TestChinaIPJson(t *testing.T) {
 	assert := With(t)
 
-	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "tools", "release", "config", "geoip.dat"))
+	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "release", "config", "geoip.dat"))
 	assert(err, IsNil)
 
 	assert(ioutil.WriteFile(platform.GetAssetLocation("geoip.dat"), fileBytes, 0666), IsNil)
@@ -51,7 +51,7 @@ func TestChinaIPJson(t *testing.T) {
 func TestChinaSitesJson(t *testing.T) {
 	assert := With(t)
 
-	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "tools", "release", "config", "geosite.dat"))
+	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "release", "config", "geosite.dat"))
 	assert(err, IsNil)
 
 	assert(ioutil.WriteFile(platform.GetAssetLocation("geosite.dat"), fileBytes, 0666), IsNil)
