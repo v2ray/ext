@@ -1,3 +1,21 @@
+// Package assert provides basic assertions for unit tests.
+//
+// Example Usage
+//
+// The following examples show how to use this library:
+//    import (
+//      "testing"
+//      . "v2ray.com/ext/assert"
+//    )
+//
+//    func TestSomething(t *testing.T) {
+//      assert := With(t)
+//
+//      a := 10
+//      b := 1
+//      assert(a, Equals, b)
+//    }
+//
 package assert
 
 import (
@@ -37,8 +55,10 @@ func (op *Matcher) call(value interface{}, expectations []interface{}) bool {
 	return ret[0].Bool()
 }
 
+// Assert asserts the given value matches expectations.
 type Assert func(value interface{}, op *Matcher, expectations ...interface{})
 
+// With creates wrap the testing object into an assertion.
 func With(t *testing.T) Assert {
 	return func(value interface{}, op *Matcher, expectations ...interface{}) {
 		if !op.call(value, expectations) {
@@ -92,6 +112,7 @@ func callInternal(m map[reflect.Type]*Matcher, v interface{}, exp interface{}) b
 	return op.call(v, []interface{}{exp})
 }
 
+// Equals is a Matcher that expects two given values are equal to each other.
 var Equals = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	vt := reflect.TypeOf(v)
 	op, found := equals[vt]
@@ -101,6 +122,7 @@ var Equals = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	return v == exp
 }, "equals to")
 
+// NotEquals is a Matcher that expects two given values are not equal to each other.
 var NotEquals = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	vt := reflect.TypeOf(v)
 	op, found := equals[vt]
@@ -110,6 +132,7 @@ var NotEquals = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	return v != exp
 }, "not equals to")
 
+// LessThan expects the given value is less than the expectation.
 var LessThan = CreateMatcher(func(v interface{}, exp interface{}) bool {
 	return callInternal(less, v, exp)
 }, "less than")
