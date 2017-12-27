@@ -1,0 +1,17 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "editor.tabSize": 2,
+  
+  "go.lintTool": "gometalinter",
+  "go.lintFlags": [
+    "--enable-gc"
+  ],
+  "go.formatTool": "goimports",
+
+  "protoc": {
+    "options": [
+      "--proto_path=${env.GOPATH}/src/",
+      "--proto_path=${env.GOPATH}/src/github.com/google/protobuf/src"
+    ]
+  }
+}
