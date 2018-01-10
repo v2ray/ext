@@ -53,8 +53,8 @@ type InboundConnectionConfig struct {
 	DomainOverride *StringList     `json:"domainOverride"`
 }
 
-// Build implements Builable.
-func (c *InboundConnectionConfig) Build() (*proxyman.InboundHandlerConfig, error) {
+// Build implements Buildable.
+func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
 	receiverConfig := &proxyman.ReceiverConfig{
 		PortRange: &v2net.PortRange{
 			From: uint32(c.Port),
@@ -94,7 +94,7 @@ func (c *InboundConnectionConfig) Build() (*proxyman.InboundHandlerConfig, error
 		return nil, err
 	}
 
-	return &proxyman.InboundHandlerConfig{
+	return &core.InboundHandlerConfig{
 		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverConfig),
 		ProxySettings:    ts,
@@ -124,7 +124,7 @@ type OutboundConnectionConfig struct {
 }
 
 // Build implements Builable.
-func (c *OutboundConnectionConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
+func (c *OutboundConnectionConfig) Build() (*core.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
 	if c.SendThrough != nil {
@@ -165,7 +165,7 @@ func (c *OutboundConnectionConfig) Build() (*proxyman.OutboundHandlerConfig, err
 		return nil, err
 	}
 
-	return &proxyman.OutboundHandlerConfig{
+	return &core.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
 		ProxySettings:  ts,
 		Tag:            c.Tag,
@@ -218,7 +218,7 @@ type InboundDetourConfig struct {
 }
 
 // Build implements Builable.
-func (c *InboundDetourConfig) Build() (*proxyman.InboundHandlerConfig, error) {
+func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 	receiverSettings := &proxyman.ReceiverConfig{}
 
 	if c.PortRange == nil {
@@ -266,7 +266,7 @@ func (c *InboundDetourConfig) Build() (*proxyman.InboundHandlerConfig, error) {
 		return nil, err
 	}
 
-	return &proxyman.InboundHandlerConfig{
+	return &core.InboundHandlerConfig{
 		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverSettings),
 		ProxySettings:    ts,
@@ -284,7 +284,7 @@ type OutboundDetourConfig struct {
 }
 
 // Build implements Builable.
-func (c *OutboundDetourConfig) Build() (*proxyman.OutboundHandlerConfig, error) {
+func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
 	if c.SendThrough != nil {
@@ -327,7 +327,7 @@ func (c *OutboundDetourConfig) Build() (*proxyman.OutboundHandlerConfig, error) 
 		return nil, err
 	}
 
-	return &proxyman.OutboundHandlerConfig{
+	return &core.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
 		Tag:            c.Tag,
 		ProxySettings:  ts,
