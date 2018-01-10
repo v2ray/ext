@@ -349,10 +349,18 @@ type Config struct {
 
 // Build implements Builable.
 func (c *Config) Build() (*core.Config, error) {
-	config := new(core.Config)
+	config := &core.Config {
+		App: []*serial.TypedMessage{
+			serial.ToTypedMessage(&dispatcher.Config{}),
+			serial.ToTypedMessage(&proxyman.InboundConfig{}),
+			serial.ToTypedMessage(&proxyman.OutboundConfig{}),
+		}
+	}
 
 	if c.LogConfig != nil {
 		config.App = append(config.App, serial.ToTypedMessage(c.LogConfig.Build()))
+	} else {
+		config.App = append(config.App, serial.ToTypedMessage(DefaultLogConfig()))
 	}
 
 	if c.Transport != nil {
