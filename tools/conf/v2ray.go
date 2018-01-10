@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"v2ray.com/core"
+	"v2ray.com/core/app/dispatcher"
 	"v2ray.com/core/app/proxyman"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/common/serial"
@@ -349,12 +350,12 @@ type Config struct {
 
 // Build implements Builable.
 func (c *Config) Build() (*core.Config, error) {
-	config := &core.Config {
+	config := &core.Config{
 		App: []*serial.TypedMessage{
 			serial.ToTypedMessage(&dispatcher.Config{}),
 			serial.ToTypedMessage(&proxyman.InboundConfig{}),
 			serial.ToTypedMessage(&proxyman.OutboundConfig{}),
-		}
+		},
 	}
 
 	if c.LogConfig != nil {
