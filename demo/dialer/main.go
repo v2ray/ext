@@ -23,17 +23,13 @@ func main() {
 			serial.ToTypedMessage(&dispatcher.Config{}),
 			serial.ToTypedMessage(&proxyman.OutboundConfig{}),
 		},
-		Outbound: []*core.OutboundHandlerConfig{
-			{
-				ProxySettings: serial.ToTypedMessage(&socks.ClientConfig{
-					Server: []*protocol.ServerEndpoint{
-						{
-							Address: net.NewIPOrDomain(net.ParseAddress("162.243.108.129")),
-							Port:    1080,
-						},
-					},
-				}),
-			},
+		Outbound: []*core.OutboundHandlerConfig{{
+			ProxySettings: serial.ToTypedMessage(&socks.ClientConfig{
+				Server: []*protocol.ServerEndpoint{{
+					Address: net.NewIPOrDomain(net.ParseAddress("162.243.108.129")),
+					Port:    1080,
+				}},
+			})},
 		},
 	}
 
