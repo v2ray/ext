@@ -291,8 +291,7 @@ func parseChinaSitesRule(data []byte) (*router.RoutingRule, error) {
 	rawRule := new(RouterRule)
 	err := json.Unmarshal(data, rawRule)
 	if err != nil {
-		newError("invalid router rule: ", err).AtError().WriteToLog()
-		return nil, err
+		return nil, newError("invalid router rule").Base(err).AtError()
 	}
 	domains, err := loadGeoSite("CN")
 	if err != nil {
