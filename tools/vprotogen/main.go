@@ -52,7 +52,7 @@ func main() {
 	})
 
 	for _, files := range protofiles {
-		args := []string{"--proto_path", gosrc, "--go_out", gosrc}
+		args := []string{"--proto_path", gosrc, "--go_out", "plugins=grpc:" + gosrc}
 		args = append(args, files...)
 		cmd := exec.Command(protoc, args...)
 		cmd.Env = append(cmd.Env, os.Environ()...)
