@@ -124,7 +124,7 @@ type OutboundConnectionConfig struct {
 	MuxSettings   *MuxConfig      `json:"mux"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *OutboundConnectionConfig) Build() (*core.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
@@ -179,7 +179,7 @@ type InboundDetourAllocationConfig struct {
 	RefreshMin  *uint32 `json:"refresh"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *InboundDetourAllocationConfig) Build() (*proxyman.AllocationStrategy, error) {
 	config := new(proxyman.AllocationStrategy)
 	switch strings.ToLower(c.Strategy) {
@@ -218,7 +218,7 @@ type InboundDetourConfig struct {
 	DomainOverride *StringList                    `json:"domainOverride"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 	receiverSettings := &proxyman.ReceiverConfig{}
 
@@ -284,7 +284,7 @@ type OutboundDetourConfig struct {
 	MuxSettings   *MuxConfig      `json:"mux"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	senderSettings := &proxyman.SenderConfig{}
 
@@ -348,7 +348,7 @@ type Config struct {
 	Policy          *PolicyConfig             `json:"policy"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *Config) Build() (*core.Config, error) {
 	config := &core.Config{
 		App: []*serial.TypedMessage{
