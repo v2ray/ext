@@ -11,7 +11,7 @@ type TransportConfig struct {
 	WSConfig  *WebSocketConfig `json:"wsSettings"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *TransportConfig) Build() (*transport.Config, error) {
 	config := new(transport.Config)
 

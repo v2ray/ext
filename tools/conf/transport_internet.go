@@ -38,7 +38,7 @@ type KCPConfig struct {
 	HeaderConfig    json.RawMessage `json:"header"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *KCPConfig) Build() (*serial.TypedMessage, error) {
 	config := new(kcp.Config)
 
@@ -100,7 +100,7 @@ type TCPConfig struct {
 	HeaderConfig json.RawMessage `json:"header"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *TCPConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tcp.Config)
 	if len(c.HeaderConfig) > 0 {
@@ -124,7 +124,7 @@ type WebSocketConfig struct {
 	Headers map[string]string `json:"headers"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 	path := c.Path
 	if len(path) == 0 && len(c.Path2) > 0 {
@@ -155,7 +155,7 @@ type TLSConfig struct {
 	ServerName string           `json:"serverName"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tls.Config)
 	config.Certificate = make([]*tls.Certificate, len(c.Certs))
@@ -183,7 +183,7 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 
 type TransportProtocol string
 
-// Build implements Builable.
+// Build implements Buildable.
 func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 	switch strings.ToLower(string(p)) {
 	case "tcp":
@@ -206,7 +206,7 @@ type StreamConfig struct {
 	WSSettings  *WebSocketConfig   `json:"wsSettings"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 	config := &internet.StreamConfig{
 		Protocol: internet.TransportProtocol_TCP,
@@ -267,7 +267,7 @@ type ProxyConfig struct {
 	Tag string `json:"tag"`
 }
 
-// Build implements Builable.
+// Build implements Buildable.
 func (v *ProxyConfig) Build() (*internet.ProxyConfig, error) {
 	if len(v.Tag) == 0 {
 		return nil, newError("Proxy tag is not set.")
