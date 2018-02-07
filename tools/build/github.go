@@ -26,7 +26,7 @@ func newGithubClient(account *GithubAccount) (*github.Client, error) {
 	return github.NewClient(oauth2.NewClient(ctx, ts)), nil
 }
 
-func GithubCreateRelease(ctx context.Context, account *GithubAccount, tag string, pre bool) (int, error) {
+func GithubCreateRelease(ctx context.Context, account *GithubAccount, tag string, pre bool) (int64, error) {
 	client, err := newGithubClient(account)
 	if err != nil {
 		return 0, err
@@ -41,7 +41,7 @@ func GithubCreateRelease(ctx context.Context, account *GithubAccount, tag string
 	return release.GetID(), nil
 }
 
-func GithubUploadAsset(ctx context.Context, account *GithubAccount, id int, file string) error {
+func GithubUploadAsset(ctx context.Context, account *GithubAccount, id int64, file string) error {
 	fileReader, err := os.Open(file)
 	if err != nil {
 		return err
