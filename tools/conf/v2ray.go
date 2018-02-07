@@ -346,6 +346,7 @@ type Config struct {
 	OutboundDetours []OutboundDetourConfig    `json:"outboundDetour"`
 	Transport       *TransportConfig          `json:"transport"`
 	Policy          *PolicyConfig             `json:"policy"`
+	Api             *ApiConfig                `json:"api"`
 }
 
 // Build implements Buildable.
@@ -356,6 +357,15 @@ func (c *Config) Build() (*core.Config, error) {
 			serial.ToTypedMessage(&proxyman.InboundConfig{}),
 			serial.ToTypedMessage(&proxyman.OutboundConfig{}),
 		},
+	}
+
+	if c.Api != nil {
+		apiConf, services, err := c.Api.Build()
+		if err != nil {
+			return nil, err
+		}
+		config.App = append(config.App, serial.ToTypedMessage(apiConf))
+		config.App = append(config.App, services...)
 	}
 
 	if c.LogConfig != nil {
