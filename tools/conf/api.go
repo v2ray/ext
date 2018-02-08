@@ -13,9 +13,9 @@ type ApiConfig struct {
 	Services []string `json:"services"`
 }
 
-func (c *ApiConfig) Build() (*commander.Config, []*serial.TypedMessage, error) {
+func (c *ApiConfig) Build() (*commander.Config, error) {
 	if len(c.Tag) == 0 {
-		return nil, nil, newError("Api tag can't be empty.")
+		return nil, newError("Api tag can't be empty.")
 	}
 
 	services := make([]*serial.TypedMessage, 0, 16)
@@ -27,6 +27,7 @@ func (c *ApiConfig) Build() (*commander.Config, []*serial.TypedMessage, error) {
 	}
 
 	return &commander.Config{
-		Tag: c.Tag,
-	}, services, nil
+		Tag:     c.Tag,
+		Service: services,
+	}, nil
 }

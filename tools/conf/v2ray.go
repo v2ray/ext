@@ -360,12 +360,11 @@ func (c *Config) Build() (*core.Config, error) {
 	}
 
 	if c.Api != nil {
-		apiConf, services, err := c.Api.Build()
+		apiConf, err := c.Api.Build()
 		if err != nil {
 			return nil, err
 		}
 		config.App = append(config.App, serial.ToTypedMessage(apiConf))
-		config.App = append(config.App, services...)
 	}
 
 	if c.LogConfig != nil {
