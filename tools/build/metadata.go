@@ -60,6 +60,6 @@ func (w *FileMetadataWriter) Append(metadata *FileMetadata) {
 	fmt.Fprintln(w.writer)
 }
 
-func (w *FileMetadataWriter) Close() {
-	w.writer.Close()
+func (w *FileMetadataWriter) Close() error {
+	return w.writer.Close()
 }

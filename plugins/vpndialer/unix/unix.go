@@ -152,8 +152,9 @@ func (a *App) Start() error {
 	return nil
 }
 
-func (a *App) Close() {
+func (a *App) Close() error {
 	internet.UseAlternativeSystemDialer(nil)
+	return nil
 }
 
 type Dialer struct {
