@@ -4,7 +4,8 @@ import (
 	"strings"
 
 	"v2ray.com/core/app/commander"
-	"v2ray.com/core/app/proxyman/command"
+	loggerservice "v2ray.com/core/app/log/command"
+	handlerservice "v2ray.com/core/app/proxyman/command"
 	"v2ray.com/core/common/serial"
 )
 
@@ -22,7 +23,9 @@ func (c *ApiConfig) Build() (*commander.Config, error) {
 	for _, s := range c.Services {
 		switch strings.ToLower(s) {
 		case "handlerservice":
-			services = append(services, serial.ToTypedMessage(&command.Config{}))
+			services = append(services, serial.ToTypedMessage(&handlerservice.Config{}))
+		case "loggerservice":
+			services = append(services, serial.ToTypedMessage(&loggerservice.Config{}))
 		}
 	}
 
