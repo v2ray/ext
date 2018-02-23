@@ -77,11 +77,14 @@ type VMessInboundConfig struct {
 	Features     *FeaturesConfig     `json:"features"`
 	Defaults     *VMessDefaultConfig `json:"default"`
 	DetourConfig *VMessDetourConfig  `json:"detour"`
+	SecureOnly   bool                `json:"disableInsecureEncryption"`
 }
 
 // Build implements Buildable
 func (c *VMessInboundConfig) Build() (*serial.TypedMessage, error) {
-	config := new(inbound.Config)
+	config := &inbound.Config{
+		SecureEncryptionOnly: c.SecureOnly,
+	}
 
 	if c.Defaults != nil {
 		config.Default = c.Defaults.Build()
