@@ -100,9 +100,9 @@ func main() {
 		suffix := build.GetSuffix(v2rayOS, v2rayArch)
 		zipFile := "v2ray" + suffix + ".zip"
 		root := filepath.Base(targetDir)
-		err = build.SevenZipFolder(root, zipFile)
-		if err != nil {
+		if err := build.ZipFolder(root, zipFile); err != nil {
 			fmt.Printf("Unable to create archive (%s): %v\n", zipFile, err)
+			return
 		}
 
 		metaWriter, err := build.NewFileMetadataWriter(filepath.Join(binPath, *flagMetadataFile))
