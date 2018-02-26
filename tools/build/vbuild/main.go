@@ -17,7 +17,6 @@ var (
 	flagArchive      = flag.Bool("zip", false, "Whether to make an archive of files or not.")
 	flagMetadataFile = flag.String("metadata", "metadata.txt", "File to store metadata info of released packages.")
 	flagSignBinary   = flag.Bool("sign", false, "Whether or not to sign the binaries.")
-	flagEncryptedZip = flag.Bool("encrypt", false, "Also generate encrypted zip files.")
 
 	binPath string
 )
@@ -119,11 +118,5 @@ func main() {
 
 		metaWriter.Append(meta)
 		metaWriter.Close()
-
-		if *flagEncryptedZip {
-			if err := build.SevenZipBuild(root, "vencrypted"+suffix+".7z", meta.Checksum()); err != nil {
-				fmt.Println("Failed to generate encrypted zip file.")
-			}
-		}
 	}
 }
