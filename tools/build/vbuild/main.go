@@ -72,45 +72,19 @@ func main() {
 		fmt.Println("Unable to create directory " + targetDir + ": " + err.Error())
 	}
 
-	targetFile := getTargetFile("v2ray", v2rayOS)
-	targetFileFull := filepath.Join(targetDir, targetFile)
-	if err := build.BuildV2RayCore(targetFileFull, v2rayOS, v2rayArch, false); err != nil {
-		fmt.Println("Unable to build V2Ray: " + err.Error())
-		return
-	}
-	if v2rayOS == build.Windows {
-		if err := build.BuildV2RayCore(filepath.Join(targetDir, "w"+targetFile), v2rayOS, v2rayArch, true); err != nil {
-			fmt.Println("Unable to build V2Ray no console: " + err.Error())
-			return
-		}
-	}
-
-	confUtil := getTargetFile("v2ctl", v2rayOS)
-	confUtilFull := filepath.Join(targetDir, confUtil)
-	if err := build.GoBuild("v2ray.com/ext/tools/control/main", confUtilFull, v2rayOS, v2rayArch, "-s -w"); err != nil {
-		fmt.Println("Unable to build V2Ray control: " + err.Error())
-		return
-	}
-
-	if *flagSignBinary {
-		gpgPass := os.Getenv("GPG_SIGN_PASS")
-		//if err != nil {
-		//	fmt.Println("Unable get GPG pass: " + err.Error())
-		//	return
-		//}
-		if err := build.GPGSignFile(targetFileFull, gpgPass); err != nil {
-			fmt.Println("Unable to sign V2Ray binary: " + err.Error())
+	targets := build.GetReleaseTargets(v2rayOS, v2rayArch)
+	for _, target := range targets {
+		if err := target.Build(targetDir); err != nil {
+			fmt.Println("Failed to build V2Ray on", v2rayArch, "for", v2rayOS, "with error", err.Error())
 			return
 		}
 
-		if err := build.GPGSignFile(confUtilFull, gpgPass); err != nil {
-			fmt.Println("Unable to sign control util: " + err.Error())
-			return
-		}
-
-		if v2rayOS == build.Windows {
-			if err := build.GPGSignFile(filepath.Join(targetDir, "w"+targetFile), gpgPass); err != nil {
-				fmt.Println("Unable to sign V2Ray no console: " + err.Error())
+		if *flagSignBinary {
+			gpgPass := os.Getenv("GPG_SIGN_PASS")
+			targetFile := filepath.Join(targetDir, target.Target)
+			if err := build.GPGSignFile(targetFile, gpgPass); err != nil {
+				fmt.Println("Unable to sign file", targetFile, "with error", err.Error())
+				return
 			}
 		}
 	}

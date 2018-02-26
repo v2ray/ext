@@ -3,6 +3,7 @@ package build
 import (
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -128,6 +129,57 @@ func GetSuffix(os GoOS, arch GoArch) string {
 	}
 
 	return suffix
+}
+
+type GoBuildTarget struct {
+	Source  string
+	Target  string
+	OS      GoOS
+	Arch    GoArch
+	LdFlags []string
+	ArmOpt  string
+	MipsOpt string
+	Tags    []string
+}
+
+func (t *GoBuildTarget) Build(directory string) error {
+	envs := []string{"GOOS=" + string(t.OS), "GOARCH=" + string(t.Arch), "CGO_ENABLED=0"}
+	if len(t.ArmOpt) > 0 {
+		envs = append(envs, "GOARM="+t.ArmOpt)
+	}
+	if len(t.MipsOpt) > 0 {
+		envs = append(envs, "GOMIPS="+t.MipsOpt)
+	}
+
+	goPath := os.Getenv("GOPATH")
+	targetFile := filepath.Join(directory, t.Target)
+	if t.OS == Windows {
+		targetFile += ".exe"
+	}
+	args := []string{
+		"build",
+		"-o", targetFile,
+		"-compiler", "gc",
+		"-gcflags", "-trimpath=" + goPath,
+		"-asmflags", "-trimpath=" + goPath,
+	}
+	if len(t.LdFlags) > 0 {
+		args = append(args, "-ldflags", strings.Join(t.LdFlags, " "))
+	}
+	if len(t.Tags) > 0 {
+		args = append(args, "-tags", strings.Join(t.Tags, ","))
+	}
+	args = append(args, t.Source)
+
+	cmd := exec.Command("go", args...)
+	cmd.Env = append(cmd.Env, envs...)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+	output, err := cmd.CombinedOutput()
+	if len(output) > 0 {
+		os.Stdout.Write(output)
+	}
+
+	return err
 }
 
 func GoBuild(source string, targetFile string, goOS GoOS, goArch GoArch, ldFlags string, tags ...string) error {
