@@ -38,14 +38,6 @@ func createTargetDirectory(version string, goOS build.GoOS, goArch build.GoArch)
 	return targetDir, err
 }
 
-func getTargetFile(name string, goOS build.GoOS) string {
-	suffix := ""
-	if goOS == build.Windows {
-		suffix += ".exe"
-	}
-	return name + suffix
-}
-
 func getBinPath() string {
 	GOPATH := os.Getenv("GOPATH")
 	return filepath.Join(GOPATH, "bin")
