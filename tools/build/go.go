@@ -153,9 +153,6 @@ func (t *GoBuildTarget) Build(directory string) error {
 
 	goPath := os.Getenv("GOPATH")
 	targetFile := filepath.Join(directory, t.Target)
-	if t.OS == Windows {
-		targetFile += ".exe"
-	}
 	args := []string{
 		"build",
 		"-o", targetFile,

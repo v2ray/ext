@@ -34,18 +34,25 @@ const stdTarget = "v2ray"
 const stdControlSource = "v2ray.com/ext/tools/control/main"
 const stdControlTarget = "v2ctl"
 
+func targetWithSuffix(goOS GoOS, target string) string {
+	if goOS == Windows {
+		return target + ".exe"
+	}
+	return target
+}
+
 func genRegularTarget(goOS GoOS, goArch GoArch) []*GoBuildTarget {
 	return []*GoBuildTarget{
 		{
 			Source:  stdSource,
-			Target:  stdTarget,
+			Target:  targetWithSuffix(goOS, stdTarget),
 			OS:      goOS,
 			Arch:    goArch,
 			LdFlags: genStdLdFlags(goOS, goArch),
 		},
 		{
 			Source:  stdControlSource,
-			Target:  stdControlTarget,
+			Target:  targetWithSuffix(goOS, stdControlTarget),
 			OS:      goOS,
 			Arch:    goArch,
 			LdFlags: []string{"-s", "-w"},
@@ -57,7 +64,7 @@ func getWindowsExtra(goArch GoArch) []*GoBuildTarget {
 	return []*GoBuildTarget{
 		{
 			Source:  stdSource,
-			Target:  "w" + stdTarget,
+			Target:  "w" + stdTarget + ".exe",
 			OS:      Windows,
 			Arch:    goArch,
 			LdFlags: append(genStdLdFlags(Windows, goArch), "-H windowsgui"),
