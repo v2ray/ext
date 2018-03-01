@@ -6,6 +6,7 @@ import (
 
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/transport/internet"
+	"v2ray.com/core/transport/internet/http"
 	"v2ray.com/core/transport/internet/kcp"
 	"v2ray.com/core/transport/internet/tcp"
 	"v2ray.com/core/transport/internet/tls"
@@ -145,6 +146,21 @@ func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 	return serial.ToTypedMessage(config), nil
 }
 
+type HTTPConfig struct {
+	Host *StringList `json:"host"`
+	Path string      `json:"path"`
+}
+
+func (c *HTTPConfig) Build() (*serial.TypedMessage, error) {
+	config := &http.Config{
+		Path: c.Path,
+	}
+	if c.Host != nil {
+		config.Host = []string(*c.Host)
+	}
+	return serial.ToTypedMessage(config), nil
+}
+
 type TLSCertConfig struct {
 	CertFile string `json:"certificateFile"`
 	KeyFile  string `json:"keyFile"`
@@ -198,12 +214,13 @@ func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 }
 
 type StreamConfig struct {
-	Network     *TransportProtocol `json:"network"`
-	Security    string             `json:"security"`
-	TLSSettings *TLSConfig         `json:"tlsSettings"`
-	TCPSettings *TCPConfig         `json:"tcpSettings"`
-	KCPSettings *KCPConfig         `json:"kcpSettings"`
-	WSSettings  *WebSocketConfig   `json:"wsSettings"`
+	Network      *TransportProtocol `json:"network"`
+	Security     string             `json:"security"`
+	TLSSettings  *TLSConfig         `json:"tlsSettings"`
+	TCPSettings  *TCPConfig         `json:"tcpSettings"`
+	KCPSettings  *KCPConfig         `json:"kcpSettings"`
+	WSSettings   *WebSocketConfig   `json:"wsSettings"`
+	HTTPSettings *HTTPConfig        `json:"httpSettings"`
 }
 
 // Build implements Buildable.
@@ -257,6 +274,16 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_WebSocket,
+			Settings: ts,
+		})
+	}
+	if c.HTTPSettings != nil {
+		ts, err := c.WSSettings.Build()
+		if err != nil {
+			return nil, newError("Failed to build HTTP config.").Base(err)
+		}
+		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
+			Protocol: internet.TransportProtocol_HTTP,
 			Settings: ts,
 		})
 	}
