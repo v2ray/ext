@@ -208,6 +208,8 @@ func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 		return internet.TransportProtocol_MKCP, nil
 	case "ws", "websocket":
 		return internet.TransportProtocol_WebSocket, nil
+	case "h2", "http":
+		return internet.TransportProtocol_HTTP, nil
 	default:
 		return internet.TransportProtocol_TCP, newError("Config: unknown transport protocol: ", p)
 	}
