@@ -280,7 +280,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		})
 	}
 	if c.HTTPSettings != nil {
-		ts, err := c.WSSettings.Build()
+		ts, err := c.HTTPSettings.Build()
 		if err != nil {
 			return nil, newError("Failed to build HTTP config.").Base(err)
 		}
