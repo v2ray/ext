@@ -95,6 +95,14 @@ func getMipsExtra(goArch GoArch) []*GoBuildTarget {
 			LdFlags: genStdLdFlags(Linux, goArch),
 			MipsOpt: "softfloat",
 		},
+		{
+			Source:  stdControlSource,
+			Target:  stdControlTarget + "_softfloat",
+			OS:      Linux,
+			Arch:    goArch,
+			LdFlags: genStdLdFlags(Linux, goArch),
+			MipsOpt: "softfloat",
+		},
 	}
 }
 
