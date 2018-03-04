@@ -28,11 +28,19 @@ func (worker *ZipWorker) zipAllFiles(path string, info os.FileInfo, err error) e
 	if info.IsDir() {
 		return nil
 	}
-	fileWriter, err := worker.zipWriter.Create(path)
+	fileReader, err := os.Open(path)
 	if err != nil {
 		return err
 	}
-	fileReader, err := os.Open(path)
+	fileInfo, err := fileReader.Stat()
+	if err != nil {
+		return err
+	}
+	fileHeader, err := zip.FileInfoHeader(fileInfo)
+	if err != nil {
+		return err
+	}
+	fileWriter, err := worker.zipWriter.CreateHeader(fileHeader)
 	if err != nil {
 		return err
 	}
