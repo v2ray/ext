@@ -40,6 +40,7 @@ func (worker *ZipWorker) zipAllFiles(path string, info os.FileInfo, err error) e
 	if err != nil {
 		return err
 	}
+	fileHeader.Method = zip.Deflate
 	fileWriter, err := worker.zipWriter.CreateHeader(fileHeader)
 	if err != nil {
 		return err
