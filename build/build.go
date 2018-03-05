@@ -133,7 +133,7 @@ func GetSuffix(os OS, arch Arch) string {
 	return suffix
 }
 
-type GoBuildTarget struct {
+type Target struct {
 	Source  string
 	Target  string
 	OS      OS
@@ -145,7 +145,7 @@ type GoBuildTarget struct {
 }
 
 // Envs returns the environment variables for this build.
-func (t *GoBuildTarget) Envs() []string {
+func (t *Target) Envs() []string {
 	envs := []string{"GOOS=" + string(t.OS), "GOARCH=" + string(t.Arch), "CGO_ENABLED=0"}
 	if len(t.ArmOpt) > 0 {
 		envs = append(envs, "GOARM="+t.ArmOpt)
@@ -156,7 +156,7 @@ func (t *GoBuildTarget) Envs() []string {
 	return envs
 }
 
-func (t *GoBuildTarget) Build(directory string) error {
+func (t *Target) Build(directory string) error {
 	goPath := os.Getenv("GOPATH")
 	targetFile := filepath.Join(directory, t.Target)
 	args := []string{

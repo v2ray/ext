@@ -8,7 +8,7 @@ import (
 	"v2ray.com/ext/build"
 )
 
-var releases = map[string][]*build.GoBuildTarget{
+var releases = map[string][]*build.Target{
 	genReleaseId(build.Windows, build.Amd64):  append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
 	genReleaseId(build.Windows, build.X86):    append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
 	genReleaseId(build.MacOS, build.Amd64):    append(genRegularTarget(build.MacOS, build.Amd64)),
@@ -43,8 +43,8 @@ func targetWithSuffix(goOS build.OS, target string) string {
 	return target
 }
 
-func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.GoBuildTarget {
-	return []*build.GoBuildTarget{
+func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.Target {
+	return []*build.Target{
 		{
 			Source:  stdSource,
 			Target:  targetWithSuffix(goOS, stdTarget),
@@ -62,8 +62,8 @@ func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.GoBuildTarget {
 	}
 }
 
-func getWindowsExtra(goArch build.Arch) []*build.GoBuildTarget {
-	return []*build.GoBuildTarget{
+func getWindowsExtra(goArch build.Arch) []*build.Target {
+	return []*build.Target{
 		{
 			Source:  stdSource,
 			Target:  "w" + stdTarget + ".exe",
@@ -74,8 +74,8 @@ func getWindowsExtra(goArch build.Arch) []*build.GoBuildTarget {
 	}
 }
 
-func getArmExtra() []*build.GoBuildTarget {
-	return []*build.GoBuildTarget{
+func getArmExtra() []*build.Target {
+	return []*build.Target{
 		{
 			Source:  stdSource,
 			Target:  stdTarget + "_armv7",
@@ -87,8 +87,8 @@ func getArmExtra() []*build.GoBuildTarget {
 	}
 }
 
-func getMipsExtra(goArch build.Arch) []*build.GoBuildTarget {
-	return []*build.GoBuildTarget{
+func getMipsExtra(goArch build.Arch) []*build.Target {
+	return []*build.Target{
 		{
 			Source:  stdSource,
 			Target:  stdTarget + "_softfloat",
@@ -119,6 +119,6 @@ func genStdLdFlags(goOS build.OS, goArch build.Arch) []string {
 	return ldFlags
 }
 
-func GetReleaseTargets(goOS build.OS, goArch build.Arch) []*build.GoBuildTarget {
+func GetReleaseTargets(goOS build.OS, goArch build.Arch) []*build.Target {
 	return releases[genReleaseId(goOS, goArch)]
 }
