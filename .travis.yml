@@ -6,3 +6,5 @@ git:
   depth: 5
 script:
 - go test -p 1 -v v2ray.com/ext/...
+after_success:
+- ./testing/coverage/coverall
