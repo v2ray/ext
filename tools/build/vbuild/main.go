@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	xbuild "v2ray.com/ext/build"
 	"v2ray.com/ext/tools/build"
 	"v2ray.com/ext/zip"
 )
@@ -22,12 +23,12 @@ var (
 	binPath string
 )
 
-func createTargetDirectory(version string, goOS build.GoOS, goArch build.GoArch) (string, error) {
+func createTargetDirectory(version string, goOS xbuild.OS, goArch xbuild.Arch) (string, error) {
 	var targetDir string
 	if len(*flagTargetDir) > 0 {
 		targetDir = *flagTargetDir
 	} else {
-		suffix := build.GetSuffix(goOS, goArch)
+		suffix := xbuild.GetSuffix(goOS, goArch)
 
 		targetDir = filepath.Join(binPath, "v2ray-"+version+suffix)
 		if version != "custom" {
@@ -53,8 +54,8 @@ func main() {
 	flag.Parse()
 	binPath = getBinPath()
 
-	v2rayOS := build.ParseOS(*flagTargetOS)
-	v2rayArch := build.ParseArch(*flagTargetArch)
+	v2rayOS := xbuild.ParseOS(*flagTargetOS)
+	v2rayArch := xbuild.ParseArch(*flagTargetArch)
 
 	version := os.Getenv("TRAVIS_TAG")
 
@@ -94,7 +95,7 @@ func main() {
 		if err := os.Chdir(binPath); err != nil {
 			fmt.Printf("Unable to switch to directory (%s): %v\n", binPath, err)
 		}
-		suffix := build.GetSuffix(v2rayOS, v2rayArch)
+		suffix := xbuild.GetSuffix(v2rayOS, v2rayArch)
 		zipFile := "v2ray" + suffix + ".zip"
 		root := filepath.Base(targetDir)
 

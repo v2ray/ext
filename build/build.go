@@ -7,33 +7,35 @@ import (
 	"strings"
 )
 
-type GoOS string
+// OS is a GoOS value for target operating system.
+type OS string
 
 const (
-	Windows   = GoOS("windows")
-	MacOS     = GoOS("darwin")
-	Linux     = GoOS("linux")
-	FreeBSD   = GoOS("freebsd")
-	OpenBSD   = GoOS("openbsd")
-	UnknownOS = GoOS("unknown")
+	Windows   = OS("windows")
+	MacOS     = OS("darwin")
+	Linux     = OS("linux")
+	FreeBSD   = OS("freebsd")
+	OpenBSD   = OS("openbsd")
+	UnknownOS = OS("unknown")
 )
 
-type GoArch string
+// Arch is a GoArch value for CPU architecture.
+type Arch string
 
 const (
-	X86         = GoArch("386")
-	Amd64       = GoArch("amd64")
-	Arm         = GoArch("arm")
-	Arm64       = GoArch("arm64")
-	Mips64      = GoArch("mips64")
-	Mips64LE    = GoArch("mips64le")
-	Mips        = GoArch("mips")
-	MipsLE      = GoArch("mipsle")
-	S390X       = GoArch("s390x")
-	UnknownArch = GoArch("unknown")
+	X86         = Arch("386")
+	Amd64       = Arch("amd64")
+	Arm         = Arch("arm")
+	Arm64       = Arch("arm64")
+	Mips64      = Arch("mips64")
+	Mips64LE    = Arch("mips64le")
+	Mips        = Arch("mips")
+	MipsLE      = Arch("mipsle")
+	S390X       = Arch("s390x")
+	UnknownArch = Arch("unknown")
 )
 
-func ParseOS(rawOS string) GoOS {
+func ParseOS(rawOS string) OS {
 	osStr := strings.ToLower(rawOS)
 	switch osStr {
 	case "windows", "win":
@@ -51,7 +53,7 @@ func ParseOS(rawOS string) GoOS {
 	}
 }
 
-func ParseArch(rawArch string) GoArch {
+func ParseArch(rawArch string) Arch {
 	archStr := strings.ToLower(rawArch)
 	switch archStr {
 	case "x86", "386", "i386":
@@ -77,7 +79,7 @@ func ParseArch(rawArch string) GoArch {
 	}
 }
 
-func GetSuffix(os GoOS, arch GoArch) string {
+func GetSuffix(os OS, arch Arch) string {
 	suffix := "-custom"
 	switch os {
 	case Windows:
@@ -134,8 +136,8 @@ func GetSuffix(os GoOS, arch GoArch) string {
 type GoBuildTarget struct {
 	Source  string
 	Target  string
-	OS      GoOS
-	Arch    GoArch
+	OS      OS
+	Arch    Arch
 	LdFlags []string
 	ArmOpt  string
 	MipsOpt string
@@ -179,7 +181,7 @@ func (t *GoBuildTarget) Build(directory string) error {
 	return err
 }
 
-func GoBuild(source string, targetFile string, goOS GoOS, goArch GoArch, ldFlags string, tags ...string) error {
+func GoBuild(source string, targetFile string, goOS OS, goArch Arch, ldFlags string, tags ...string) error {
 	goPath := os.Getenv("GOPATH")
 	args := []string{
 		"build",

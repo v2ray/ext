@@ -6,13 +6,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"v2ray.com/ext/build"
 	"v2ray.com/ext/sysio"
 )
 
 type CopyOption func([]byte) []byte
 
-func FormatLineEnding(goOS GoOS) CopyOption {
-	if goOS == Windows {
+func FormatLineEnding(goOS build.OS) CopyOption {
+	if goOS == build.Windows {
 		return func(content []byte) []byte {
 			content = bytes.Replace(content, []byte{'\r', '\n'}, []byte{'\n'}, -1)
 			content = bytes.Replace(content, []byte{'\n'}, []byte{'\r', '\n'}, -1)
@@ -36,12 +37,12 @@ func CopyFile(src string, dest string, options ...CopyOption) error {
 	return ioutil.WriteFile(dest, content, 0777)
 }
 
-func CopyAllConfigFiles(destDir string, goOS GoOS) error {
+func CopyAllConfigFiles(destDir string, goOS build.OS) error {
 	GOPATH := os.Getenv("GOPATH")
 	srcDir := filepath.Join(GOPATH, "src", "v2ray.com", "core", "release", "config")
 	src := filepath.Join(srcDir, "vpoint_socks_vmess.json")
 	dest := filepath.Join(destDir, "vpoint_socks_vmess.json")
-	if goOS == Windows || goOS == MacOS {
+	if goOS == build.Windows || goOS == build.MacOS {
 		dest = filepath.Join(destDir, "config.json")
 	}
 	option := FormatLineEnding(goOS)
@@ -70,7 +71,7 @@ func CopyAllConfigFiles(destDir string, goOS GoOS) error {
 		return err
 	}
 
-	if goOS == Windows || goOS == MacOS {
+	if goOS == build.Windows || goOS == build.MacOS {
 		return nil
 	}
 
@@ -81,7 +82,7 @@ func CopyAllConfigFiles(destDir string, goOS GoOS) error {
 		return err
 	}
 
-	if goOS == Linux {
+	if goOS == build.Linux {
 		if err := os.MkdirAll(filepath.Join(destDir, "systemv"), os.ModeDir|0777); err != nil {
 			return err
 		}
