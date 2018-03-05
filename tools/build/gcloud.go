@@ -7,7 +7,13 @@ import (
 )
 
 func getGCloudMetadata(name string, scope string) (string, error) {
-	response, err := http.Get("http://metadata.google.internal/computeMetadata/v1/" + scope + "/attributes/" + name)
+	request, err := http.NewRequest("GET", "http://metadata.google.internal/computeMetadata/v1/"+scope+"/attributes/"+name, nil)
+	if err != nil {
+		return "", newError("failed to create http request").Base(err)
+	}
+	request.Header.Set("Metadata-Flavor", "Google")
+
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return "", newError("failed to get gcloud attribute: ", name, " in ", scope).Base(err)
 	}

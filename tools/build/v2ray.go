@@ -8,27 +8,32 @@ import (
 	"v2ray.com/ext/build"
 )
 
-var releases = map[string][]*build.Target{
-	genReleaseId(build.Windows, build.Amd64):  append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
-	genReleaseId(build.Windows, build.X86):    append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
-	genReleaseId(build.MacOS, build.Amd64):    append(genRegularTarget(build.MacOS, build.Amd64)),
-	genReleaseId(build.Linux, build.Amd64):    append(genRegularTarget(build.Linux, build.Amd64)),
-	genReleaseId(build.Linux, build.X86):      append(genRegularTarget(build.Linux, build.X86)),
-	genReleaseId(build.Linux, build.Arm64):    append(genRegularTarget(build.Linux, build.Arm64)),
-	genReleaseId(build.Linux, build.Arm):      append(genRegularTarget(build.Linux, build.Arm), getArmExtra()...),
-	genReleaseId(build.Linux, build.Mips64):   append(genRegularTarget(build.Linux, build.Mips64)),
-	genReleaseId(build.Linux, build.Mips64LE): append(genRegularTarget(build.Linux, build.Mips64LE)),
-	genReleaseId(build.Linux, build.Mips):     append(genRegularTarget(build.Linux, build.Mips), getMipsExtra(build.Mips)...),
-	genReleaseId(build.Linux, build.MipsLE):   append(genRegularTarget(build.Linux, build.MipsLE), getMipsExtra(build.MipsLE)...),
-	genReleaseId(build.Linux, build.S390X):    append(genRegularTarget(build.Linux, build.S390X)),
-	genReleaseId(build.OpenBSD, build.Amd64):  append(genRegularTarget(build.OpenBSD, build.Amd64)),
-	genReleaseId(build.OpenBSD, build.X86):    append(genRegularTarget(build.OpenBSD, build.X86)),
-	genReleaseId(build.FreeBSD, build.Amd64):  append(genRegularTarget(build.FreeBSD, build.Amd64)),
-	genReleaseId(build.FreeBSD, build.X86):    append(genRegularTarget(build.FreeBSD, build.X86)),
+type releaseID struct {
+	OS   build.OS
+	Arch build.Arch
 }
 
-func genReleaseId(goOS build.OS, goArch build.Arch) string {
-	return string(goOS) + "-" + string(goArch)
+var releases = map[releaseID][]*build.GoTarget{
+	genReleaseID(build.Windows, build.Amd64):  append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
+	genReleaseID(build.Windows, build.X86):    append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
+	genReleaseID(build.MacOS, build.Amd64):    append(genRegularTarget(build.MacOS, build.Amd64)),
+	genReleaseID(build.Linux, build.Amd64):    append(genRegularTarget(build.Linux, build.Amd64)),
+	genReleaseID(build.Linux, build.X86):      append(genRegularTarget(build.Linux, build.X86)),
+	genReleaseID(build.Linux, build.Arm64):    append(genRegularTarget(build.Linux, build.Arm64)),
+	genReleaseID(build.Linux, build.Arm):      append(genRegularTarget(build.Linux, build.Arm), getArmExtra()...),
+	genReleaseID(build.Linux, build.Mips64):   append(genRegularTarget(build.Linux, build.Mips64)),
+	genReleaseID(build.Linux, build.Mips64LE): append(genRegularTarget(build.Linux, build.Mips64LE)),
+	genReleaseID(build.Linux, build.Mips):     append(genRegularTarget(build.Linux, build.Mips), getMipsExtra(build.Mips)...),
+	genReleaseID(build.Linux, build.MipsLE):   append(genRegularTarget(build.Linux, build.MipsLE), getMipsExtra(build.MipsLE)...),
+	genReleaseID(build.Linux, build.S390X):    append(genRegularTarget(build.Linux, build.S390X)),
+	genReleaseID(build.OpenBSD, build.Amd64):  append(genRegularTarget(build.OpenBSD, build.Amd64)),
+	genReleaseID(build.OpenBSD, build.X86):    append(genRegularTarget(build.OpenBSD, build.X86)),
+	genReleaseID(build.FreeBSD, build.Amd64):  append(genRegularTarget(build.FreeBSD, build.Amd64)),
+	genReleaseID(build.FreeBSD, build.X86):    append(genRegularTarget(build.FreeBSD, build.X86)),
+}
+
+func genReleaseID(goOS build.OS, goArch build.Arch) releaseID {
+	return releaseID{OS: goOS, Arch: goArch}
 }
 
 const stdSource = "v2ray.com/core/main"
@@ -43,8 +48,8 @@ func targetWithSuffix(goOS build.OS, target string) string {
 	return target
 }
 
-func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.Target {
-	return []*build.Target{
+func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.GoTarget {
+	return []*build.GoTarget{
 		{
 			Source:  stdSource,
 			Target:  targetWithSuffix(goOS, stdTarget),
@@ -62,8 +67,8 @@ func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.Target {
 	}
 }
 
-func getWindowsExtra(goArch build.Arch) []*build.Target {
-	return []*build.Target{
+func getWindowsExtra(goArch build.Arch) []*build.GoTarget {
+	return []*build.GoTarget{
 		{
 			Source:  stdSource,
 			Target:  "w" + stdTarget + ".exe",
@@ -74,8 +79,8 @@ func getWindowsExtra(goArch build.Arch) []*build.Target {
 	}
 }
 
-func getArmExtra() []*build.Target {
-	return []*build.Target{
+func getArmExtra() []*build.GoTarget {
+	return []*build.GoTarget{
 		{
 			Source:  stdSource,
 			Target:  stdTarget + "_armv7",
@@ -87,8 +92,8 @@ func getArmExtra() []*build.Target {
 	}
 }
 
-func getMipsExtra(goArch build.Arch) []*build.Target {
-	return []*build.Target{
+func getMipsExtra(goArch build.Arch) []*build.GoTarget {
+	return []*build.GoTarget{
 		{
 			Source:  stdSource,
 			Target:  stdTarget + "_softfloat",
@@ -119,6 +124,6 @@ func genStdLdFlags(goOS build.OS, goArch build.Arch) []string {
 	return ldFlags
 }
 
-func GetReleaseTargets(goOS build.OS, goArch build.Arch) []*build.Target {
-	return releases[genReleaseId(goOS, goArch)]
+func GetReleaseTargets(goOS build.OS, goArch build.Arch) []*build.GoTarget {
+	return releases[genReleaseID(goOS, goArch)]
 }

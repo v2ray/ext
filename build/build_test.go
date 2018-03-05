@@ -10,7 +10,7 @@ import (
 func TestBuildEnvs(t *testing.T) {
 	assert := With(t)
 
-	target := &Target{
+	target := &GoTarget{
 		OS:   Windows,
 		Arch: Amd64,
 	}

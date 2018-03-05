@@ -72,7 +72,7 @@ func main() {
 
 	targets := build.GetReleaseTargets(v2rayOS, v2rayArch)
 	for _, target := range targets {
-		if err := target.Build(targetDir); err != nil {
+		if err := target.BuildTo(targetDir); err != nil {
 			fmt.Println("Failed to build V2Ray on", v2rayArch, "for", v2rayOS, "with error", err.Error())
 			return
 		}
