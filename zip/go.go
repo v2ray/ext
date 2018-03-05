@@ -1,4 +1,4 @@
-package build
+package zip
 
 import (
 	"archive/zip"
@@ -54,7 +54,7 @@ func (worker *ZipWorker) close() {
 	worker.zipWriter.Close()
 }
 
-func ZipFolder(folder string, file string) error {
+func goZipFolder(folder string, file string) error {
 	if _, err := os.Stat(file); err == nil {
 		os.Remove(file)
 	}

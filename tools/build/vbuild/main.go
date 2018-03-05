@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"v2ray.com/ext/tools/build"
+	"v2ray.com/ext/zip"
 )
 
 var (
@@ -41,6 +42,11 @@ func createTargetDirectory(version string, goOS build.GoOS, goArch build.GoArch)
 func getBinPath() string {
 	GOPATH := os.Getenv("GOPATH")
 	return filepath.Join(GOPATH, "bin")
+}
+
+func isOfficialBuild() bool {
+	version := os.Getenv("TRAVIS_TAG")
+	return len(version) > 0
 }
 
 func main() {
@@ -91,7 +97,12 @@ func main() {
 		suffix := build.GetSuffix(v2rayOS, v2rayArch)
 		zipFile := "v2ray" + suffix + ".zip"
 		root := filepath.Base(targetDir)
-		if err := build.ZipFolder(root, zipFile); err != nil {
+
+		var zipOptions []zip.Option
+		if isOfficialBuild() {
+			zipOptions = append(zipOptions, zip.With7Zip())
+		}
+		if err := zip.CompressFolder(root, zipFile, zipOptions...); err != nil {
 			fmt.Printf("Unable to create archive (%s): %v\n", zipFile, err)
 			return
 		}
