@@ -336,7 +336,6 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 }
 
 type Config struct {
-	Port            uint16                    `json:"port"` // Port of this Point server.
 	LogConfig       *LogConfig                `json:"log"`
 	RouterConfig    *RouterConfig             `json:"routing"`
 	DNSConfig       *DnsConfig                `json:"dns"`
@@ -404,11 +403,7 @@ func (c *Config) Build() (*core.Config, error) {
 	if c.InboundConfig == nil {
 		return nil, newError("no inbound config specified")
 	}
-
-	if c.InboundConfig.Port == 0 && c.Port > 0 {
-		c.InboundConfig.Port = c.Port
-	}
-
+	
 	ic, err := c.InboundConfig.Build()
 	if err != nil {
 		return nil, err
