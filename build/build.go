@@ -144,7 +144,8 @@ type GoBuildTarget struct {
 	Tags    []string
 }
 
-func (t *GoBuildTarget) Build(directory string) error {
+// Envs returns the environment variables for this build.
+func (t *GoBuildTarget) Envs() []string {
 	envs := []string{"GOOS=" + string(t.OS), "GOARCH=" + string(t.Arch), "CGO_ENABLED=0"}
 	if len(t.ArmOpt) > 0 {
 		envs = append(envs, "GOARM="+t.ArmOpt)
@@ -152,7 +153,10 @@ func (t *GoBuildTarget) Build(directory string) error {
 	if len(t.MipsOpt) > 0 {
 		envs = append(envs, "GOMIPS="+t.MipsOpt)
 	}
+	return envs
+}
 
+func (t *GoBuildTarget) Build(directory string) error {
 	goPath := os.Getenv("GOPATH")
 	targetFile := filepath.Join(directory, t.Target)
 	args := []string{
@@ -171,35 +175,7 @@ func (t *GoBuildTarget) Build(directory string) error {
 	args = append(args, t.Source)
 
 	cmd := exec.Command("go", args...)
-	cmd.Env = append(cmd.Env, envs...)
-	cmd.Env = append(cmd.Env, os.Environ()...)
-	output, err := cmd.CombinedOutput()
-	if len(output) > 0 {
-		os.Stdout.Write(output)
-	}
-
-	return err
-}
-
-func GoBuild(source string, targetFile string, goOS OS, goArch Arch, ldFlags string, tags ...string) error {
-	goPath := os.Getenv("GOPATH")
-	args := []string{
-		"build",
-		"-o", targetFile,
-		"-compiler", "gc",
-		"-gcflags", "-trimpath=" + goPath,
-		"-asmflags", "-trimpath=" + goPath,
-	}
-	if len(ldFlags) > 0 {
-		args = append(args, "-ldflags", ldFlags)
-	}
-	if len(tags) > 0 {
-		args = append(args, "-tags", strings.Join(tags, ","))
-	}
-	args = append(args, source)
-
-	cmd := exec.Command("go", args...)
-	cmd.Env = append(cmd.Env, "GOOS="+string(goOS), "GOARCH="+string(goArch), "CGO_ENABLED=0")
+	cmd.Env = append(cmd.Env, t.Envs()...)
 	cmd.Env = append(cmd.Env, os.Environ()...)
 	output, err := cmd.CombinedOutput()
 	if len(output) > 0 {
