@@ -70,41 +70,31 @@ func main() {
 		fmt.Println("Unable to create directory " + targetDir + ": " + err.Error())
 	}
 
+	if *flagSignBinary {
+		build.OptionSign = true
+	}
+
 	targets := build.GetReleaseTargets(v2rayOS, v2rayArch)
 	for _, target := range targets {
-		if err := target.BuildTo(targetDir); err != nil {
+		if _, err := target.BuildTo(targetDir); err != nil {
 			fmt.Println("Failed to build V2Ray on", v2rayArch, "for", v2rayOS, "with error", err.Error())
 			return
 		}
-
-		if *flagSignBinary {
-			gpgPass := os.Getenv("GPG_SIGN_PASS")
-			targetFile := filepath.Join(targetDir, target.Target)
-			if err := build.GPGSignFile(targetFile, gpgPass); err != nil {
-				fmt.Println("Unable to sign file", targetFile, "with error", err.Error())
-				return
-			}
-		}
-	}
-
-	if err := build.CopyAllConfigFiles(targetDir, v2rayOS); err != nil {
-		fmt.Println("Unable to copy config files: " + err.Error())
 	}
 
 	if *flagArchive {
-		if err := os.Chdir(binPath); err != nil {
-			fmt.Printf("Unable to switch to directory (%s): %v\n", binPath, err)
+		zipTarget := &xbuild.ZipTarget{
+			Source: xbuild.PlainPath(targetDir),
+			Target: "v2ray" + xbuild.GetSuffix(v2rayOS, v2rayArch) + ".zip",
 		}
-		suffix := xbuild.GetSuffix(v2rayOS, v2rayArch)
-		zipFile := "v2ray" + suffix + ".zip"
-		root := filepath.Base(targetDir)
 
-		var zipOptions []zip.Option
 		if isOfficialBuild() {
-			zipOptions = append(zipOptions, zip.With7Zip())
+			zipTarget.Options = append(zipTarget.Options, zip.With7Zip())
 		}
-		if err := zip.CompressFolder(root, zipFile, zipOptions...); err != nil {
-			fmt.Printf("Unable to create archive (%s): %v\n", zipFile, err)
+
+		output, err := zipTarget.BuildTo(filepath.Dir(targetDir))
+		if err != nil {
+			fmt.Printf("Unable to create archive (%s): %v\n", zipTarget.Target, err)
 			return
 		}
 
@@ -114,6 +104,7 @@ func main() {
 			return
 		}
 
+		zipFile := output.Generated
 		meta, err := build.GenerateFileMetadata(zipFile)
 		if err != nil {
 			fmt.Println("Failed to generate metadata for file: ", zipFile, err)

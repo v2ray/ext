@@ -3,9 +3,14 @@ package build
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"time"
 
 	"v2ray.com/ext/build"
+)
+
+var (
+	OptionSign bool = false
 )
 
 type releaseID struct {
@@ -13,7 +18,7 @@ type releaseID struct {
 	Arch build.Arch
 }
 
-var releases = map[releaseID][]*build.GoTarget{
+var releases = map[releaseID][]build.Target{
 	genReleaseID(build.Windows, build.Amd64):  append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
 	genReleaseID(build.Windows, build.X86):    append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
 	genReleaseID(build.MacOS, build.Amd64):    append(genRegularTarget(build.MacOS, build.Amd64)),
@@ -48,69 +53,128 @@ func targetWithSuffix(goOS build.OS, target string) string {
 	return target
 }
 
-func genRegularTarget(goOS build.OS, goArch build.Arch) []*build.GoTarget {
-	return []*build.GoTarget{
-		{
-			Source:  stdSource,
-			Target:  targetWithSuffix(goOS, stdTarget),
-			OS:      goOS,
-			Arch:    goArch,
-			LdFlags: genStdLdFlags(goOS, goArch),
-		},
-		{
-			Source:  stdControlSource,
-			Target:  targetWithSuffix(goOS, stdControlTarget),
-			OS:      goOS,
-			Arch:    goArch,
-			LdFlags: []string{"-s", "-w"},
+func targetWithSignature(target build.Target) []build.Target {
+	if !OptionSign {
+		return []build.Target{target}
+	}
+
+	ct := &build.CachedTarget{
+		Target: target,
+	}
+	st := &build.SignTarget{
+		Passphrase: os.Getenv("GPG_SIGN_PASS"),
+		Source: &build.LazyPath{
+			CachedTarget: ct,
 		},
 	}
+	return []build.Target{ct, st}
 }
 
-func getWindowsExtra(goArch build.Arch) []*build.GoTarget {
-	return []*build.GoTarget{
-		{
-			Source:  stdSource,
-			Target:  "w" + stdTarget + ".exe",
-			OS:      build.Windows,
-			Arch:    goArch,
-			LdFlags: append(genStdLdFlags(build.Windows, goArch), "-H windowsgui"),
-		},
+func genRegularTarget(goOS build.OS, goArch build.Arch) []build.Target {
+	releaseDir := filepath.Join("${GOPATH}", "src", "v2ray.com", "core", "release")
+	var targets []build.Target
+
+	targets = append(targets, targetWithSignature(&build.GoTarget{
+		Source:  stdSource,
+		Target:  targetWithSuffix(goOS, stdTarget),
+		OS:      goOS,
+		Arch:    goArch,
+		LdFlags: genStdLdFlags(goOS, goArch),
+	})...)
+
+	targets = append(targets, targetWithSignature(&build.GoTarget{
+		Source:  stdControlSource,
+		Target:  targetWithSuffix(goOS, stdControlTarget),
+		OS:      goOS,
+		Arch:    goArch,
+		LdFlags: []string{"-s", "-w"},
+	})...)
+
+	targets = append(targets, &build.ResourceTarget{
+		Source: build.EnvPath(filepath.Join(releaseDir, "config", "geoip.dat")),
+		Target: "geoip.dat",
+	}, &build.ResourceTarget{
+		Source: build.EnvPath(filepath.Join(releaseDir, "config", "geosite.dat")),
+		Target: "geosite.dat",
+	}, &build.ResourceTarget{
+		Source:           build.EnvPath(filepath.Join(releaseDir, "doc", "readme.md")),
+		Target:           "readme.md",
+		FixLineSeparator: true,
+		OS:               goOS,
+	})
+
+	if goOS == build.Linux {
+		targets = append(targets, &build.ResourceTarget{
+			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemv", "v2ray")),
+			Target:           filepath.Join("systemv", "v2ray"),
+			FixLineSeparator: true,
+			OS:               goOS,
+		}, &build.ResourceTarget{
+			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemd", "v2ray.service")),
+			Target:           filepath.Join("systemd", "v2ray.service"),
+			FixLineSeparator: true,
+			OS:               goOS,
+		})
 	}
+
+	if goOS == build.Windows || goOS == build.MacOS {
+		targets = append(targets, &build.ResourceTarget{
+			Source: build.EnvPath(filepath.Join(releaseDir, "config", "vpoint_socks_vmess.json")),
+			Target: "config.json",
+		})
+	} else {
+		targets = append(targets, &build.ResourceTarget{
+			Source: build.EnvPath(filepath.Join(releaseDir, "config", "vpoint_socks_vmess.json")),
+			Target: "vpoint_socks_vmess.json",
+		}, &build.ResourceTarget{
+			Source: build.EnvPath(filepath.Join(releaseDir, "config", "vpoint_vmess_freedom.json")),
+			Target: "vpoint_vmess_freedom.json",
+		})
+	}
+
+	return targets
 }
 
-func getArmExtra() []*build.GoTarget {
-	return []*build.GoTarget{
-		{
-			Source:  stdSource,
-			Target:  stdTarget + "_armv7",
-			OS:      build.Linux,
-			Arch:    build.Arm,
-			LdFlags: genStdLdFlags(build.Linux, build.Arm),
-			ArmOpt:  "7",
-		},
-	}
+func getWindowsExtra(goArch build.Arch) []build.Target {
+	return targetWithSignature(&build.GoTarget{
+		Source:  stdSource,
+		Target:  "w" + stdTarget + ".exe",
+		OS:      build.Windows,
+		Arch:    goArch,
+		LdFlags: append(genStdLdFlags(build.Windows, goArch), "-H windowsgui"),
+	})
 }
 
-func getMipsExtra(goArch build.Arch) []*build.GoTarget {
-	return []*build.GoTarget{
-		{
-			Source:  stdSource,
-			Target:  stdTarget + "_softfloat",
-			OS:      build.Linux,
-			Arch:    goArch,
-			LdFlags: genStdLdFlags(build.Linux, goArch),
-			MipsOpt: "softfloat",
-		},
-		{
-			Source:  stdControlSource,
-			Target:  stdControlTarget + "_softfloat",
-			OS:      build.Linux,
-			Arch:    goArch,
-			LdFlags: genStdLdFlags(build.Linux, goArch),
-			MipsOpt: "softfloat",
-		},
-	}
+func getArmExtra() []build.Target {
+	return targetWithSignature(&build.GoTarget{
+		Source:  stdSource,
+		Target:  stdTarget + "_armv7",
+		OS:      build.Linux,
+		Arch:    build.Arm,
+		LdFlags: genStdLdFlags(build.Linux, build.Arm),
+		ArmOpt:  "7",
+	})
+}
+
+func getMipsExtra(goArch build.Arch) []build.Target {
+	var targets []build.Target
+	targets = append(targets, targetWithSignature(&build.GoTarget{
+		Source:  stdSource,
+		Target:  stdTarget + "_softfloat",
+		OS:      build.Linux,
+		Arch:    goArch,
+		LdFlags: genStdLdFlags(build.Linux, goArch),
+		MipsOpt: "softfloat",
+	})...)
+	targets = append(targets, targetWithSignature(&build.GoTarget{
+		Source:  stdControlSource,
+		Target:  stdControlTarget + "_softfloat",
+		OS:      build.Linux,
+		Arch:    goArch,
+		LdFlags: genStdLdFlags(build.Linux, goArch),
+		MipsOpt: "softfloat",
+	})...)
+	return targets
 }
 
 func genStdLdFlags(goOS build.OS, goArch build.Arch) []string {
@@ -124,6 +188,6 @@ func genStdLdFlags(goOS build.OS, goArch build.Arch) []string {
 	return ldFlags
 }
 
-func GetReleaseTargets(goOS build.OS, goArch build.Arch) []*build.GoTarget {
+func GetReleaseTargets(goOS build.OS, goArch build.Arch) []build.Target {
 	return releases[genReleaseID(goOS, goArch)]
 }

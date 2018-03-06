@@ -133,6 +133,10 @@ func GetSuffix(os OS, arch Arch) string {
 	return suffix
 }
 
+func createDirectoryFor(file string) error {
+	return os.MkdirAll(filepath.Dir(file), os.ModePerm)
+}
+
 type GoTarget struct {
 	Source  string
 	Target  string
@@ -156,9 +160,12 @@ func (t *GoTarget) Envs() []string {
 	return envs
 }
 
-func (t *GoTarget) BuildTo(directory string) error {
+func (t *GoTarget) BuildTo(directory string) (*Output, error) {
 	goPath := os.Getenv("GOPATH")
 	targetFile := filepath.Join(directory, t.Target)
+	if err := createDirectoryFor(targetFile); err != nil {
+		return nil, err
+	}
 	args := []string{
 		"build",
 		"-o", targetFile,
@@ -182,5 +189,5 @@ func (t *GoTarget) BuildTo(directory string) error {
 		os.Stdout.Write(output)
 	}
 
-	return err
+	return &Output{Generated: targetFile}, err
 }
