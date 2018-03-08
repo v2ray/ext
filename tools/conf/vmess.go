@@ -30,7 +30,7 @@ func (a *VMessAccount) Build() *vmess.Account {
 	case "none":
 		st = protocol.SecurityType_NONE
 	default:
-		st = protocol.SecurityType_LEGACY
+		st = protocol.SecurityType_AUTO
 	}
 	return &vmess.Account{
 		Id:      a.ID,
