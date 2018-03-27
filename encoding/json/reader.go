@@ -2,6 +2,8 @@ package json
 
 import (
 	"io"
+
+	"v2ray.com/core/common/buf"
 )
 
 // State is the internal state of parser.
@@ -20,20 +22,30 @@ const (
 	StateMultilineCommentStar
 )
 
-// Reader is a JSON reader which allows comments.
+// Reader is a reader for filtering comments.
+// It supports Java style single and multi line comment syntax, and Python style single line comment syntax.
 type Reader struct {
 	io.Reader
+
 	state State
+	br    *buf.BufferedReader
 }
 
-// Read implements io.Reader.Read().
+// Read implements io.Reader.Read(). Buffer must be at least 3 bytes.
 func (v *Reader) Read(b []byte) (int, error) {
-	n, err := v.Reader.Read(b)
-	if err != nil {
-		return n, err
+	if v.br == nil {
+		v.br = buf.NewBufferedReader(buf.NewReader(v.Reader))
 	}
+
 	p := b[:0]
-	for _, x := range b[:n] {
+	for len(p) < len(b)-2 {
+		x, err := v.br.ReadByte()
+		if err != nil {
+			if len(p) == 0 {
+				return 0, err
+			}
+			return len(p), nil
+		}
 		switch v.state {
 		case StateContent:
 			switch x {
