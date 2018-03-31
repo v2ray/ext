@@ -87,6 +87,7 @@ func init() {
 		case flag.ErrHelp:
 			fmt.Println("v2ctl verify [--sig=<sig-file>] file")
 			fmt.Println("Verify the file officially signed by V2Ray.")
+			return
 		default:
 			fmt.Fprintln(os.Stderr, "Error parsing arguments:", err)
 			return
