@@ -9,6 +9,7 @@ type Policy struct {
 	ConnectionIdle *uint32 `json:"connIdle"`
 	UplinkOnly     *uint32 `json:"uplinkOnly"`
 	DownlinkOnly   *uint32 `json:"downlinkOnly"`
+	Stats          bool    `json:"stats"`
 }
 
 func (t *Policy) Build() (*policy.Policy, error) {
@@ -27,6 +28,9 @@ func (t *Policy) Build() (*policy.Policy, error) {
 	}
 	return &policy.Policy{
 		Timeout: config,
+		Stats: &policy.Policy_Stats{
+			EnablePerUser: t.Stats,
+		},
 	}, nil
 }
 

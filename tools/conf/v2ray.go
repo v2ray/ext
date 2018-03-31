@@ -7,6 +7,7 @@ import (
 	"v2ray.com/core"
 	"v2ray.com/core/app/dispatcher"
 	"v2ray.com/core/app/proxyman"
+	"v2ray.com/core/app/stats"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/common/serial"
 )
@@ -335,6 +336,12 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	}, nil
 }
 
+type StatsConfig struct{}
+
+func (c *StatsConfig) Build() (*stats.Config, error) {
+	return &stats.Config{}, nil
+}
+
 type Config struct {
 	Port            uint16                    `json:"port"` // Port of this Point server.
 	LogConfig       *LogConfig                `json:"log"`
@@ -347,6 +354,7 @@ type Config struct {
 	Transport       *TransportConfig          `json:"transport"`
 	Policy          *PolicyConfig             `json:"policy"`
 	Api             *ApiConfig                `json:"api"`
+	Stats           *StatsConfig              `json:"stats"`
 }
 
 // Build implements Buildable.
@@ -365,6 +373,14 @@ func (c *Config) Build() (*core.Config, error) {
 			return nil, err
 		}
 		config.App = append(config.App, serial.ToTypedMessage(apiConf))
+	}
+
+	if c.Stats != nil {
+		statsConf, err := c.Stats.Build()
+		if err != nil {
+			return nil, err
+		}
+		config.App = append(config.App, serial.ToTypedMessage(statsConf))
 	}
 
 	if c.LogConfig != nil {
