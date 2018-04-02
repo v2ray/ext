@@ -33,6 +33,6 @@ func TestShadowsocksServerConfigParsing(t *testing.T) {
 	account, ok := rawAccount.(*shadowsocks.MemoryAccount)
 	assert(ok, IsTrue)
 
-	assert(account.Cipher.KeySize(), Equals, 16)
+	assert(account.Cipher.KeySize(), Equals, int32(16))
 	assert(account.Key, Equals, []byte{160, 224, 26, 2, 22, 110, 9, 80, 65, 52, 80, 20, 38, 243, 224, 241})
 }
