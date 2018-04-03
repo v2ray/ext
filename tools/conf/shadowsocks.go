@@ -30,17 +30,19 @@ func cipherFromString(c string) shadowsocks.CipherType {
 }
 
 type ShadowsocksServerConfig struct {
-	Cipher   string `json:"method"`
-	Password string `json:"password"`
-	UDP      bool   `json:"udp"`
-	Level    byte   `json:"level"`
-	Email    string `json:"email"`
-	OTA      *bool  `json:"ota"`
+	Cipher      string       `json:"method"`
+	Password    string       `json:"password"`
+	UDP         bool         `json:"udp"`
+	Level       byte         `json:"level"`
+	Email       string       `json:"email"`
+	OTA         *bool        `json:"ota"`
+	NetworkList *NetworkList `json:"network"`
 }
 
 func (v *ShadowsocksServerConfig) Build() (*serial.TypedMessage, error) {
 	config := new(shadowsocks.ServerConfig)
 	config.UdpEnabled = v.UDP
+	config.Network = v.NetworkList.Build().Network
 
 	if len(v.Password) == 0 {
 		return nil, newError("Shadowsocks password is not specified.")
