@@ -29,6 +29,9 @@ func getServiceMethod(s string) (string, string) {
 func printUsage() {
 	fmt.Println("v2ctl api [--server=127.0.0.1:8080] Service.Method Request")
 	fmt.Println("Call an API in an V2Ray process.")
+	fmt.Println("The following methods are currently supported:")
+	fmt.Println("\tLoggerService.RestartLogger")
+	fmt.Println("\tStatsService.GetStats")
 }
 
 type serviceHandler func(conn *grpc.ClientConn, method string, request string) (string, error)
