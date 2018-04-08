@@ -74,59 +74,64 @@ func firstIdentity(m map[string]*openpgp.Identity) string {
 	return ""
 }
 
+type VerifyCommand struct{}
+
+func (c *VerifyCommand) Name() string {
+	return "verify"
+}
+
+func (c *VerifyCommand) Description() Description {
+	return Description{
+		Short: "Verify if a binary is officially signed.",
+		Usage: []string{
+			"v2ctl verify [--sig=<sig-file>] file",
+			"Verify the file officially signed by V2Ray.",
+		},
+	}
+}
+
+func (c *VerifyCommand) Execute(args []string) error {
+	fs := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+
+	sigFile := fs.String("sig", "", "Path to the signature file")
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	target := fs.Arg(0)
+	if len(target) == 0 {
+		return newError("empty file path.")
+	}
+
+	if len(*sigFile) == 0 {
+		*sigFile = target + ".sig"
+	}
+
+	targetReader, err := os.Open(os.ExpandEnv(target))
+	if err != nil {
+		return newError("failed to open file: ", target).Base(err)
+	}
+
+	sigReader, err := os.Open(os.ExpandEnv(*sigFile))
+	if err != nil {
+		return newError("failed to open file ", *sigFile).Base(err)
+	}
+
+	keyring, err := openpgp.ReadArmoredKeyRing(strings.NewReader(pubkey))
+	if err != nil {
+		return newError("failed to create keyring").Base(err)
+	}
+
+	entity, err := openpgp.CheckDetachedSignature(keyring, targetReader, sigReader)
+	if err != nil {
+		return newError("failed to verify signature").Base(err)
+	}
+
+	fmt.Println("Signed by:", firstIdentity(entity.Identities))
+	return nil
+}
+
 func init() {
-	const name = "verify"
-	common.Must(RegisterCommand(name, "Verify if a binary is officially signed.", func(args []string) {
-		fs := flag.NewFlagSet(name, flag.ContinueOnError)
-
-		sigFile := fs.String("sig", "", "Path to the signature file")
-
-		err := fs.Parse(args)
-		switch err {
-		case nil:
-		case flag.ErrHelp:
-			fmt.Println("v2ctl verify [--sig=<sig-file>] file")
-			fmt.Println("Verify the file officially signed by V2Ray.")
-			return
-		default:
-			fmt.Fprintln(os.Stderr, "Error parsing arguments:", err)
-			return
-		}
-
-		target := fs.Arg(0)
-		if len(target) == 0 {
-			fmt.Fprintln(os.Stderr, "Empty file path.")
-			return
-		}
-
-		if len(*sigFile) == 0 {
-			*sigFile = target + ".sig"
-		}
-
-		targetReader, err := os.Open(os.ExpandEnv(target))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error opening file (", target, "):", err)
-			return
-		}
-
-		sigReader, err := os.Open(os.ExpandEnv(*sigFile))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error opening file (", *sigFile, "): ", err)
-			return
-		}
-
-		keyring, err := openpgp.ReadArmoredKeyRing(strings.NewReader(pubkey))
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error creating keyring:", err)
-			return
-		}
-
-		entity, err := openpgp.CheckDetachedSignature(keyring, targetReader, sigReader)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error verifying signature:", err)
-			return
-		}
-
-		fmt.Println("Signed by:", firstIdentity(entity.Identities))
-	}))
+	common.Must(RegisterCommand(&VerifyCommand{}))
 }

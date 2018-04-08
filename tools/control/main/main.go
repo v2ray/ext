@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -28,5 +29,14 @@ func main() {
 		return
 	}
 
-	cmd(os.Args[2:])
+	if err := cmd.Execute(os.Args[2:]); err != nil {
+		if err != flag.ErrHelp {
+			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Fprintln(os.Stderr)
+		}
+
+		for _, line := range cmd.Description().Usage {
+			fmt.Println(line)
+		}
+	}
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/golang/protobuf/proto"
@@ -16,6 +15,60 @@ import (
 	"v2ray.com/core/common"
 )
 
+type ApiCommand struct{}
+
+func (c *ApiCommand) Name() string {
+	return "api"
+}
+
+func (c *ApiCommand) Description() Description {
+	return Description{
+		Short: "Call V2Ray API",
+		Usage: []string{
+			"v2ctl api [--server=127.0.0.1:8080] Service.Method Request",
+			"Call an API in an V2Ray process.",
+			"The following methods are currently supported:",
+			"\tLoggerService.RestartLogger",
+			"\tStatsService.GetStats",
+		},
+	}
+}
+
+func (c *ApiCommand) Execute(args []string) error {
+	fs := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
+
+	serverAddrPtr := fs.String("server", "127.0.0.1:8080", "Server address")
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	conn, err := grpc.Dial(*serverAddrPtr, grpc.WithInsecure(), grpc.WithBlock())
+	if err != nil {
+		return newError("failed to dial ", *serverAddrPtr).Base(err)
+	}
+	defer conn.Close()
+
+	unnamedArgs := fs.Args()
+	if len(unnamedArgs) < 2 {
+		return newError("service name or request not specified.")
+	}
+
+	service, method := getServiceMethod(unnamedArgs[0])
+	handler, found := serivceHandlerMap[strings.ToLower(service)]
+	if !found {
+		return newError("unknown service: ", service)
+	}
+
+	response, err := handler(conn, method, unnamedArgs[1])
+	if err != nil {
+		return newError("failed to call service ", unnamedArgs[0]).Base(err)
+	}
+
+	fmt.Println(response)
+	return nil
+}
+
 func getServiceMethod(s string) (string, string) {
 	ss := strings.Split(s, ".")
 	service := ss[0]
@@ -24,14 +77,6 @@ func getServiceMethod(s string) (string, string) {
 		method = ss[1]
 	}
 	return service, method
-}
-
-func printUsage() {
-	fmt.Println("v2ctl api [--server=127.0.0.1:8080] Service.Method Request")
-	fmt.Println("Call an API in an V2Ray process.")
-	fmt.Println("The following methods are currently supported:")
-	fmt.Println("\tLoggerService.RestartLogger")
-	fmt.Println("\tStatsService.GetStats")
 }
 
 type serviceHandler func(conn *grpc.ClientConn, method string, request string) (string, error)
@@ -80,48 +125,5 @@ func callStatsService(conn *grpc.ClientConn, method string, request string) (str
 }
 
 func init() {
-	const name = "api"
-	common.Must(RegisterCommand(name, "Call V2Ray API", func(arg []string) {
-		fs := flag.NewFlagSet(name, flag.ContinueOnError)
-
-		serverAddrPtr := fs.String("server", "127.0.0.1:8080", "Server address")
-
-		err := fs.Parse(arg)
-		switch err {
-		case nil:
-		case flag.ErrHelp:
-			printUsage()
-			return
-		default:
-			fmt.Fprintln(os.Stderr, "Error parsing arguments:", err)
-			return
-		}
-
-		conn, err := grpc.Dial(*serverAddrPtr, grpc.WithInsecure(), grpc.WithBlock())
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Failed to dial", *serverAddrPtr, ":", err)
-		}
-		defer conn.Close()
-
-		unnamedArgs := fs.Args()
-		if len(unnamedArgs) < 2 {
-			printUsage()
-			return
-		}
-
-		service, method := getServiceMethod(unnamedArgs[0])
-		handler, found := serivceHandlerMap[strings.ToLower(service)]
-		if !found {
-			fmt.Fprintln(os.Stderr, "Unknown service:", service)
-			return
-		}
-
-		response, err := handler(conn, method, unnamedArgs[1])
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "failed to call service", unnamedArgs[0], ":", err)
-			return
-		}
-
-		fmt.Println(response)
-	}))
+	common.Must(RegisterCommand(&ApiCommand{}))
 }

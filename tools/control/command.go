@@ -1,23 +1,31 @@
 package control
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-type Command func(args []string)
+type Description struct {
+	Short string
+	Usage []string
+}
 
-type CommandWithDesc struct {
-	desc string
-	cmd  Command
+type Command interface {
+	Name() string
+	Description() Description
+	Execute(args []string) error
 }
 
 var (
-	commandRegistry = make(map[string]*CommandWithDesc)
+	commandRegistry = make(map[string]Command)
 )
 
-func RegisterCommand(name string, description string, cmd Command) error {
-	commandRegistry[name] = &CommandWithDesc{
-		desc: description,
-		cmd:  cmd,
+func RegisterCommand(cmd Command) error {
+	entry := strings.ToLower(cmd.Name())
+	if len(entry) == 0 {
+		return newError("empty command name")
 	}
+	commandRegistry[entry] = cmd
 	return nil
 }
 
@@ -26,11 +34,11 @@ func GetCommand(name string) Command {
 	if !found {
 		return nil
 	}
-	return cmd.cmd
+	return cmd
 }
 
 func PrintUsage() {
-	for name, desc := range commandRegistry {
-		fmt.Println("   ", name, "\t\t\t", desc.desc)
+	for name, cmd := range commandRegistry {
+		fmt.Println("   ", name, "\t\t\t", cmd.Description())
 	}
 }
