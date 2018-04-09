@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"v2ray.com/core/transport/internet/domainsocket"
+
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/transport/internet"
 	"v2ray.com/core/transport/internet/http"
@@ -161,6 +163,18 @@ func (c *HTTPConfig) Build() (*serial.TypedMessage, error) {
 	return serial.ToTypedMessage(config), nil
 }
 
+type DomainSocketConfig struct {
+	Path     string `json:"path"`
+	Abstract bool   `json:"abstract"`
+}
+
+func (c *DomainSocketConfig) Build() (*serial.TypedMessage, error) {
+	return serial.ToTypedMessage(&domainsocket.Config{
+		Path:     c.Path,
+		Abstract: c.Abstract,
+	}), nil
+}
+
 type TLSCertConfig struct {
 	CertFile string `json:"certificateFile"`
 	KeyFile  string `json:"keyFile"`
@@ -210,19 +224,22 @@ func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 		return internet.TransportProtocol_WebSocket, nil
 	case "h2", "http":
 		return internet.TransportProtocol_HTTP, nil
+	case "ds", "domainsocket":
+		return internet.TransportProtocol_DomainSocket, nil
 	default:
 		return internet.TransportProtocol_TCP, newError("Config: unknown transport protocol: ", p)
 	}
 }
 
 type StreamConfig struct {
-	Network      *TransportProtocol `json:"network"`
-	Security     string             `json:"security"`
-	TLSSettings  *TLSConfig         `json:"tlsSettings"`
-	TCPSettings  *TCPConfig         `json:"tcpSettings"`
-	KCPSettings  *KCPConfig         `json:"kcpSettings"`
-	WSSettings   *WebSocketConfig   `json:"wsSettings"`
-	HTTPSettings *HTTPConfig        `json:"httpSettings"`
+	Network      *TransportProtocol  `json:"network"`
+	Security     string              `json:"security"`
+	TLSSettings  *TLSConfig          `json:"tlsSettings"`
+	TCPSettings  *TCPConfig          `json:"tcpSettings"`
+	KCPSettings  *KCPConfig          `json:"kcpSettings"`
+	WSSettings   *WebSocketConfig    `json:"wsSettings"`
+	HTTPSettings *HTTPConfig         `json:"httpSettings"`
+	DSSettings   *DomainSocketConfig `json:"dsSettings"`
 }
 
 // Build implements Buildable.
@@ -287,6 +304,16 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_HTTP,
 			Settings: ts,
+		})
+	}
+	if c.DSSettings != nil {
+		ds, err := c.DSSettings.Build()
+		if err != nil {
+			return nil, newError("Failed to build DomainSocket config.").Base(err)
+		}
+		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
+			Protocol: internet.TransportProtocol_DomainSocket,
+			Settings: ds,
 		})
 	}
 	return config, nil

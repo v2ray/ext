@@ -6,9 +6,11 @@ import (
 )
 
 type TransportConfig struct {
-	TCPConfig *TCPConfig       `json:"tcpSettings"`
-	KCPConfig *KCPConfig       `json:"kcpSettings"`
-	WSConfig  *WebSocketConfig `json:"wsSettings"`
+	TCPConfig  *TCPConfig          `json:"tcpSettings"`
+	KCPConfig  *KCPConfig          `json:"kcpSettings"`
+	WSConfig   *WebSocketConfig    `json:"wsSettings"`
+	HTTPConfig *HTTPConfig         `json:"httpSettings"`
+	DSConfig   *DomainSocketConfig `json:"dsSettings"`
 }
 
 // Build implements Buildable.
@@ -47,5 +49,28 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			Settings: ts,
 		})
 	}
+
+	if c.HTTPConfig != nil {
+		ts, err := c.HTTPConfig.Build()
+		if err != nil {
+			return nil, newError("Failed to build HTTP config.").Base(err)
+		}
+		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
+			Protocol: internet.TransportProtocol_HTTP,
+			Settings: ts,
+		})
+	}
+
+	if c.DSConfig != nil {
+		ds, err := c.DSConfig.Build()
+		if err != nil {
+			return nil, newError("Failed to build DomainSocket config.").Base(err)
+		}
+		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
+			Protocol: internet.TransportProtocol_DomainSocket,
+			Settings: ds,
+		})
+	}
+
 	return config, nil
 }
