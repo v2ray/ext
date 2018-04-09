@@ -176,9 +176,42 @@ func (c *DomainSocketConfig) Build() (*serial.TypedMessage, error) {
 }
 
 type TLSCertConfig struct {
-	CertFile string `json:"certificateFile"`
-	KeyFile  string `json:"keyFile"`
+	CertFile string   `json:"certificateFile"`
+	CertStr  []string `json:"certifcate"`
+	KeyFile  string   `json:"keyFile"`
+	KeyStr   []string `json:"key"`
 }
+
+func readFileOrString(f string, s []string) ([]byte, error) {
+	if len(f) > 0 {
+		return sysio.ReadFile(f)
+	}
+	if len(s) > 0 {
+		b := make([]byte, 0, 1024)
+		for _, x := range s {
+			b = append(b, x...)
+			b = append(b, '\n')
+		}
+		return b, nil
+	}
+	return nil, newError("both file and bytes are empty.")
+}
+
+func (c *TLSCertConfig) Build() (*tls.Certificate, error) {
+	cert, err := readFileOrString(c.CertFile, c.CertStr)
+	if err != nil {
+		return nil, newError("failed to parse certificate")
+	}
+	key, err := readFileOrString(c.KeyFile, c.KeyStr)
+	if err != nil {
+		return nil, newError("failed to parse key")
+	}
+	return &tls.Certificate{
+		Certificate: cert,
+		Key:         key,
+	}, nil
+}
+
 type TLSConfig struct {
 	Insecure   bool             `json:"allowInsecure"`
 	Certs      []*TLSCertConfig `json:"certificates"`
@@ -190,18 +223,11 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	config := new(tls.Config)
 	config.Certificate = make([]*tls.Certificate, len(c.Certs))
 	for idx, certConf := range c.Certs {
-		cert, err := sysio.ReadFile(certConf.CertFile)
+		cert, err := certConf.Build()
 		if err != nil {
-			return nil, newError("failed to load TLS certificate file: ", certConf.CertFile).Base(err).AtError()
+			return nil, err
 		}
-		key, err := sysio.ReadFile(certConf.KeyFile)
-		if err != nil {
-			return nil, newError("failed to load TLS key file: ", certConf.KeyFile).Base(err).AtError()
-		}
-		config.Certificate[idx] = &tls.Certificate{
-			Key:         key,
-			Certificate: cert,
-		}
+		config.Certificate[idx] = cert
 	}
 	serverName := c.ServerName
 	config.AllowInsecure = c.Insecure
