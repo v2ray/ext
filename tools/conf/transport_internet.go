@@ -177,7 +177,7 @@ func (c *DomainSocketConfig) Build() (*serial.TypedMessage, error) {
 
 type TLSCertConfig struct {
 	CertFile string   `json:"certificateFile"`
-	CertStr  []string `json:"certifcate"`
+	CertStr  []string `json:"certificate"`
 	KeyFile  string   `json:"keyFile"`
 	KeyStr   []string `json:"key"`
 }
@@ -187,12 +187,7 @@ func readFileOrString(f string, s []string) ([]byte, error) {
 		return sysio.ReadFile(f)
 	}
 	if len(s) > 0 {
-		b := make([]byte, 0, 1024)
-		for _, x := range s {
-			b = append(b, x...)
-			b = append(b, '\n')
-		}
-		return b, nil
+		return []byte(strings.Join(s, "\n")), nil
 	}
 	return nil, newError("both file and bytes are empty.")
 }
@@ -200,11 +195,11 @@ func readFileOrString(f string, s []string) ([]byte, error) {
 func (c *TLSCertConfig) Build() (*tls.Certificate, error) {
 	cert, err := readFileOrString(c.CertFile, c.CertStr)
 	if err != nil {
-		return nil, newError("failed to parse certificate")
+		return nil, newError("failed to parse certificate").Base(err)
 	}
 	key, err := readFileOrString(c.KeyFile, c.KeyStr)
 	if err != nil {
-		return nil, newError("failed to parse key")
+		return nil, newError("failed to parse key").Base(err)
 	}
 	return &tls.Certificate{
 		Certificate: cert,
