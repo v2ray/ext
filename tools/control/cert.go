@@ -39,7 +39,12 @@ func (c *CertificateCommand) Name() string {
 func (c *CertificateCommand) Description() Description {
 	return Description{
 		Short: "Generate TLS certificates.",
-		Usage: []string{},
+		Usage: []string{
+			"v2ctl cert [--ca] [--domain=v2ray.com]",
+			"Generate new TLS certificate",
+			"--ca The new certificate is a CA certificate",
+			"--domain Common name for the certificate",
+		},
 	}
 }
 
