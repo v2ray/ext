@@ -44,13 +44,15 @@ func (c *CertificateCommand) Description() Description {
 }
 
 func (c *CertificateCommand) printJson(certificate *cert.Certificate) {
+	certPEM, keyPEM := certificate.ToPEM()
 	jCert := &jsonCert{
-		Certificate: strings.Split(strings.TrimSpace(string(certificate.Certificate)), "\n"),
-		Key:         strings.Split(strings.TrimSpace(string(certificate.PrivateKey)), "\n"),
+		Certificate: strings.Split(strings.TrimSpace(string(certPEM)), "\n"),
+		Key:         strings.Split(strings.TrimSpace(string(keyPEM)), "\n"),
 	}
 	content, err := json.MarshalIndent(jCert, "", "  ")
 	common.Must(err)
 	os.Stdout.Write(content)
+	os.Stdout.WriteString("\n")
 }
 
 func (c *CertificateCommand) Execute(args []string) error {
