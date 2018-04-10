@@ -180,6 +180,7 @@ type TLSCertConfig struct {
 	CertStr  []string `json:"certificate"`
 	KeyFile  string   `json:"keyFile"`
 	KeyStr   []string `json:"key"`
+	Usage    string   `json:"usage"`
 }
 
 func readFileOrString(f string, s []string) ([]byte, error) {
@@ -193,18 +194,34 @@ func readFileOrString(f string, s []string) ([]byte, error) {
 }
 
 func (c *TLSCertConfig) Build() (*tls.Certificate, error) {
+	certificate := new(tls.Certificate)
+
 	cert, err := readFileOrString(c.CertFile, c.CertStr)
 	if err != nil {
 		return nil, newError("failed to parse certificate").Base(err)
 	}
-	key, err := readFileOrString(c.KeyFile, c.KeyStr)
-	if err != nil {
-		return nil, newError("failed to parse key").Base(err)
+	certificate.Certificate = cert
+
+	if len(c.KeyFile) > 0 || len(c.KeyStr) > 0 {
+		key, err := readFileOrString(c.KeyFile, c.KeyStr)
+		if err != nil {
+			return nil, newError("failed to parse key").Base(err)
+		}
+		certificate.Key = key
 	}
-	return &tls.Certificate{
-		Certificate: cert,
-		Key:         key,
-	}, nil
+
+	switch strings.ToLower(c.Usage) {
+	case "encipherment":
+		certificate.Usage = tls.Certificate_ENCIPHERMENT
+	case "verify":
+		certificate.Usage = tls.Certificate_AUTHORITY_VERIFY
+	case "issue":
+		certificate.Usage = tls.Certificate_AUTHORITY_ISSUE
+	default:
+		certificate.Usage = tls.Certificate_ENCIPHERMENT
+	}
+
+	return certificate, nil
 }
 
 type TLSConfig struct {
