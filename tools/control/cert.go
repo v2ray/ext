@@ -1,6 +1,7 @@
 package control
 
 import (
+	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"os"
@@ -64,6 +65,7 @@ func (c *CertificateCommand) Execute(args []string) error {
 	var opts []cert.Option
 	if *isCA {
 		opts = append(opts, cert.Authority(*isCA))
+		opts = append(opts, cert.KeyUsage(x509.KeyUsageCertSign|x509.KeyUsageKeyEncipherment|x509.KeyUsageDigitalSignature))
 	}
 
 	cert, err := cert.Generate(nil, opts...)
