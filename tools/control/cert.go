@@ -6,6 +6,7 @@ import (
 	"flag"
 	"os"
 	"strings"
+	"time"
 
 	"v2ray.com/core/common"
 	"v2ray.com/core/common/protocol/tls/cert"
@@ -68,12 +69,19 @@ func (c *CertificateCommand) Execute(args []string) error {
 
 	isCA := fs.Bool("ca", false, "Whether this certificate is a CA")
 	output := fs.String("output", "json", "Output format")
+	expire := fs.Duration("expire", time.Hour*24*90 /* 90 days */, "Time until the certificate expires. Default value 3 months.")
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
 
 	var opts []cert.Option
 	if *isCA {
 		opts = append(opts, cert.Authority(*isCA))
 		opts = append(opts, cert.KeyUsage(x509.KeyUsageCertSign|x509.KeyUsageKeyEncipherment|x509.KeyUsageDigitalSignature))
 	}
+
+	opts = append(opts, cert.NotAfter(time.Now().Add(*expire)))
 
 	cert, err := cert.Generate(nil, opts...)
 	if err != nil {
