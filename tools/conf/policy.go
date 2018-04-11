@@ -36,8 +36,23 @@ func (t *Policy) Build() (*policy.Policy, error) {
 	}, nil
 }
 
+type SystemPolicy struct {
+	StatsInboundUplink   bool `json:"statsInboundUplink"`
+	StatsInboundDownlink bool `json:"statsInboundDownlink"`
+}
+
+func (p *SystemPolicy) Build() (*policy.SystemPolicy, error) {
+	return &policy.SystemPolicy{
+		Stats: &policy.SystemPolicy_Stats{
+			InboundUplink:   p.StatsInboundUplink,
+			InboundDownlink: p.StatsInboundDownlink,
+		},
+	}, nil
+}
+
 type PolicyConfig struct {
 	Levels map[uint32]*Policy `json:"levels"`
+	System *SystemPolicy      `json:"system"`
 }
 
 func (c *PolicyConfig) Build() (*policy.Config, error) {
@@ -51,7 +66,17 @@ func (c *PolicyConfig) Build() (*policy.Config, error) {
 			levels[l] = pp
 		}
 	}
-	return &policy.Config{
+	config := &policy.Config{
 		Level: levels,
-	}, nil
+	}
+
+	if c.System != nil {
+		sc, err := c.System.Build()
+		if err != nil {
+			return nil, err
+		}
+		config.System = sc
+	}
+
+	return config, nil
 }
