@@ -118,7 +118,7 @@ func (c *CertificateCommand) Execute(args []string) error {
 
 	cert, err := cert.Generate(nil, opts...)
 	if err != nil {
-		return newError("failed to generate TLS certificate")
+		return newError("failed to generate TLS certificate").Base(err)
 	}
 
 	if *jsonOutput {
