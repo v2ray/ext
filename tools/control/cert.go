@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/json"
 	"flag"
@@ -10,6 +11,7 @@ import (
 
 	"v2ray.com/core/common"
 	"v2ray.com/core/common/protocol/tls/cert"
+	"v2ray.com/core/common/signal"
 )
 
 type stringList []string
@@ -31,7 +33,8 @@ type jsonCert struct {
 	Key         []string `json:"key"`
 }
 
-type CertificateCommand struct{}
+type CertificateCommand struct {
+}
 
 func (c *CertificateCommand) Name() string {
 	return "cert"
@@ -62,14 +65,38 @@ func (c *CertificateCommand) printJson(certificate *cert.Certificate) {
 	os.Stdout.WriteString("\n")
 }
 
+func (c *CertificateCommand) writeFile(content []byte, name string) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return common.Error2(f.Write(content))
+}
+
+func (c *CertificateCommand) printFile(certificate *cert.Certificate, name string) error {
+	certPEM, keyPEM := certificate.ToPEM()
+	return signal.ExecuteParallel(context.Background(), func() error {
+		return c.writeFile(certPEM, name+"_cert.pem")
+	}, func() error {
+		return c.writeFile(keyPEM, name+"_key.pem")
+	})
+}
+
 func (c *CertificateCommand) Execute(args []string) error {
 	fs := flag.NewFlagSet(c.Name(), flag.ContinueOnError)
 
 	var domainNames stringList
 	fs.Var(&domainNames, "domain", "Domain name for the certificate")
 
+	commonName := fs.String("name", "V2Ray Inc", "The common name of this certificate")
+	organization := fs.String("org", "V2Ray Inc", "Organization of the certificate")
+
 	isCA := fs.Bool("ca", false, "Whether this certificate is a CA")
-	output := fs.String("output", "json", "Output format")
+	jsonOutput := fs.Bool("json", true, "Print certificate in JSON format")
+	fileOutput := fs.String("file", "", "Save certificate in file.")
+
 	expire := fs.Duration("expire", time.Hour*24*90 /* 90 days */, "Time until the certificate expires. Default value 3 months.")
 
 	if err := fs.Parse(args); err != nil {
@@ -83,18 +110,25 @@ func (c *CertificateCommand) Execute(args []string) error {
 	}
 
 	opts = append(opts, cert.NotAfter(time.Now().Add(*expire)))
+	opts = append(opts, cert.CommonName(*commonName))
+	if len(domainNames) > 0 {
+		opts = append(opts, cert.DNSNames(domainNames...))
+	}
+	opts = append(opts, cert.Organization(*organization))
 
 	cert, err := cert.Generate(nil, opts...)
 	if err != nil {
 		return newError("failed to generate TLS certificate")
 	}
 
-	switch strings.ToLower(*output) {
-	case "json":
+	if *jsonOutput {
 		c.printJson(cert)
-	case "file":
-	default:
-		return newError("unknown output format: ", *output)
+	}
+
+	if len(*fileOutput) > 0 {
+		if err := c.printFile(cert, *fileOutput); err != nil {
+			return err
+		}
 	}
 
 	return nil
