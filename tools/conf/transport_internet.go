@@ -228,6 +228,7 @@ type TLSConfig struct {
 	Insecure   bool             `json:"allowInsecure"`
 	Certs      []*TLSCertConfig `json:"certificates"`
 	ServerName string           `json:"serverName"`
+	ALPN       *StringList      `json:"alpn"`
 }
 
 // Build implements Buildable.
@@ -245,6 +246,9 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	config.AllowInsecure = c.Insecure
 	if len(c.ServerName) > 0 {
 		config.ServerName = serverName
+	}
+	if c.ALPN != nil && len(*c.ALPN) > 0 {
+		config.NextProtocol = []string(*c.ALPN)
 	}
 	return serial.ToTypedMessage(config), nil
 }
