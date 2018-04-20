@@ -34,7 +34,7 @@ type Reader struct {
 // Read implements io.Reader.Read(). Buffer must be at least 3 bytes.
 func (v *Reader) Read(b []byte) (int, error) {
 	if v.br == nil {
-		v.br = buf.NewBufferedReader(buf.NewReader(v.Reader))
+		v.br = &buf.BufferedReader{Reader: buf.NewReader(v.Reader)}
 	}
 
 	p := b[:0]
