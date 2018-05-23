@@ -48,6 +48,31 @@ func TestChinaIPJson(t *testing.T) {
 	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("8.8.8.8"), 80))), IsFalse)
 }
 
+func TestExternalIPJson(t *testing.T) {
+	assert := With(t)
+
+	fileBytes, err := sysio.ReadFile(filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "release", "config", "geoip.dat"))
+	assert(err, IsNil)
+
+	assert(ioutil.WriteFile(platform.GetAssetLocation("geoip.dat"), fileBytes, 0666), IsNil)
+
+	rule, err := ParseRule([]byte(`{
+		"type": "field",
+		"ip": ["ext:geoip.dat:cn"],
+    "outboundTag": "x"
+	}`))
+	assert(err, IsNil)
+	assert(rule.Tag, Equals, "x")
+	cond, err := rule.BuildCondition()
+	assert(err, IsNil)
+	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("121.14.1.189"), 80))), IsTrue)    // sina.com.cn
+	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("101.226.103.106"), 80))), IsTrue) // qq.com
+	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("115.239.210.36"), 80))), IsTrue)  // image.baidu.com
+	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("120.135.126.1"), 80))), IsTrue)
+
+	assert(cond.Apply(proxy.ContextWithTarget(context.Background(), net.TCPDestination(net.ParseAddress("8.8.8.8"), 80))), IsFalse)
+}
+
 func TestChinaSitesJson(t *testing.T) {
 	assert := With(t)
 

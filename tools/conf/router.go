@@ -103,9 +103,13 @@ func ParseIP(s string) (*router.CIDR, error) {
 }
 
 func loadGeoIP(country string) ([]*router.CIDR, error) {
-	geoipBytes, err := sysio.ReadAsset("geoip.dat")
+	return loadIP("geoip.dat", country)
+}
+
+func loadIP(filename, country string) ([]*router.CIDR, error) {
+	geoipBytes, err := sysio.ReadAsset(filename)
 	if err != nil {
-		return nil, err
+		return nil, newError("failed to open file: ", filename).Base(err)
 	}
 	var geoipList router.GeoIPList
 	if err := proto.Unmarshal(geoipBytes, &geoipList); err != nil {
@@ -122,9 +126,13 @@ func loadGeoIP(country string) ([]*router.CIDR, error) {
 }
 
 func loadGeoSite(country string) ([]*router.Domain, error) {
-	geositeBytes, err := sysio.ReadAsset("geosite.dat")
+	return loadSite("geosite.dat", country)
+}
+
+func loadSite(filename, country string) ([]*router.Domain, error) {
+	geositeBytes, err := sysio.ReadAsset(filename)
 	if err != nil {
-		return nil, err
+		return nil, newError("failed to open file: ", filename).Base(err)
 	}
 	var geositeList router.GeoSiteList
 	if err := proto.Unmarshal(geositeBytes, &geositeList); err != nil {
@@ -172,6 +180,21 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 				continue
 			}
 
+			if strings.HasPrefix(domain, "ext:") {
+				kv := strings.Split(domain[4:], ":")
+				if len(kv) != 2 {
+					return nil, newError("invalid external resource: ", domain)
+				}
+				filename := kv[0]
+				country := strings.ToUpper(kv[1])
+				domains, err := loadSite(filename, country)
+				if err != nil {
+					return nil, newError("failed to load external sites: ", country, " from ", filename).Base(err)
+				}
+				rule.Domain = append(rule.Domain, domains...)
+				continue
+			}
+
 			domainRule := new(router.Domain)
 			switch {
 			case strings.HasPrefix(domain, "regexp:"):
@@ -195,6 +218,22 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 				geoip, err := loadGeoIP(strings.ToUpper(country))
 				if err != nil {
 					return nil, newError("failed to load GeoIP: ", country).Base(err)
+				}
+				rule.Cidr = append(rule.Cidr, geoip...)
+				continue
+			}
+
+			if strings.HasPrefix(ip, "ext:") {
+				kv := strings.Split(ip[4:], ":")
+				if len(kv) != 2 {
+					return nil, newError("invalid external resource: ", ip)
+				}
+
+				filename := kv[0]
+				country := kv[1]
+				geoip, err := loadGeoIP(strings.ToUpper(country))
+				if err != nil {
+					return nil, newError("failed to load IPs: ", country, " from ", filename).Base(err)
 				}
 				rule.Cidr = append(rule.Cidr, geoip...)
 				continue
