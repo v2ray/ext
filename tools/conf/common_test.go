@@ -2,6 +2,7 @@ package conf_test
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 
 	v2net "v2ray.com/core/common/net"
@@ -118,6 +119,19 @@ func TestOverRangeIntPort(t *testing.T) {
 
 	err = json.Unmarshal([]byte("-1"), &portRange)
 	assert(err, IsNotNil)
+}
+
+func TestEnvPort(t *testing.T) {
+	assert := With(t)
+
+	assert(os.Setenv("PORT", "1234"), IsNil)
+
+	var portRange PortRange
+	err := json.Unmarshal([]byte("\"env:PORT\""), &portRange)
+	assert(err, IsNil)
+
+	assert(portRange.From, Equals, uint32(1234))
+	assert(portRange.To, Equals, uint32(1234))
 }
 
 func TestSingleStringPort(t *testing.T) {

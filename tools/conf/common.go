@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 
 	v2net "v2ray.com/core/common/net"
@@ -111,6 +112,11 @@ func parseStringPort(data []byte) (v2net.Port, v2net.Port, error) {
 	if err != nil {
 		return v2net.Port(0), v2net.Port(0), err
 	}
+	if strings.HasPrefix(s, "env:") {
+		s = s[4:]
+		s = os.Getenv(s)
+	}
+
 	pair := strings.SplitN(s, "-", 2)
 	if len(pair) == 0 {
 		return v2net.Port(0), v2net.Port(0), newError("Config: Invalid port range: ", s)

@@ -8,7 +8,6 @@ import (
 	"v2ray.com/core/app/dispatcher"
 	"v2ray.com/core/app/proxyman"
 	"v2ray.com/core/app/stats"
-	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/common/serial"
 )
 
@@ -46,7 +45,7 @@ func toProtocolList(s []string) ([]proxyman.KnownProtocols, error) {
 }
 
 type InboundConnectionConfig struct {
-	Port           uint16          `json:"port"`
+	Port           *PortRange      `json:"port"`
 	Listen         *Address        `json:"listen"`
 	Protocol       string          `json:"protocol"`
 	StreamSetting  *StreamConfig   `json:"streamSettings"`
@@ -57,15 +56,16 @@ type InboundConnectionConfig struct {
 
 // Build implements Buildable.
 func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
+	if c.Port == nil {
+		return nil, newError("port is not specified in inbound config.")
+	}
+
 	receiverConfig := &proxyman.ReceiverConfig{
-		PortRange: &v2net.PortRange{
-			From: uint32(c.Port),
-			To:   uint32(c.Port),
-		},
+		PortRange: c.Port.Build(),
 	}
 	if c.Listen != nil {
 		if c.Listen.Family().IsDomain() {
-			return nil, newError("unable to listen on domain address: " + c.Listen.Domain())
+			return nil, newError("unable to listen on domain address: ", c.Listen.Domain())
 		}
 		receiverConfig.Listen = c.Listen.Build()
 	}
@@ -79,7 +79,7 @@ func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
 	if c.DomainOverride != nil {
 		kp, err := toProtocolList(*c.DomainOverride)
 		if err != nil {
-			return nil, newError("failed to parse inbound config").Base(err)
+			return nil, newError("failed to parse domain override in inbound config").Base(err)
 		}
 		receiverConfig.DomainOverride = kp
 	}
@@ -421,8 +421,11 @@ func (c *Config) Build() (*core.Config, error) {
 		return nil, newError("no inbound config specified")
 	}
 
-	if c.InboundConfig.Port == 0 && c.Port > 0 {
-		c.InboundConfig.Port = c.Port
+	if c.InboundConfig.Port == nil && c.Port > 0 {
+		c.InboundConfig.Port = &PortRange{
+			From: uint32(c.Port),
+			To:   uint32(c.Port),
+		}
 	}
 
 	ic, err := c.InboundConfig.Build()
