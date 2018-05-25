@@ -11,6 +11,7 @@ type Policy struct {
 	DownlinkOnly      *uint32 `json:"downlinkOnly"`
 	StatsUserUplink   bool    `json:"statsUserUplink"`
 	StatsUserDownlink bool    `json:"statsUserDownlink"`
+	BufferSize        *uint32 `json:"bufferSize"`
 }
 
 func (t *Policy) Build() (*policy.Policy, error) {
@@ -27,13 +28,29 @@ func (t *Policy) Build() (*policy.Policy, error) {
 	if t.DownlinkOnly != nil {
 		config.DownlinkOnly = &policy.Second{Value: *t.DownlinkOnly}
 	}
-	return &policy.Policy{
+
+	p := &policy.Policy{
 		Timeout: config,
 		Stats: &policy.Policy_Stats{
 			UserUplink:   t.StatsUserUplink,
 			UserDownlink: t.StatsUserDownlink,
 		},
-	}, nil
+	}
+
+	if t.BufferSize != nil {
+		if *t.BufferSize == 0 {
+			p.Buffer = &policy.Policy_Buffer{
+				Enabled: false,
+			}
+		} else {
+			p.Buffer = &policy.Policy_Buffer{
+				Enabled: true,
+				Size:    (*t.BufferSize) * 1024,
+			}
+		}
+	}
+
+	return p, nil
 }
 
 type SystemPolicy struct {
