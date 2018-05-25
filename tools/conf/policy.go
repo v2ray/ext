@@ -38,15 +38,9 @@ func (t *Policy) Build() (*policy.Policy, error) {
 	}
 
 	if t.BufferSize != nil {
-		if *t.BufferSize == 0 {
-			p.Buffer = &policy.Policy_Buffer{
-				Enabled: false,
-			}
-		} else {
-			p.Buffer = &policy.Policy_Buffer{
-				Enabled: true,
-				Size:    (*t.BufferSize) * 1024,
-			}
+		p.Buffer = &policy.Policy_Buffer{
+			Enabled: true,
+			Size:    (*t.BufferSize) * 1024,
 		}
 	}
 
