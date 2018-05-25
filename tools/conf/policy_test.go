@@ -7,15 +7,36 @@ import (
 	. "v2ray.com/ext/tools/conf"
 )
 
-func TestZeroBuffer(t *testing.T) {
+func TestBufferSize(t *testing.T) {
 	assert := With(t)
 
-	bs := uint32(0)
-	pConf := Policy{
-		BufferSize: &bs,
+	cases := []struct {
+		Input  int32
+		Output int32
+	}{
+		{
+			Input:  0,
+			Output: 0,
+		},
+		{
+			Input:  -1,
+			Output: -1,
+		},
+		{
+			Input:  1,
+			Output: 1024,
+		},
 	}
-	p, err := pConf.Build()
-	assert(err, IsNil)
 
-	assert(p.Buffer.Enabled, IsFalse)
+	for _, c := range cases {
+		bs := int32(c.Input)
+		pConf := Policy{
+			BufferSize: &bs,
+		}
+		p, err := pConf.Build()
+		assert(err, IsNil)
+
+		assert(p.Buffer.Connection, Equals, int32(c.Output))
+	}
+
 }
