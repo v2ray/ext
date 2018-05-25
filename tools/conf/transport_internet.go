@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"strings"
 
-	"v2ray.com/core/transport/internet/domainsocket"
-
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/transport/internet"
+	"v2ray.com/core/transport/internet/domainsocket"
 	"v2ray.com/core/transport/internet/http"
 	"v2ray.com/core/transport/internet/kcp"
 	"v2ray.com/core/transport/internet/tcp"
@@ -22,6 +21,7 @@ var (
 		"srtp":         func() interface{} { return new(SRTPAuthenticator) },
 		"utp":          func() interface{} { return new(UTPAuthenticator) },
 		"wechat-video": func() interface{} { return new(WechatVideoAuthenticator) },
+		"dtls":         func() interface{} { return new(DTLSAuthenticator) },
 	}, "type", "")
 
 	tcpHeaderLoader = NewJSONConfigLoader(ConfigCreatorCache{
