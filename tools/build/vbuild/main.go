@@ -78,6 +78,7 @@ func main() {
 	for _, target := range targets {
 		if _, err := target.BuildTo(targetDir); err != nil {
 			fmt.Println("Failed to build V2Ray on", v2rayArch, "for", v2rayOS, "with error", err.Error())
+			os.Exit(-1)
 			return
 		}
 	}
@@ -95,12 +96,14 @@ func main() {
 		output, err := zipTarget.BuildTo(filepath.Dir(targetDir))
 		if err != nil {
 			fmt.Printf("Unable to create archive (%s): %v\n", zipTarget.Target, err)
+			os.Exit(-1)
 			return
 		}
 
 		metaWriter, err := build.NewFileMetadataWriter(filepath.Join(binPath, *flagMetadataFile))
 		if err != nil {
 			fmt.Println("Failed to create metadata writer: ", err)
+			os.Exit(-1)
 			return
 		}
 
@@ -108,6 +111,7 @@ func main() {
 		meta, err := build.GenerateFileMetadata(zipFile)
 		if err != nil {
 			fmt.Println("Failed to generate metadata for file: ", zipFile, err)
+			os.Exit(-1)
 			return
 		}
 
