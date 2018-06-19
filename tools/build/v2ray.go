@@ -39,6 +39,7 @@ func getReleases() map[releaseID][]build.Target {
 			genReleaseID(build.OpenBSD, build.X86):    append(genRegularTarget(build.OpenBSD, build.X86)),
 			genReleaseID(build.FreeBSD, build.Amd64):  append(genRegularTarget(build.FreeBSD, build.Amd64)),
 			genReleaseID(build.FreeBSD, build.X86):    append(genRegularTarget(build.FreeBSD, build.X86)),
+			genReleaseID(build.DragonflyBSD, build.Amd64):    append(genRegularTarget(build.DragonflyBSD, build.Amd64)),
 		}
 	}
 	return releases
