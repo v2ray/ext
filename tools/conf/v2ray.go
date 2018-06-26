@@ -406,7 +406,11 @@ func (c *Config) Build() (*core.Config, error) {
 	}
 
 	if c.DNSConfig != nil {
-		config.App = append(config.App, serial.ToTypedMessage(c.DNSConfig.Build()))
+		dnsApp, err := c.DNSConfig.Build()
+		if err != nil {
+			return nil, newError("failed to parse DNS config").Base(err)
+		}
+		config.App = append(config.App, serial.ToTypedMessage(dnsApp))
 	}
 
 	if c.Policy != nil {

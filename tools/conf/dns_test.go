@@ -21,7 +21,8 @@ func TestDnsConfigParsing(t *testing.T) {
 	err := json.Unmarshal([]byte(rawJson), jsonConfig)
 	assert(err, IsNil)
 
-	config := jsonConfig.Build()
+	config, err := jsonConfig.Build()
+	assert(err, IsNil)
 	assert(len(config.NameServers), Equals, 1)
 	dest := config.NameServers[0].AsDestination()
 	assert(dest, IsUDP)
