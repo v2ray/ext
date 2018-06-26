@@ -11,8 +11,7 @@ import (
 type DnsConfig struct {
 	Servers  []*Address          `json:"servers"`
 	Hosts    map[string]*Address `json:"hosts"`
-	ClientV4 *Address            `json:"clientIp"`
-	ClientV6 *Address            `json:"clientIp6"`
+	ClientIP *Address            `json:"clientIp"`
 }
 
 // Build implements Buildable
@@ -20,24 +19,11 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 	config := new(dns.Config)
 	config.NameServers = make([]*net.Endpoint, len(c.Servers))
 
-	if c.ClientV4 != nil {
-		if c.ClientV4.Family() != net.AddressFamilyIPv4 {
-			return nil, newError("not an IPV4 address:", c.ClientV4.String())
+	if c.ClientIP != nil {
+		if !c.ClientIP.Family().IsIPv4() && !c.ClientIP.Family().IsIPv6() {
+			return nil, newError("not an IP address:", c.ClientIP.String())
 		}
-		if config.ClientIp == nil {
-			config.ClientIp = &dns.Config_ClientIP{}
-		}
-		config.ClientIp.V4 = []byte(c.ClientV4.IP())
-	}
-
-	if c.ClientV6 != nil {
-		if c.ClientV6.Family() != net.AddressFamilyIPv6 {
-			return nil, newError("not an IPV6 address:", c.ClientV4.String())
-		}
-		if config.ClientIp == nil {
-			config.ClientIp = &dns.Config_ClientIP{}
-		}
-		config.ClientIp.V6 = []byte(c.ClientV6.IP())
+		config.ClientIp = []byte(c.ClientIP.IP())
 	}
 
 	for idx, server := range c.Servers {
