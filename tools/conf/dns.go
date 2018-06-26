@@ -1,8 +1,10 @@
 package conf
 
 import (
+	"strings"
+
 	"v2ray.com/core/app/dns"
-	v2net "v2ray.com/core/common/net"
+	"v2ray.com/core/common/net"
 )
 
 // DnsConfig is a JSON serializable object for dns.Config.
@@ -16,10 +18,10 @@ type DnsConfig struct {
 // Build implements Buildable
 func (c *DnsConfig) Build() (*dns.Config, error) {
 	config := new(dns.Config)
-	config.NameServers = make([]*v2net.Endpoint, len(c.Servers))
+	config.NameServers = make([]*net.Endpoint, len(c.Servers))
 
 	if c.ClientV4 != nil {
-		if c.ClientV4.Family() != v2net.AddressFamilyIPv4 {
+		if c.ClientV4.Family() != net.AddressFamilyIPv4 {
 			return nil, newError("not an IPV4 address:", c.ClientV4.String())
 		}
 		if config.ClientIp == nil {
@@ -29,7 +31,7 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 	}
 
 	if c.ClientV6 != nil {
-		if c.ClientV6.Family() != v2net.AddressFamilyIPv6 {
+		if c.ClientV6.Family() != net.AddressFamilyIPv6 {
 			return nil, newError("not an IPV6 address:", c.ClientV4.String())
 		}
 		if config.ClientIp == nil {
@@ -39,17 +41,31 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 	}
 
 	for idx, server := range c.Servers {
-		config.NameServers[idx] = &v2net.Endpoint{
-			Network: v2net.Network_UDP,
+		config.NameServers[idx] = &net.Endpoint{
+			Network: net.Network_UDP,
 			Address: server.Build(),
 			Port:    53,
 		}
 	}
 
 	if c.Hosts != nil {
-		config.Hosts = make(map[string]*v2net.IPOrDomain)
 		for domain, ip := range c.Hosts {
-			config.Hosts[domain] = ip.Build()
+			if ip.Family() == net.AddressFamilyDomain {
+				return nil, newError("domain is not expected in DNS hosts: ", ip.Domain())
+			}
+
+			mapping := &dns.Config_HostMapping{
+				Ip: [][]byte{[]byte(ip.IP())},
+			}
+			if strings.HasPrefix(domain, "domain:") {
+				mapping.Type = dns.Config_HostMapping_SubDomain
+				mapping.Domain = domain[7:]
+			} else {
+				mapping.Type = dns.Config_HostMapping_Full
+				mapping.Domain = domain
+			}
+
+			config.StaticHosts = append(config.StaticHosts, mapping)
 		}
 	}
 
