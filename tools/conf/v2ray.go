@@ -18,6 +18,7 @@ var (
 		"shadowsocks":   func() interface{} { return new(ShadowsocksServerConfig) },
 		"socks":         func() interface{} { return new(SocksServerConfig) },
 		"vmess":         func() interface{} { return new(VMessInboundConfig) },
+		"mtproto":       func() interface{} { return new(MTProtoServerConfig) },
 	}, "protocol", "settings")
 
 	outboundConfigLoader = NewJSONConfigLoader(ConfigCreatorCache{
@@ -26,6 +27,7 @@ var (
 		"shadowsocks": func() interface{} { return new(ShadowsocksClientConfig) },
 		"vmess":       func() interface{} { return new(VMessOutboundConfig) },
 		"socks":       func() interface{} { return new(SocksClientConfig) },
+		"mtproto":     func() interface{} { return new(MTProtoClientConfig) },
 	}, "protocol", "settings")
 )
 
