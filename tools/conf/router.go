@@ -279,7 +279,7 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	if rawFieldRule.Protocols != nil {
-		for _, s := range rawFieldRule.Protocols {
+		for _, s := range *rawFieldRule.Protocols {
 			rule.Protocol = append(rule.Protocol, s)
 		}
 	}
