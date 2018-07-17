@@ -58,7 +58,7 @@ func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
 			switch strings.ToLower(domainOverride) {
 			case "http":
 				p = append(p, "http")
-			case "tls", "https":
+			case "tls", "https", "ssl":
 				p = append(p, "tls")
 			default:
 				return nil, newError("unknown protocol: ", domainOverride)
