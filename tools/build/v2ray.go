@@ -23,23 +23,23 @@ var releases map[releaseID][]build.Target
 func getReleases() map[releaseID][]build.Target {
 	if releases == nil {
 		releases = map[releaseID][]build.Target{
-			genReleaseID(build.Windows, build.Amd64):  append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
-			genReleaseID(build.Windows, build.X86):    append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
-			genReleaseID(build.MacOS, build.Amd64):    append(genRegularTarget(build.MacOS, build.Amd64)),
-			genReleaseID(build.Linux, build.Amd64):    append(genRegularTarget(build.Linux, build.Amd64)),
-			genReleaseID(build.Linux, build.X86):      append(genRegularTarget(build.Linux, build.X86)),
-			genReleaseID(build.Linux, build.Arm64):    append(genRegularTarget(build.Linux, build.Arm64)),
-			genReleaseID(build.Linux, build.Arm):      append(genRegularTarget(build.Linux, build.Arm), getArmExtra()...),
-			genReleaseID(build.Linux, build.Mips64):   append(genRegularTarget(build.Linux, build.Mips64)),
-			genReleaseID(build.Linux, build.Mips64LE): append(genRegularTarget(build.Linux, build.Mips64LE)),
-			genReleaseID(build.Linux, build.Mips):     append(genRegularTarget(build.Linux, build.Mips), getMipsExtra(build.Mips)...),
-			genReleaseID(build.Linux, build.MipsLE):   append(genRegularTarget(build.Linux, build.MipsLE), getMipsExtra(build.MipsLE)...),
-			genReleaseID(build.Linux, build.S390X):    append(genRegularTarget(build.Linux, build.S390X)),
-			genReleaseID(build.OpenBSD, build.Amd64):  append(genRegularTarget(build.OpenBSD, build.Amd64)),
-			genReleaseID(build.OpenBSD, build.X86):    append(genRegularTarget(build.OpenBSD, build.X86)),
-			genReleaseID(build.FreeBSD, build.Amd64):  append(genRegularTarget(build.FreeBSD, build.Amd64)),
-			genReleaseID(build.FreeBSD, build.X86):    append(genRegularTarget(build.FreeBSD, build.X86)),
-			genReleaseID(build.DragonflyBSD, build.Amd64):    append(genRegularTarget(build.DragonflyBSD, build.Amd64)),
+			genReleaseID(build.Windows, build.Amd64):      append(genRegularTarget(build.Windows, build.Amd64), getWindowsExtra(build.Amd64)...),
+			genReleaseID(build.Windows, build.X86):        append(genRegularTarget(build.Windows, build.X86), getWindowsExtra(build.X86)...),
+			genReleaseID(build.MacOS, build.Amd64):        append(genRegularTarget(build.MacOS, build.Amd64)),
+			genReleaseID(build.Linux, build.Amd64):        append(genRegularTarget(build.Linux, build.Amd64)),
+			genReleaseID(build.Linux, build.X86):          append(genRegularTarget(build.Linux, build.X86)),
+			genReleaseID(build.Linux, build.Arm64):        append(genRegularTarget(build.Linux, build.Arm64)),
+			genReleaseID(build.Linux, build.Arm):          append(genRegularTarget(build.Linux, build.Arm), getArmExtra()...),
+			genReleaseID(build.Linux, build.Mips64):       append(genRegularTarget(build.Linux, build.Mips64)),
+			genReleaseID(build.Linux, build.Mips64LE):     append(genRegularTarget(build.Linux, build.Mips64LE)),
+			genReleaseID(build.Linux, build.Mips):         append(genRegularTarget(build.Linux, build.Mips), getMipsExtra(build.Mips)...),
+			genReleaseID(build.Linux, build.MipsLE):       append(genRegularTarget(build.Linux, build.MipsLE), getMipsExtra(build.MipsLE)...),
+			genReleaseID(build.Linux, build.S390X):        append(genRegularTarget(build.Linux, build.S390X)),
+			genReleaseID(build.OpenBSD, build.Amd64):      append(genRegularTarget(build.OpenBSD, build.Amd64)),
+			genReleaseID(build.OpenBSD, build.X86):        append(genRegularTarget(build.OpenBSD, build.X86)),
+			genReleaseID(build.FreeBSD, build.Amd64):      append(genRegularTarget(build.FreeBSD, build.Amd64)),
+			genReleaseID(build.FreeBSD, build.X86):        append(genRegularTarget(build.FreeBSD, build.X86)),
+			genReleaseID(build.DragonflyBSD, build.Amd64): append(genRegularTarget(build.DragonflyBSD, build.Amd64)),
 		}
 	}
 	return releases
@@ -120,6 +120,11 @@ func genRegularTarget(goOS build.OS, goArch build.Arch) []build.Target {
 		}, &build.ResourceTarget{
 			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemd", "v2ray.service")),
 			Target:           filepath.Join("systemd", "v2ray.service"),
+			FixLineSeparator: true,
+			OS:               goOS,
+		}, &build.ResourceTarget{
+			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "upload.sh")),
+			Target:           filepath.Join("upload.sh"),
 			FixLineSeparator: true,
 			OS:               goOS,
 		})
