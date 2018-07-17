@@ -46,6 +46,32 @@ func toProtocolList(s []string) ([]proxyman.KnownProtocols, error) {
 	return kp, nil
 }
 
+type SniffingConfig struct {
+	Enabled        bool        `json:"enabled"`
+	DomainOverride *StringList `json:"domainOverride"`
+}
+
+func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
+	var p []string
+	if c.DomainOverride != nil {
+		for _, domainOverride := range *c.DomainOverride {
+			switch strings.ToLower(domainOverride) {
+			case "http":
+				p = append(p, "http")
+			case "tls", "https":
+				p = append(p, "tls")
+			default:
+				return nil, newError("unknown protocol: ", domainOverride)
+			}
+		}
+	}
+
+	return &proxyman.SniffingConfig{
+		Enabled:        c.Enabled,
+		DomainOverride: p,
+	}, nil
+}
+
 type InboundConnectionConfig struct {
 	Port           *PortRange      `json:"port"`
 	Listen         *Address        `json:"listen"`
@@ -54,6 +80,7 @@ type InboundConnectionConfig struct {
 	Settings       json.RawMessage `json:"settings"`
 	Tag            string          `json:"tag"`
 	DomainOverride *StringList     `json:"domainOverride"`
+	Sniffing       *SniffingConfig `json:"sniffing"`
 }
 
 // Build implements Buildable.
@@ -77,6 +104,13 @@ func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
 			return nil, err
 		}
 		receiverConfig.StreamSettings = ts
+	}
+	if c.Sniffing != nil {
+		s, err := c.Sniffing.Build()
+		if err != nil {
+			return nil, newError("failed to build sniffing config").Base(err)
+		}
+		receiverConfig.SniffingSettings = s
 	}
 	if c.DomainOverride != nil {
 		kp, err := toProtocolList(*c.DomainOverride)
@@ -219,6 +253,7 @@ type InboundDetourConfig struct {
 	Allocation     *InboundDetourAllocationConfig `json:"allocate"`
 	StreamSetting  *StreamConfig                  `json:"streamSettings"`
 	DomainOverride *StringList                    `json:"domainOverride"`
+	SniffingConfig *SniffingConfig                `json:"sniffing"`
 }
 
 // Build implements Buildable.
@@ -249,6 +284,13 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 			return nil, err
 		}
 		receiverSettings.StreamSettings = ss
+	}
+	if c.SniffingConfig != nil {
+		s, err := c.SniffingConfig.Build()
+		if err != nil {
+			return nil, newError("failed to build sniffing config").Base(err)
+		}
+		receiverSettings.SniffingSettings = s
 	}
 	if c.DomainOverride != nil {
 		kp, err := toProtocolList(*c.DomainOverride)
