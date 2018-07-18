@@ -39,14 +39,14 @@ func (c *FreedomConfig) Build() (*serial.TypedMessage, error) {
 		if err != nil {
 			return nil, newError("invalid redirect port: ", c.Redirect, ": ", err).Base(err)
 		}
-		if len(host) == 0 {
-			host = "127.0.0.1"
-		}
 		config.DestinationOverride = &freedom.DestinationOverride{
 			Server: &protocol.ServerEndpoint{
-				Address: v2net.NewIPOrDomain(v2net.ParseAddress(host)),
-				Port:    uint32(port),
+				Port: uint32(port),
 			},
+		}
+
+		if len(host) > 0 {
+			config.DestinationOverride.Server.Address = v2net.NewIPOrDomain(v2net.ParseAddress(host))
 		}
 	}
 	return serial.ToTypedMessage(config), nil
