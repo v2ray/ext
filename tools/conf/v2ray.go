@@ -47,14 +47,14 @@ func toProtocolList(s []string) ([]proxyman.KnownProtocols, error) {
 }
 
 type SniffingConfig struct {
-	Enabled        bool        `json:"enabled"`
-	DomainOverride *StringList `json:"domainOverride"`
+	Enabled      bool        `json:"enabled"`
+	DestOverride *StringList `json:"destOverride"`
 }
 
 func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
 	var p []string
-	if c.DomainOverride != nil {
-		for _, domainOverride := range *c.DomainOverride {
+	if c.DestOverride != nil {
+		for _, domainOverride := range *c.DestOverride {
 			switch strings.ToLower(domainOverride) {
 			case "http":
 				p = append(p, "http")
@@ -67,8 +67,8 @@ func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
 	}
 
 	return &proxyman.SniffingConfig{
-		Enabled:        c.Enabled,
-		DomainOverride: p,
+		Enabled:             c.Enabled,
+		DestinationOverride: p,
 	}, nil
 }
 
