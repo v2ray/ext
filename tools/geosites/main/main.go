@@ -15,6 +15,10 @@ func main() {
 		CountryCode: "CN",
 		Domain:      geosites.GetGeoSiteCN(),
 	})
+	geoSiteList.Entry = append(geoSiteList.Entry, &router.GeoSite{
+		CountryCode: "SPEEDTEST",
+		Domain:      geosites.GetGeoSiteSpeedTest(),
+	})
 
 	geoSiteListBytes, err := proto.Marshal(geoSiteList)
 	if err != nil {

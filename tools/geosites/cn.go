@@ -13,7 +13,7 @@ func GetGeoSiteCN() []*router.Domain {
 }
 
 func init() {
-	domains := []string{
+	domains := [...]string{
 		"cn",
 		"xn--fiqs8s", /* .中国 */
 
