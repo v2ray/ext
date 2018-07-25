@@ -28,6 +28,7 @@ var (
 		"vmess":       func() interface{} { return new(VMessOutboundConfig) },
 		"socks":       func() interface{} { return new(SocksClientConfig) },
 		"mtproto":     func() interface{} { return new(MTProtoClientConfig) },
+		"speedtest":   func() interface{} { return new(SpeedTestConfig) },
 	}, "protocol", "settings")
 )
 
