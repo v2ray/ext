@@ -2,6 +2,10 @@ package geosites
 
 import "v2ray.com/core/app/router"
 
+// Generated from http://c.speedtest.net/speedtest-servers-static.php
+// With script:
+// let servers = []; document.querySelectorAll('server').forEach(s => {let v = s.attributes.host.value; if (v) servers.push(v); }); servers = servers.filter((s, pos) => { return servers.indexOf(s) === pos; }); let output = ""; servers.forEach(s => {output += "\"" + s + "\",\n";}); console.log(output);
+
 var spDomains = [...]string{
 	"88.84.191.230",
 	"speedo.eltele.no",
