@@ -1,9 +1,9 @@
 FROM ubuntu:latest as builder
 
-RUN apt-get install curl -y \
-    && curl -L -O https://install.direct/go.sh \
-    && chmod +x ./go.sh \
-    && ./go.sh
+RUN apt-get install curl -y
+RUN curl -L -o /tmp/go.sh https://install.direct/go.sh
+RUN chmod +x /tmp/go.sh
+RUN /tmp/go.sh
 
 FROM alpine:latest
 
