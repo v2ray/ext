@@ -1,6 +1,7 @@
 FROM ubuntu:latest as builder
 
-RUN curl -L -O https://install.direct/go.sh \
+RUN apt-get install curl -y \
+    && curl -L -O https://install.direct/go.sh \
     && chmod +x ./go.sh \
     && ./go.sh
 
