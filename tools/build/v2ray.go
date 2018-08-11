@@ -122,11 +122,6 @@ func genRegularTarget(goOS build.OS, goArch build.Arch) []build.Target {
 			Target:           filepath.Join("systemd", "v2ray.service"),
 			FixLineSeparator: true,
 			OS:               goOS,
-		}, &build.ResourceTarget{
-			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "upload.sh")),
-			Target:           filepath.Join("upload.sh"),
-			FixLineSeparator: true,
-			OS:               goOS,
 		})
 	}
 
