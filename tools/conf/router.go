@@ -204,6 +204,9 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 			case strings.HasPrefix(domain, "domain:"):
 				domainRule.Type = router.Domain_Domain
 				domainRule.Value = domain[7:]
+			case strings.HasPrefix(domain, "full:"):
+				domainRule.Type = router.Domain_Full
+				domainRule.Value = domain[5:]
 			default:
 				domainRule.Type = router.Domain_Plain
 				domainRule.Value = domain
