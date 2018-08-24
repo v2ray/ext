@@ -37,8 +37,15 @@ func GetCommand(name string) Command {
 	return cmd
 }
 
+type hiddenCommand interface {
+	Hidden() bool
+}
+
 func PrintUsage() {
 	for name, cmd := range commandRegistry {
+		if _, ok := cmd.(hiddenCommand); ok {
+			continue
+		}
 		fmt.Println("   ", name, "\t\t\t", cmd.Description())
 	}
 }
