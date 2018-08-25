@@ -7,6 +7,21 @@ import (
 	"v2ray.com/core/common/net"
 )
 
+/*
+type NameServerConfig struct {
+	Address *Address `json:"address"`
+	Domains []string `json:"domains"`
+}
+
+func (c *NameServerConfig) Build() (*dns.NameServer, error) {
+	if c.Address == nil {
+		return nil, newError("NameServer address is not specified.")
+	}
+
+	return nil, nil
+}
+*/
+
 // DnsConfig is a JSON serializable object for dns.Config.
 type DnsConfig struct {
 	Servers  []*Address          `json:"servers"`
@@ -44,10 +59,10 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 				Ip: [][]byte{[]byte(ip.IP())},
 			}
 			if strings.HasPrefix(domain, "domain:") {
-				mapping.Type = dns.Config_HostMapping_SubDomain
+				mapping.Type = dns.DomainMatchingType_Subdomain
 				mapping.Domain = domain[7:]
 			} else {
-				mapping.Type = dns.Config_HostMapping_Full
+				mapping.Type = dns.DomainMatchingType_Full
 				mapping.Domain = domain
 			}
 
