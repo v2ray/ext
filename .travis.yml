@@ -1,6 +1,6 @@
 language: go
 go:
-- "1.10.2"
+- "1.11"
 go_import_path: v2ray.com/ext
 git:
   depth: 5
