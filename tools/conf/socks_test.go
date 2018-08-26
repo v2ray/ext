@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"v2ray.com/core/common"
 	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/proxy/socks"
@@ -72,16 +73,14 @@ func TestSocksOutboundConfig(t *testing.T) {
 	socksConfig := iConfig.(*socks.ClientConfig)
 	assert(len(socksConfig.Server), Equals, 1)
 
-	ss := protocol.NewServerSpecFromPB(*socksConfig.Server[0])
+	ss, err := protocol.NewServerSpecFromPB(*socksConfig.Server[0])
+	common.Must(err)
 	assert(ss.Destination().String(), Equals, "tcp:127.0.0.1:1234")
 
 	user := ss.PickUser()
 	assert(user.Email, Equals, "test@email.com")
 
-	account, err := user.GetTypedAccount()
-	assert(err, IsNil)
-
-	socksAccount := account.(*socks.Account)
+	socksAccount := user.Account.(*socks.Account)
 	assert(socksAccount.Username, Equals, "test user")
 	assert(socksAccount.Password, Equals, "test pass")
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"testing"
 
+	"v2ray.com/core/common"
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/proxy/vmess/outbound"
 	. "v2ray.com/ext/assert"
@@ -39,6 +40,7 @@ func TestConfigTargetParsing(t *testing.T) {
 
 	config := iConfig.(*outbound.Config)
 	specPB := config.Receiver[0]
-	spec := protocol.NewServerSpecFromPB(*specPB)
+	spec, err := protocol.NewServerSpecFromPB(*specPB)
+	common.Must(err)
 	assert(spec.Destination().String(), Equals, "tcp:127.0.0.1:80")
 }
