@@ -176,12 +176,13 @@ func (t *GoTarget) BuildTo(directory string) (*Output, error) {
 	if err := createDirectoryFor(targetFile); err != nil {
 		return nil, err
 	}
+	trimPath := filepath.Join(goPath, "src")
 	args := []string{
 		"build",
 		"-o", targetFile,
 		"-compiler", "gc",
-		"-gcflags", "-trimpath=" + goPath,
-		"-asmflags", "-trimpath=" + goPath,
+		"-gcflags", "-trimpath=" + trimPath,
+		"-asmflags", "-trimpath=" + trimPath,
 	}
 	if len(t.LdFlags) > 0 {
 		args = append(args, "-ldflags", strings.Join(t.LdFlags, " "))
