@@ -22,6 +22,7 @@ var (
 		"utp":          func() interface{} { return new(UTPAuthenticator) },
 		"wechat-video": func() interface{} { return new(WechatVideoAuthenticator) },
 		"dtls":         func() interface{} { return new(DTLSAuthenticator) },
+		"wireguard":    func() interface{} { return new(WireguardAuthenticator) },
 	}, "type", "")
 
 	tcpHeaderLoader = NewJSONConfigLoader(ConfigCreatorCache{

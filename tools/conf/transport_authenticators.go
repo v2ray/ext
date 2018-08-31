@@ -8,6 +8,7 @@ import (
 	"v2ray.com/core/transport/internet/headers/tls"
 	"v2ray.com/core/transport/internet/headers/utp"
 	"v2ray.com/core/transport/internet/headers/wechat"
+	"v2ray.com/core/transport/internet/headers/wireguard"
 )
 
 type NoOpAuthenticator struct{}
@@ -38,6 +39,12 @@ type WechatVideoAuthenticator struct{}
 
 func (WechatVideoAuthenticator) Build() (*serial.TypedMessage, error) {
 	return serial.ToTypedMessage(new(wechat.VideoConfig)), nil
+}
+
+type WireguardAuthenticator struct{}
+
+func (WireguardAuthenticator) Build() (*serial.TypedMessage, error) {
+	return serial.ToTypedMessage(new(wireguard.WireguardConfig)), nil
 }
 
 type DTLSAuthenticator struct{}
