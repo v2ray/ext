@@ -165,7 +165,8 @@ func (t *GoTarget) Envs() []string {
 		envs = append(envs, "GOARM="+t.ArmOpt)
 	}
 	if len(t.MipsOpt) > 0 {
-		envs = append(envs, "GOMIPS="+t.MipsOpt)
+		envs = append(envs, "GOMIPS="+t.MipsOpt, "GOMIPS64="+t.MipsOpt)
+		envs = append(envs, "GOMIPSLE="+t.MipsOpt, "GOMIPS64LE="+t.MipsOpt) // https://github.com/golang/go/issues/27260
 	}
 	return envs
 }
@@ -179,6 +180,7 @@ func (t *GoTarget) BuildTo(directory string) (*Output, error) {
 	trimPath := filepath.Join(goPath, "src")
 	args := []string{
 		"build",
+		"-a", // force rebuild all. see https://github.com/golang/go/issues/27236
 		"-o", targetFile,
 		"-compiler", "gc",
 		"-gcflags", "-trimpath=" + trimPath,
