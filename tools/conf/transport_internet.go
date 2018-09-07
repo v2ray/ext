@@ -276,15 +276,26 @@ func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 	}
 }
 
+type SocketConfig struct {
+	Mark int32 `json:"mark"`
+}
+
+func (c *SocketConfig) Build() (*internet.SocketConfig, error) {
+	return &internet.SocketConfig{
+		Mark: c.Mark,
+	}, nil
+}
+
 type StreamConfig struct {
-	Network      *TransportProtocol  `json:"network"`
-	Security     string              `json:"security"`
-	TLSSettings  *TLSConfig          `json:"tlsSettings"`
-	TCPSettings  *TCPConfig          `json:"tcpSettings"`
-	KCPSettings  *KCPConfig          `json:"kcpSettings"`
-	WSSettings   *WebSocketConfig    `json:"wsSettings"`
-	HTTPSettings *HTTPConfig         `json:"httpSettings"`
-	DSSettings   *DomainSocketConfig `json:"dsSettings"`
+	Network        *TransportProtocol  `json:"network"`
+	Security       string              `json:"security"`
+	TLSSettings    *TLSConfig          `json:"tlsSettings"`
+	TCPSettings    *TCPConfig          `json:"tcpSettings"`
+	KCPSettings    *KCPConfig          `json:"kcpSettings"`
+	WSSettings     *WebSocketConfig    `json:"wsSettings"`
+	HTTPSettings   *HTTPConfig         `json:"httpSettings"`
+	DSSettings     *DomainSocketConfig `json:"dsSettings"`
+	SocketSettings *SocketConfig       `json:"sockopt"`
 }
 
 // Build implements Buildable.
@@ -360,6 +371,13 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			Protocol: internet.TransportProtocol_DomainSocket,
 			Settings: ds,
 		})
+	}
+	if c.SocketSettings != nil {
+		ss, err := c.SocketSettings.Build()
+		if err != nil {
+			return nil, newError("failed to build sockopt").Base(err)
+		}
+		config.SocketSettings = ss
 	}
 	return config, nil
 }
