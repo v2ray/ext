@@ -278,11 +278,22 @@ func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
 
 type SocketConfig struct {
 	Mark int32 `json:"mark"`
+	TFO  *bool `json:"tcpFastOpen"`
 }
 
 func (c *SocketConfig) Build() (*internet.SocketConfig, error) {
+	var tfoSettings internet.SocketConfig_TCPFastOpenState
+	if c.TFO != nil {
+		if *c.TFO {
+			tfoSettings = internet.SocketConfig_Enable
+		} else {
+			tfoSettings = internet.SocketConfig_Disable
+		}
+	}
+
 	return &internet.SocketConfig{
 		Mark: c.Mark,
+		Tfo:  tfoSettings,
 	}, nil
 }
 
