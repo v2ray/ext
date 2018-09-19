@@ -1,16 +1,56 @@
 package conf
 
 import (
+	"encoding/json"
 	"strings"
 
 	"v2ray.com/core/app/dns"
+	"v2ray.com/core/app/router"
 	"v2ray.com/core/common/net"
 )
 
-/*
 type NameServerConfig struct {
-	Address *Address `json:"address"`
-	Domains []string `json:"domains"`
+	Address *Address
+	Port    uint16
+	Domains []string
+}
+
+func (c *NameServerConfig) UnmarshalJSON(data []byte) error {
+	var address Address
+	if err := json.Unmarshal(data, &address); err == nil {
+		c.Address = &address
+		c.Port = 53
+		return nil
+	}
+
+	var advanced struct {
+		Address *Address `json:"address"`
+		Port    uint16   `json:"port"`
+		Domains []string `json:"domains"`
+	}
+	if err := json.Unmarshal(data, &advanced); err == nil {
+		c.Address = advanced.Address
+		c.Port = advanced.Port
+		c.Domains = advanced.Domains
+		return nil
+	}
+
+	return newError("failed to parse name server")
+}
+
+func toDomainMatchingType(t router.Domain_Type) dns.DomainMatchingType {
+	switch t {
+	case router.Domain_Domain:
+		return dns.DomainMatchingType_Subdomain
+	case router.Domain_Full:
+		return dns.DomainMatchingType_Full
+	case router.Domain_Plain:
+		return dns.DomainMatchingType_Keyword
+	case router.Domain_Regex:
+		return dns.DomainMatchingType_Regex
+	default:
+		panic("unknown domain type")
+	}
 }
 
 func (c *NameServerConfig) Build() (*dns.NameServer, error) {
@@ -18,13 +58,35 @@ func (c *NameServerConfig) Build() (*dns.NameServer, error) {
 		return nil, newError("NameServer address is not specified.")
 	}
 
-	return nil, nil
+	var domains []*dns.NameServer_PriorityDomain
+
+	for _, d := range c.Domains {
+		parsedDomain, err := parseDomainRule(d)
+		if err != nil {
+			return nil, newError("invalid domain rule: ", d).Base(err)
+		}
+
+		for _, pd := range parsedDomain {
+			domains = append(domains, &dns.NameServer_PriorityDomain{
+				Type:   toDomainMatchingType(pd.Type),
+				Domain: pd.Value,
+			})
+		}
+	}
+
+	return &dns.NameServer{
+		Address: &net.Endpoint{
+			Network: net.Network_UDP,
+			Address: c.Address.Build(),
+			Port:    uint32(c.Port),
+		},
+		PrioritizedDomain: domains,
+	}, nil
 }
-*/
 
 // DnsConfig is a JSON serializable object for dns.Config.
 type DnsConfig struct {
-	Servers  []*Address          `json:"servers"`
+	Servers  []*NameServerConfig `json:"servers"`
 	Hosts    map[string]*Address `json:"hosts"`
 	ClientIP *Address            `json:"clientIp"`
 }
@@ -32,7 +94,6 @@ type DnsConfig struct {
 // Build implements Buildable
 func (c *DnsConfig) Build() (*dns.Config, error) {
 	config := new(dns.Config)
-	config.NameServers = make([]*net.Endpoint, len(c.Servers))
 
 	if c.ClientIP != nil {
 		if !c.ClientIP.Family().IsIPv4() && !c.ClientIP.Family().IsIPv6() {
@@ -41,12 +102,12 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 		config.ClientIp = []byte(c.ClientIP.IP())
 	}
 
-	for idx, server := range c.Servers {
-		config.NameServers[idx] = &net.Endpoint{
-			Network: net.Network_UDP,
-			Address: server.Build(),
-			Port:    53,
+	for _, server := range c.Servers {
+		ns, err := server.Build()
+		if err != nil {
+			return nil, newError("failed to build name server").Base(err)
 		}
+		config.NameServer = append(config.NameServer, ns)
 	}
 
 	if c.Hosts != nil {
