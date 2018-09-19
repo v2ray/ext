@@ -3,6 +3,8 @@ package conf
 import (
 	"strings"
 
+	"github.com/golang/protobuf/proto"
+
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/shadowsocks"
@@ -39,7 +41,7 @@ type ShadowsocksServerConfig struct {
 	NetworkList *NetworkList `json:"network"`
 }
 
-func (v *ShadowsocksServerConfig) Build() (*serial.TypedMessage, error) {
+func (v *ShadowsocksServerConfig) Build() (proto.Message, error) {
 	config := new(shadowsocks.ServerConfig)
 	config.UdpEnabled = v.UDP
 	config.Network = v.NetworkList.Build().Network
@@ -69,7 +71,7 @@ func (v *ShadowsocksServerConfig) Build() (*serial.TypedMessage, error) {
 		Account: serial.ToTypedMessage(account),
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type ShadowsocksServerTarget struct {
@@ -86,7 +88,7 @@ type ShadowsocksClientConfig struct {
 	Servers []*ShadowsocksServerTarget `json:"servers"`
 }
 
-func (v *ShadowsocksClientConfig) Build() (*serial.TypedMessage, error) {
+func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
 	config := new(shadowsocks.ClientConfig)
 
 	if len(v.Servers) == 0 {
@@ -133,5 +135,5 @@ func (v *ShadowsocksClientConfig) Build() (*serial.TypedMessage, error) {
 
 	config.Server = serverSpecs
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

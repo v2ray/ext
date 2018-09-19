@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/transport/internet"
 	"v2ray.com/core/transport/internet/domainsocket"
@@ -43,7 +44,7 @@ type KCPConfig struct {
 }
 
 // Build implements Buildable.
-func (c *KCPConfig) Build() (*serial.TypedMessage, error) {
+func (c *KCPConfig) Build() (proto.Message, error) {
 	config := new(kcp.Config)
 
 	if c.Mtu != nil {
@@ -94,10 +95,10 @@ func (c *KCPConfig) Build() (*serial.TypedMessage, error) {
 		if err != nil {
 			return nil, newError("invalid mKCP header config").Base(err).AtError()
 		}
-		config.HeaderConfig = ts
+		config.HeaderConfig = serial.ToTypedMessage(ts)
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type TCPConfig struct {
@@ -105,7 +106,7 @@ type TCPConfig struct {
 }
 
 // Build implements Buildable.
-func (c *TCPConfig) Build() (*serial.TypedMessage, error) {
+func (c *TCPConfig) Build() (proto.Message, error) {
 	config := new(tcp.Config)
 	if len(c.HeaderConfig) > 0 {
 		headerConfig, _, err := tcpHeaderLoader.Load(c.HeaderConfig)
@@ -116,10 +117,10 @@ func (c *TCPConfig) Build() (*serial.TypedMessage, error) {
 		if err != nil {
 			return nil, newError("invalid TCP header config").Base(err).AtError()
 		}
-		config.HeaderSettings = ts
+		config.HeaderSettings = serial.ToTypedMessage(ts)
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type WebSocketConfig struct {
@@ -129,7 +130,7 @@ type WebSocketConfig struct {
 }
 
 // Build implements Buildable.
-func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
+func (c *WebSocketConfig) Build() (proto.Message, error) {
 	path := c.Path
 	if len(path) == 0 && len(c.Path2) > 0 {
 		path = c.Path2
@@ -146,7 +147,7 @@ func (c *WebSocketConfig) Build() (*serial.TypedMessage, error) {
 		Path:   path,
 		Header: header,
 	}
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type HTTPConfig struct {
@@ -154,14 +155,14 @@ type HTTPConfig struct {
 	Path string      `json:"path"`
 }
 
-func (c *HTTPConfig) Build() (*serial.TypedMessage, error) {
+func (c *HTTPConfig) Build() (proto.Message, error) {
 	config := &http.Config{
 		Path: c.Path,
 	}
 	if c.Host != nil {
 		config.Host = []string(*c.Host)
 	}
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type DomainSocketConfig struct {
@@ -169,11 +170,11 @@ type DomainSocketConfig struct {
 	Abstract bool   `json:"abstract"`
 }
 
-func (c *DomainSocketConfig) Build() (*serial.TypedMessage, error) {
-	return serial.ToTypedMessage(&domainsocket.Config{
+func (c *DomainSocketConfig) Build() (proto.Message, error) {
+	return &domainsocket.Config{
 		Path:     c.Path,
 		Abstract: c.Abstract,
-	}), nil
+	}, nil
 }
 
 type TLSCertConfig struct {
@@ -234,7 +235,7 @@ type TLSConfig struct {
 }
 
 // Build implements Buildable.
-func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
+func (c *TLSConfig) Build() (proto.Message, error) {
 	config := new(tls.Config)
 	config.Certificate = make([]*tls.Certificate, len(c.Certs))
 	for idx, certConf := range c.Certs {
@@ -253,7 +254,7 @@ func (c *TLSConfig) Build() (*serial.TypedMessage, error) {
 	if c.ALPN != nil && len(*c.ALPN) > 0 {
 		config.NextProtocol = []string(*c.ALPN)
 	}
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type TransportProtocol string
@@ -330,8 +331,9 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		if err != nil {
 			return nil, newError("Failed to build TLS config.").Base(err)
 		}
-		config.SecuritySettings = append(config.SecuritySettings, ts)
-		config.SecurityType = ts.Type
+		tm := serial.ToTypedMessage(ts)
+		config.SecuritySettings = append(config.SecuritySettings, tm)
+		config.SecurityType = tm.Type
 	}
 	if c.TCPSettings != nil {
 		ts, err := c.TCPSettings.Build()
@@ -340,7 +342,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_TCP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 	if c.KCPSettings != nil {
@@ -350,7 +352,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_MKCP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 	if c.WSSettings != nil {
@@ -360,7 +362,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_WebSocket,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 	if c.HTTPSettings != nil {
@@ -370,7 +372,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_HTTP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 	if c.DSSettings != nil {
@@ -380,7 +382,7 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_DomainSocket,
-			Settings: ds,
+			Settings: serial.ToTypedMessage(ds),
 		})
 	}
 	if c.SocketSettings != nil {

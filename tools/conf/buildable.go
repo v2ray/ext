@@ -1,9 +1,7 @@
 package conf
 
-import (
-	"v2ray.com/core/common/serial"
-)
+import "github.com/golang/protobuf/proto"
 
 type Buildable interface {
-	Build() (*serial.TypedMessage, error)
+	Build() (proto.Message, error)
 }

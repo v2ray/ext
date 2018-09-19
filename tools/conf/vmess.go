@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/golang/protobuf/proto"
+
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/vmess"
@@ -81,7 +83,7 @@ type VMessInboundConfig struct {
 }
 
 // Build implements Buildable
-func (c *VMessInboundConfig) Build() (*serial.TypedMessage, error) {
+func (c *VMessInboundConfig) Build() (proto.Message, error) {
 	config := &inbound.Config{
 		SecureEncryptionOnly: c.SecureOnly,
 	}
@@ -110,7 +112,7 @@ func (c *VMessInboundConfig) Build() (*serial.TypedMessage, error) {
 		config.User[idx] = user
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type VMessOutboundTarget struct {
@@ -125,7 +127,7 @@ type VMessOutboundConfig struct {
 var bUser = "a06fe789-5ab1-480b-8124-ae4599801ff3"
 
 // Build implements Buildable
-func (c *VMessOutboundConfig) Build() (*serial.TypedMessage, error) {
+func (c *VMessOutboundConfig) Build() (proto.Message, error) {
 	config := new(outbound.Config)
 
 	if len(c.Receivers) == 0 {
@@ -158,5 +160,5 @@ func (c *VMessOutboundConfig) Build() (*serial.TypedMessage, error) {
 		serverSpecs[idx] = spec
 	}
 	config.Receiver = serverSpecs
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

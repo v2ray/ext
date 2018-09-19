@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"v2ray.com/core/common/serial"
+	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/proxy/http"
 )
 
@@ -17,7 +17,7 @@ type HttpServerConfig struct {
 	UserLevel   uint32         `json:"userLevel"`
 }
 
-func (c *HttpServerConfig) Build() (*serial.TypedMessage, error) {
+func (c *HttpServerConfig) Build() (proto.Message, error) {
 	config := &http.ServerConfig{
 		Timeout:          c.Timeout,
 		AllowTransparent: c.Transparent,
@@ -31,5 +31,5 @@ func (c *HttpServerConfig) Build() (*serial.TypedMessage, error) {
 		}
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

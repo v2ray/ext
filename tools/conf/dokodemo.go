@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"v2ray.com/core/common/serial"
+	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/proxy/dokodemo"
 )
 
@@ -14,7 +14,7 @@ type DokodemoConfig struct {
 	UserLevel    uint32       `json:"userLevel"`
 }
 
-func (v *DokodemoConfig) Build() (*serial.TypedMessage, error) {
+func (v *DokodemoConfig) Build() (proto.Message, error) {
 	config := new(dokodemo.Config)
 	if v.Host != nil {
 		config.Address = v.Host.Build()
@@ -24,5 +24,5 @@ func (v *DokodemoConfig) Build() (*serial.TypedMessage, error) {
 	config.Timeout = v.TimeoutValue
 	config.FollowRedirect = v.Redirect
 	config.UserLevel = v.UserLevel
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

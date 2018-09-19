@@ -148,6 +148,48 @@ func loadSite(filename, country string) ([]*router.Domain, error) {
 	return nil, newError("country not found: " + country)
 }
 
+func parseDomainRule(domain string) ([]*router.Domain, error) {
+	if strings.HasPrefix(domain, "geosite:") {
+		country := strings.ToUpper(domain[8:])
+		domains, err := loadGeoSite(country)
+		if err != nil {
+			return nil, newError("failed to load geosite: ", country).Base(err)
+		}
+		return domains, nil
+	}
+
+	if strings.HasPrefix(domain, "ext:") {
+		kv := strings.Split(domain[4:], ":")
+		if len(kv) != 2 {
+			return nil, newError("invalid external resource: ", domain)
+		}
+		filename := kv[0]
+		country := strings.ToUpper(kv[1])
+		domains, err := loadSite(filename, country)
+		if err != nil {
+			return nil, newError("failed to load external sites: ", country, " from ", filename).Base(err)
+		}
+		return domains, nil
+	}
+
+	domainRule := new(router.Domain)
+	switch {
+	case strings.HasPrefix(domain, "regexp:"):
+		domainRule.Type = router.Domain_Regex
+		domainRule.Value = domain[7:]
+	case strings.HasPrefix(domain, "domain:"):
+		domainRule.Type = router.Domain_Domain
+		domainRule.Value = domain[7:]
+	case strings.HasPrefix(domain, "full:"):
+		domainRule.Type = router.Domain_Full
+		domainRule.Value = domain[5:]
+	default:
+		domainRule.Type = router.Domain_Plain
+		domainRule.Value = domain
+	}
+	return []*router.Domain{domainRule}, nil
+}
+
 func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	type RawFieldRule struct {
 		RouterRule
@@ -171,47 +213,11 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 
 	if rawFieldRule.Domain != nil {
 		for _, domain := range *rawFieldRule.Domain {
-			if strings.HasPrefix(domain, "geosite:") {
-				country := strings.ToUpper(domain[8:])
-				domains, err := loadGeoSite(country)
-				if err != nil {
-					return nil, newError("failed to load geosite: ", country).Base(err)
-				}
-				rule.Domain = append(rule.Domain, domains...)
-				continue
+			rules, err := parseDomainRule(domain)
+			if err != nil {
+				return nil, newError("failed to parse domain rule: ", domain).Base(err)
 			}
-
-			if strings.HasPrefix(domain, "ext:") {
-				kv := strings.Split(domain[4:], ":")
-				if len(kv) != 2 {
-					return nil, newError("invalid external resource: ", domain)
-				}
-				filename := kv[0]
-				country := strings.ToUpper(kv[1])
-				domains, err := loadSite(filename, country)
-				if err != nil {
-					return nil, newError("failed to load external sites: ", country, " from ", filename).Base(err)
-				}
-				rule.Domain = append(rule.Domain, domains...)
-				continue
-			}
-
-			domainRule := new(router.Domain)
-			switch {
-			case strings.HasPrefix(domain, "regexp:"):
-				domainRule.Type = router.Domain_Regex
-				domainRule.Value = domain[7:]
-			case strings.HasPrefix(domain, "domain:"):
-				domainRule.Type = router.Domain_Domain
-				domainRule.Value = domain[7:]
-			case strings.HasPrefix(domain, "full:"):
-				domainRule.Type = router.Domain_Full
-				domainRule.Value = domain[5:]
-			default:
-				domainRule.Type = router.Domain_Plain
-				domainRule.Value = domain
-			}
-			rule.Domain = append(rule.Domain, domainRule)
+			rule.Domain = append(rule.Domain, rules...)
 		}
 	}
 

@@ -4,9 +4,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/golang/protobuf/proto"
 	v2net "v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
-	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/freedom"
 )
 
@@ -18,7 +18,7 @@ type FreedomConfig struct {
 }
 
 // Build implements Buildable
-func (c *FreedomConfig) Build() (*serial.TypedMessage, error) {
+func (c *FreedomConfig) Build() (proto.Message, error) {
 	config := new(freedom.Config)
 	config.DomainStrategy = freedom.Config_AS_IS
 	domainStrategy := strings.ToLower(c.DomainStrategy)
@@ -49,5 +49,5 @@ func (c *FreedomConfig) Build() (*serial.TypedMessage, error) {
 			config.DestinationOverride.Server.Address = v2net.NewIPOrDomain(v2net.ParseAddress(host))
 		}
 	}
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 
+	"github.com/golang/protobuf/proto"
+
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/mtproto"
@@ -31,7 +33,7 @@ type MTProtoServerConfig struct {
 	Users []json.RawMessage `json:"users"`
 }
 
-func (c *MTProtoServerConfig) Build() (*serial.TypedMessage, error) {
+func (c *MTProtoServerConfig) Build() (proto.Message, error) {
 	config := &mtproto.ServerConfig{}
 
 	if len(c.Users) == 0 {
@@ -55,13 +57,13 @@ func (c *MTProtoServerConfig) Build() (*serial.TypedMessage, error) {
 		config.User[idx] = user
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type MTProtoClientConfig struct {
 }
 
-func (c *MTProtoClientConfig) Build() (*serial.TypedMessage, error) {
+func (c *MTProtoClientConfig) Build() (proto.Message, error) {
 	config := new(mtproto.ClientConfig)
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }

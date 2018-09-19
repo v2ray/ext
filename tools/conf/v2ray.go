@@ -135,7 +135,7 @@ func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
 	return &core.InboundHandlerConfig{
 		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverConfig),
-		ProxySettings:    ts,
+		ProxySettings:    serial.ToTypedMessage(ts),
 	}, nil
 }
 
@@ -205,7 +205,7 @@ func (c *OutboundConnectionConfig) Build() (*core.OutboundHandlerConfig, error) 
 
 	return &core.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
-		ProxySettings:  ts,
+		ProxySettings:  serial.ToTypedMessage(ts),
 		Tag:            c.Tag,
 	}, nil
 }
@@ -315,7 +315,7 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 	return &core.InboundHandlerConfig{
 		Tag:              c.Tag,
 		ReceiverSettings: serial.ToTypedMessage(receiverSettings),
-		ProxySettings:    ts,
+		ProxySettings:    serial.ToTypedMessage(ts),
 	}, nil
 }
 
@@ -376,7 +376,7 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	return &core.OutboundHandlerConfig{
 		SenderSettings: serial.ToTypedMessage(senderSettings),
 		Tag:            c.Tag,
-		ProxySettings:  ts,
+		ProxySettings:  serial.ToTypedMessage(ts),
 	}, nil
 }
 

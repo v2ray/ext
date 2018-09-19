@@ -3,27 +3,29 @@ package conf
 import (
 	"encoding/json"
 
+	"github.com/golang/protobuf/proto"
+
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/blackhole"
 )
 
 type NoneResponse struct{}
 
-func (*NoneResponse) Build() (*serial.TypedMessage, error) {
-	return serial.ToTypedMessage(new(blackhole.NoneResponse)), nil
+func (*NoneResponse) Build() (proto.Message, error) {
+	return new(blackhole.NoneResponse), nil
 }
 
 type HttpResponse struct{}
 
-func (*HttpResponse) Build() (*serial.TypedMessage, error) {
-	return serial.ToTypedMessage(new(blackhole.HTTPResponse)), nil
+func (*HttpResponse) Build() (proto.Message, error) {
+	return new(blackhole.HTTPResponse), nil
 }
 
 type BlackholeConfig struct {
 	Response json.RawMessage `json:"response"`
 }
 
-func (v *BlackholeConfig) Build() (*serial.TypedMessage, error) {
+func (v *BlackholeConfig) Build() (proto.Message, error) {
 	config := new(blackhole.Config)
 	if v.Response != nil {
 		response, _, err := configLoader.Load(v.Response)
@@ -34,10 +36,10 @@ func (v *BlackholeConfig) Build() (*serial.TypedMessage, error) {
 		if err != nil {
 			return nil, err
 		}
-		config.Response = responseSettings
+		config.Response = serial.ToTypedMessage(responseSettings)
 	}
 
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 var (

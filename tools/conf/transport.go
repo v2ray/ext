@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"v2ray.com/core/common/serial"
 	"v2ray.com/core/transport"
 	"v2ray.com/core/transport/internet"
 )
@@ -24,7 +25,7 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_TCP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -35,7 +36,7 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_MKCP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -46,7 +47,7 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_WebSocket,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -57,7 +58,7 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_HTTP,
-			Settings: ts,
+			Settings: serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -68,7 +69,7 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
 			Protocol: internet.TransportProtocol_DomainSocket,
-			Settings: ds,
+			Settings: serial.ToTypedMessage(ds),
 		})
 	}
 
