@@ -16,6 +16,32 @@ import (
 	. "v2ray.com/ext/tools/conf"
 )
 
+func TestSocketConfig(t *testing.T) {
+	createParser := func() func(string) (proto.Message, error) {
+		return func(s string) (proto.Message, error) {
+			config := new(SocketConfig)
+			if err := json.Unmarshal([]byte(s), config); err != nil {
+				return nil, err
+			}
+			return config.Build()
+		}
+	}
+
+	runMultiTestCase(t, []TestCase{
+		{
+			Input: `{
+				"mark": 1,
+				"tcpFastOpen": true
+			}`,
+			Parser: createParser(),
+			Output: &internet.SocketConfig{
+				Mark: 1,
+				Tfo:  internet.SocketConfig_Enable,
+			},
+		},
+	})
+}
+
 func TestTransportConfig(t *testing.T) {
 	createParser := func() func(string) (proto.Message, error) {
 		return func(s string) (proto.Message, error) {

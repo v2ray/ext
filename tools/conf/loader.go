@@ -38,12 +38,10 @@ func NewJSONConfigLoader(cache ConfigCreatorCache, idKey string, configKey strin
 }
 
 func (v *JSONConfigLoader) LoadWithID(raw []byte, id string) (interface{}, error) {
-	creator, found := v.cache[id]
-	if !found {
-		return nil, newError("unknown config id: ", id).AtError()
+	config, err := v.cache.CreateConfig(id)
+	if err != nil {
+		return nil, err
 	}
-
-	config := creator()
 	if err := json.Unmarshal(raw, config); err != nil {
 		return nil, err
 	}
