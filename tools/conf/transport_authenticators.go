@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"sort"
+
 	"github.com/golang/protobuf/proto"
 
 	"v2ray.com/core/transport/internet/headers/http"
@@ -61,6 +63,15 @@ type HTTPAuthenticatorRequest struct {
 	Headers map[string]*StringList `json:"headers"`
 }
 
+func sortMapKeys(m map[string]*StringList) []string {
+	var keys []string
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
 func (v *HTTPAuthenticatorRequest) Build() (*http.RequestConfig, error) {
 	config := &http.RequestConfig{
 		Uri: []string{"/"},
@@ -105,7 +116,9 @@ func (v *HTTPAuthenticatorRequest) Build() (*http.RequestConfig, error) {
 
 	if len(v.Headers) > 0 {
 		config.Header = make([]*http.Header, 0, len(v.Headers))
-		for key, value := range v.Headers {
+		headerNames := sortMapKeys(v.Headers)
+		for _, key := range headerNames {
+			value := v.Headers[key]
 			if value == nil {
 				return nil, newError("empty HTTP header value: " + key).AtError()
 			}
@@ -171,7 +184,9 @@ func (v *HTTPAuthenticatorResponse) Build() (*http.ResponseConfig, error) {
 
 	if len(v.Headers) > 0 {
 		config.Header = make([]*http.Header, 0, len(v.Headers))
-		for key, value := range v.Headers {
+		headerNames := sortMapKeys(v.Headers)
+		for _, key := range headerNames {
+			value := v.Headers[key]
 			if value == nil {
 				return nil, newError("empty HTTP header value: " + key).AtError()
 			}
