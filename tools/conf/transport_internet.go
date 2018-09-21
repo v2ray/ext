@@ -260,20 +260,20 @@ func (c *TLSConfig) Build() (proto.Message, error) {
 type TransportProtocol string
 
 // Build implements Buildable.
-func (p TransportProtocol) Build() (internet.TransportProtocol, error) {
+func (p TransportProtocol) Build() (string, error) {
 	switch strings.ToLower(string(p)) {
 	case "tcp":
-		return internet.TransportProtocol_TCP, nil
+		return "tcp", nil
 	case "kcp", "mkcp":
-		return internet.TransportProtocol_MKCP, nil
+		return "mkcp", nil
 	case "ws", "websocket":
-		return internet.TransportProtocol_WebSocket, nil
+		return "websocket", nil
 	case "h2", "http":
-		return internet.TransportProtocol_HTTP, nil
+		return "http", nil
 	case "ds", "domainsocket":
-		return internet.TransportProtocol_DomainSocket, nil
+		return "domainsocket", nil
 	default:
-		return internet.TransportProtocol_TCP, newError("Config: unknown transport protocol: ", p)
+		return "", newError("Config: unknown transport protocol: ", p)
 	}
 }
 
@@ -313,14 +313,14 @@ type StreamConfig struct {
 // Build implements Buildable.
 func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 	config := &internet.StreamConfig{
-		Protocol: internet.TransportProtocol_TCP,
+		ProtocolName: "tcp",
 	}
 	if c.Network != nil {
 		protocol, err := (*c.Network).Build()
 		if err != nil {
 			return nil, err
 		}
-		config.Protocol = protocol
+		config.ProtocolName = protocol
 	}
 	if strings.ToLower(c.Security) == "tls" {
 		tlsSettings := c.TLSSettings
@@ -341,8 +341,8 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			return nil, newError("Failed to build TCP config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_TCP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "tcp",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 	if c.KCPSettings != nil {
@@ -351,8 +351,8 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			return nil, newError("Failed to build mKCP config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_MKCP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "mkcp",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 	if c.WSSettings != nil {
@@ -361,8 +361,8 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			return nil, newError("Failed to build WebSocket config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_WebSocket,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "websocket",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 	if c.HTTPSettings != nil {
@@ -371,8 +371,8 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			return nil, newError("Failed to build HTTP config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_HTTP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "http",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 	if c.DSSettings != nil {
@@ -381,8 +381,8 @@ func (c *StreamConfig) Build() (*internet.StreamConfig, error) {
 			return nil, newError("Failed to build DomainSocket config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_DomainSocket,
-			Settings: serial.ToTypedMessage(ds),
+			ProtocolName: "domainsocket",
+			Settings:     serial.ToTypedMessage(ds),
 		})
 	}
 	if c.SocketSettings != nil {

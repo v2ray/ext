@@ -89,7 +89,7 @@ func TestTransportConfig(t *testing.T) {
 			Output: &transport.Config{
 				TransportSettings: []*internet.TransportConfig{
 					{
-						Protocol: internet.TransportProtocol_TCP,
+						ProtocolName: "tcp",
 						Settings: serial.ToTypedMessage(&tcp.Config{
 							HeaderSettings: serial.ToTypedMessage(&http.Config{
 								Request: &http.RequestConfig{
@@ -131,14 +131,14 @@ func TestTransportConfig(t *testing.T) {
 						}),
 					},
 					{
-						Protocol: internet.TransportProtocol_MKCP,
+						ProtocolName: "mkcp",
 						Settings: serial.ToTypedMessage(&kcp.Config{
 							Mtu:          &kcp.MTU{Value: 1200},
 							HeaderConfig: serial.ToTypedMessage(&noop.Config{}),
 						}),
 					},
 					{
-						Protocol: internet.TransportProtocol_WebSocket,
+						ProtocolName: "websocket",
 						Settings: serial.ToTypedMessage(&websocket.Config{
 							Path: "/t",
 						}),

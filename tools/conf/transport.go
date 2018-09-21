@@ -24,8 +24,8 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			return nil, newError("failed to build TCP config").Base(err).AtError()
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_TCP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "tcp",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -35,8 +35,8 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			return nil, newError("failed to build mKCP config").Base(err).AtError()
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_MKCP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "mkcp",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -46,8 +46,8 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			return nil, newError("failed to build WebSocket config").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_WebSocket,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "websocket",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -57,8 +57,8 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			return nil, newError("Failed to build HTTP config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_HTTP,
-			Settings: serial.ToTypedMessage(ts),
+			ProtocolName: "http",
+			Settings:     serial.ToTypedMessage(ts),
 		})
 	}
 
@@ -68,8 +68,8 @@ func (c *TransportConfig) Build() (*transport.Config, error) {
 			return nil, newError("Failed to build DomainSocket config.").Base(err)
 		}
 		config.TransportSettings = append(config.TransportSettings, &internet.TransportConfig{
-			Protocol: internet.TransportProtocol_DomainSocket,
-			Settings: serial.ToTypedMessage(ds),
+			ProtocolName: "domainsocket",
+			Settings:     serial.ToTypedMessage(ds),
 		})
 	}
 

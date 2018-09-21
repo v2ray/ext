@@ -147,10 +147,10 @@ func TestV2RayConfig(t *testing.T) {
 								To:   443,
 							},
 							StreamSettings: &internet.StreamConfig{
-								Protocol: internet.TransportProtocol_WebSocket,
+								ProtocolName: "websocket",
 								TransportSettings: []*internet.TransportConfig{
 									{
-										Protocol: internet.TransportProtocol_WebSocket,
+										ProtocolName: "websocket",
 										Settings: serial.ToTypedMessage(&websocket.Config{
 											Header: []*websocket.Header{
 												{
