@@ -3,6 +3,7 @@ package conf
 import (
 	"encoding/json"
 
+	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/socks"
@@ -34,7 +35,7 @@ type SocksServerConfig struct {
 	UserLevel  uint32          `json:"userLevel"`
 }
 
-func (v *SocksServerConfig) Build() (*serial.TypedMessage, error) {
+func (v *SocksServerConfig) Build() (proto.Message, error) {
 	config := new(socks.ServerConfig)
 	switch v.AuthMethod {
 	case AuthMethodNoAuth:
@@ -60,7 +61,7 @@ func (v *SocksServerConfig) Build() (*serial.TypedMessage, error) {
 
 	config.Timeout = v.Timeout
 	config.UserLevel = v.UserLevel
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
 
 type SocksRemoteConfig struct {
@@ -72,7 +73,7 @@ type SocksClientConfig struct {
 	Servers []*SocksRemoteConfig `json:"servers"`
 }
 
-func (v *SocksClientConfig) Build() (*serial.TypedMessage, error) {
+func (v *SocksClientConfig) Build() (proto.Message, error) {
 	config := new(socks.ClientConfig)
 	config.Server = make([]*protocol.ServerEndpoint, len(v.Servers))
 	for idx, serverConfig := range v.Servers {
@@ -94,5 +95,5 @@ func (v *SocksClientConfig) Build() (*serial.TypedMessage, error) {
 		}
 		config.Server[idx] = server
 	}
-	return serial.ToTypedMessage(config), nil
+	return config, nil
 }
