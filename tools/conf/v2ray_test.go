@@ -20,6 +20,7 @@ import (
 	"v2ray.com/core/proxy/vmess"
 	"v2ray.com/core/proxy/vmess/inbound"
 	"v2ray.com/core/transport/internet"
+	"v2ray.com/core/transport/internet/http"
 	"v2ray.com/core/transport/internet/tls"
 	"v2ray.com/core/transport/internet/websocket"
 	. "v2ray.com/ext/tools/conf"
@@ -94,6 +95,11 @@ func TestV2RayConfig(t *testing.T) {
 							}
 						]
 					}
+				},
+				"transport": {
+					"httpSettings": {
+						"path": "/test"
+					}
 				}
 			}`,
 			Parser: createParser(),
@@ -126,7 +132,19 @@ func TestV2RayConfig(t *testing.T) {
 				},
 				Outbound: []*core.OutboundHandlerConfig{
 					{
-						SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{}),
+						SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+							StreamSettings: &internet.StreamConfig{
+								ProtocolName: "tcp",
+								TransportSettings: []*internet.TransportConfig{
+									{
+										ProtocolName: "http",
+										Settings: serial.ToTypedMessage(&http.Config{
+											Path: "/test",
+										}),
+									},
+								},
+							},
+						}),
 						ProxySettings: serial.ToTypedMessage(&freedom.Config{
 							DomainStrategy: freedom.Config_AS_IS,
 							Timeout:        600,
@@ -134,9 +152,21 @@ func TestV2RayConfig(t *testing.T) {
 						}),
 					},
 					{
-						Tag:            "blocked",
-						SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{}),
-						ProxySettings:  serial.ToTypedMessage(&blackhole.Config{}),
+						Tag: "blocked",
+						SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+							StreamSettings: &internet.StreamConfig{
+								ProtocolName: "tcp",
+								TransportSettings: []*internet.TransportConfig{
+									{
+										ProtocolName: "http",
+										Settings: serial.ToTypedMessage(&http.Config{
+											Path: "/test",
+										}),
+									},
+								},
+							},
+						}),
+						ProxySettings: serial.ToTypedMessage(&blackhole.Config{}),
 					},
 				},
 				Inbound: []*core.InboundHandlerConfig{

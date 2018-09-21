@@ -401,6 +401,24 @@ type Config struct {
 	Stats           *StatsConfig              `json:"stats"`
 }
 
+func applyTransportConfig(s *StreamConfig, t *TransportConfig) {
+	if s.TCPSettings == nil {
+		s.TCPSettings = t.TCPConfig
+	}
+	if s.KCPSettings == nil {
+		s.KCPSettings = t.KCPConfig
+	}
+	if s.WSSettings == nil {
+		s.WSSettings = t.WSConfig
+	}
+	if s.HTTPSettings == nil {
+		s.HTTPSettings = t.HTTPConfig
+	}
+	if s.DSSettings == nil {
+		s.DSSettings = t.DSConfig
+	}
+}
+
 // Build implements Buildable.
 func (c *Config) Build() (*core.Config, error) {
 	config := &core.Config{
@@ -431,14 +449,6 @@ func (c *Config) Build() (*core.Config, error) {
 		config.App = append(config.App, serial.ToTypedMessage(c.LogConfig.Build()))
 	} else {
 		config.App = append(config.App, serial.ToTypedMessage(DefaultLogConfig()))
-	}
-
-	if c.Transport != nil {
-		ts, err := c.Transport.Build()
-		if err != nil {
-			return nil, err
-		}
-		config.Transport = ts
 	}
 
 	if c.RouterConfig != nil {
@@ -493,6 +503,13 @@ func (c *Config) Build() (*core.Config, error) {
 	if c.OutboundConfig == nil {
 		return nil, newError("no outbound config specified")
 	}
+	if c.Transport != nil {
+		if c.OutboundConfig.StreamSetting == nil {
+			c.OutboundConfig.StreamSetting = &StreamConfig{}
+		}
+		applyTransportConfig(c.OutboundConfig.StreamSetting, c.Transport)
+	}
+
 	oc, err := c.OutboundConfig.Build()
 	if err != nil {
 		return nil, err
@@ -500,6 +517,12 @@ func (c *Config) Build() (*core.Config, error) {
 	config.Outbound = append(config.Outbound, oc)
 
 	for _, rawOutboundConfig := range c.OutboundDetours {
+		if c.Transport != nil {
+			if rawOutboundConfig.StreamSetting == nil {
+				rawOutboundConfig.StreamSetting = &StreamConfig{}
+			}
+			applyTransportConfig(rawOutboundConfig.StreamSetting, c.Transport)
+		}
 		oc, err := rawOutboundConfig.Build()
 		if err != nil {
 			return nil, err
