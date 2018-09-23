@@ -278,8 +278,9 @@ func (p TransportProtocol) Build() (string, error) {
 }
 
 type SocketConfig struct {
-	Mark int32 `json:"mark"`
-	TFO  *bool `json:"tcpFastOpen"`
+	Mark   int32  `json:"mark"`
+	TFO    *bool  `json:"tcpFastOpen"`
+	TProxy string `json:"tproxy"`
 }
 
 func (c *SocketConfig) Build() (*internet.SocketConfig, error) {
@@ -291,10 +292,20 @@ func (c *SocketConfig) Build() (*internet.SocketConfig, error) {
 			tfoSettings = internet.SocketConfig_Disable
 		}
 	}
+	var tproxy internet.SocketConfig_TProxyMode
+	switch strings.ToLower(c.TProxy) {
+	case "tproxy":
+		tproxy = internet.SocketConfig_TProxy
+	case "redirect":
+		tproxy = internet.SocketConfig_Redirect
+	default:
+		tproxy = internet.SocketConfig_Off
+	}
 
 	return &internet.SocketConfig{
-		Mark: c.Mark,
-		Tfo:  tfoSettings,
+		Mark:   c.Mark,
+		Tfo:    tfoSettings,
+		Tproxy: tproxy,
 	}, nil
 }
 
