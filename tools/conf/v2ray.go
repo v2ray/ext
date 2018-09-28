@@ -486,6 +486,13 @@ func (c *Config) Build() (*core.Config, error) {
 		}
 	}
 
+	if c.Transport != nil {
+		if c.InboundConfig.StreamSetting == nil {
+			c.InboundConfig.StreamSetting = &StreamConfig{}
+		}
+		applyTransportConfig(c.InboundConfig.StreamSetting, c.Transport)
+	}
+
 	ic, err := c.InboundConfig.Build()
 	if err != nil {
 		return nil, err
@@ -493,6 +500,12 @@ func (c *Config) Build() (*core.Config, error) {
 	config.Inbound = append(config.Inbound, ic)
 
 	for _, rawInboundConfig := range c.InboundDetours {
+		if c.Transport != nil {
+			if rawInboundConfig.StreamSetting == nil {
+				rawInboundConfig.StreamSetting = &StreamConfig{}
+			}
+			applyTransportConfig(rawInboundConfig.StreamSetting, c.Transport)
+		}
 		ic, err := rawInboundConfig.Build()
 		if err != nil {
 			return nil, err

@@ -190,6 +190,12 @@ func TestV2RayConfig(t *testing.T) {
 											},
 										}),
 									},
+									{
+										ProtocolName: "http",
+										Settings: serial.ToTypedMessage(&http.Config{
+											Path: "/test",
+										}),
+									},
 								},
 								SecurityType: "v2ray.core.transport.internet.tls.Config",
 								SecuritySettings: []*serial.TypedMessage{
