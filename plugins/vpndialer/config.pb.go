@@ -1,8 +1,10 @@
 package vpndialer
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -26,16 +28,17 @@ func (m *Config) Reset()         { *m = Config{} }
 func (m *Config) String() string { return proto.CompactTextString(m) }
 func (*Config) ProtoMessage()    {}
 func (*Config) Descriptor() ([]byte, []int) {
-	return fileDescriptor_config_87e0dbcf04f73fa2, []int{0}
+	return fileDescriptor_54400ef39adf267d, []int{0}
 }
+
 func (m *Config) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Config.Unmarshal(m, b)
 }
 func (m *Config) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Config.Marshal(b, m, deterministic)
 }
-func (dst *Config) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Config.Merge(dst, src)
+func (m *Config) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Config.Merge(m, src)
 }
 func (m *Config) XXX_Size() int {
 	return xxx_messageInfo_Config.Size(m)
@@ -58,10 +61,10 @@ func init() {
 }
 
 func init() {
-	proto.RegisterFile("v2ray.com/ext/plugins/vpndialer/config.proto", fileDescriptor_config_87e0dbcf04f73fa2)
+	proto.RegisterFile("v2ray.com/ext/plugins/vpndialer/config.proto", fileDescriptor_54400ef39adf267d)
 }
 
-var fileDescriptor_config_87e0dbcf04f73fa2 = []byte{
+var fileDescriptor_54400ef39adf267d = []byte{
 	// 153 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0x29, 0x33, 0x2a, 0x4a,
 	0xac, 0xd4, 0x4b, 0xce, 0xcf, 0xd5, 0x4f, 0xad, 0x28, 0xd1, 0x2f, 0xc8, 0x29, 0x4d, 0xcf, 0xcc,
