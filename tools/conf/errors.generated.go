@@ -2,6 +2,5 @@ package conf
 
 import "v2ray.com/core/common/errors"
 
-func newError(values ...interface{}) *errors.Error {
-	return errors.New(values...).Path("Ext", "Tools", "Conf")
-}
+type errPathObjHolder struct {}
+func newError(values ...interface{}) *errors.Error { return errors.New(values...).WithPathObj(errPathObjHolder{}) }

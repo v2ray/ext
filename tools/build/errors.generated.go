@@ -2,6 +2,5 @@ package build
 
 import "v2ray.com/core/common/errors"
 
-func newError(values ...interface{}) *errors.Error {
-	return errors.New(values...).Path("Ext", "Tools", "Build")
-}
+type errPathObjHolder struct {}
+func newError(values ...interface{}) *errors.Error { return errors.New(values...).WithPathObj(errPathObjHolder{}) }
