@@ -4,6 +4,7 @@ def _gpg_sign_impl(ctx):
   ctx.actions.run_shell(
     command = command,
     use_default_shell_env = True,
+    inputs = [ctx.file.base],
     outputs = [output_file],
     progress_message = "Signing binary",
     mnemonic = "gpg",
