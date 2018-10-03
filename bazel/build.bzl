@@ -7,7 +7,10 @@ def _go_command(ctx):
   pkg = ctx.attr.pkg
   command = "go build -o '%s' %s" % (output_file.path, pkg)
 
-  env_dict = {}
+  env_dict = {
+    "CGO_ENABLED": "0"
+  }
+  
   if ctx.attr.os:
     env_dict["GOOS"] = ctx.attr.os
   if ctx.attr.arch:
