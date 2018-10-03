@@ -3,26 +3,40 @@ def _go_command(ctx):
   if ctx.attr.os == "windows":
     output = output + ".exe"
 
-  output_file = ctx.actions.declare_file(output)
+  output_file = ctx.actions.declare_file(ctx.attr.os + "/" + ctx.attr.arch + "/" + output)
   pkg = ctx.attr.pkg
-  command = "go build -o '%s' %s" % (output_file.path, pkg)
+
+  ld_flags = "-s -w"
+  if ctx.attr.ld:
+    ld_flags = ld_flags + " " + ctx.attr.ld
+
+  options = [
+    "go",
+    "build",
+    "-a", # force rebuild all. see https://github.com/golang/go/issues/27236
+    "-o", output_file.path,
+    "-compiler", "gc",
+    "-gcflags", "-trimpath=${GOPATH}/src",
+    "-asmflags", "-trimpath=${GOPATH}/src",
+    "-ldflags", "'%s'" % ld_flags,
+    pkg,
+  ]
+
+  command = " ".join(options)
 
   env_dict = {
     "CGO_ENABLED": "0"
   }
   
-  if ctx.attr.os:
-    env_dict["GOOS"] = ctx.attr.os
-  if ctx.attr.arch:
-    env_dict["GOARCH"] = ctx.attr.arch
-  if ctx.attr.mips:
+  env_dict["GOOS"] = ctx.attr.os
+  env_dict["GOARCH"] = ctx.attr.arch
+  if ctx.attr.mips: # https://github.com/golang/go/issues/27260
     env_dict["GOMIPS"] = ctx.attr.mips
-  if ctx.attr.mips64:
-    env_dict["GOMIPS64"] = ctx.attr.mips64
+    env_dict["GOMIPS64"] = ctx.attr.mips
+    env_dict["GOMIPSLE"] = ctx.attr.mips
+    env_dict["GOMIPS64LE"] = ctx.attr.mips
   if ctx.attr.arm:
     env_dict["GOARM"] = ctx.attr.arm
-  if ctx.attr.arm64:
-    env_dict["GOARM64"] = ctx.attr.arm64
 
   for key, value in env_dict.items():
     print(key + " = " + value)
@@ -42,12 +56,11 @@ foreign_go_binary = rule(
   attrs = {
     'pkg': attr.string(),
     'output': attr.string(),
-    'os': attr.string(),
-    'arch': attr.string(),
+    'os': attr.string(mandatory=True),
+    'arch': attr.string(mandatory=True),
     'mips': attr.string(),
-    'mips64': attr.string(),
     'arm': attr.string(),
-    'arm64': attr.string(),
+    'ld': attr.string(),
   },
   executable = True,
 )
