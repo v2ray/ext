@@ -24,28 +24,26 @@ def _go_command(ctx):
 
   command = " ".join(options)
 
-  env_dict = {
-    "CGO_ENABLED": "0"
-  }
+  envs = [
+    "CGO_ENABLED=0",
+    "GOOS="+ctx.attr.os,
+    "GOARCH="+ctx.attr.arch
+  ]
   
-  env_dict["GOOS"] = ctx.attr.os
-  env_dict["GOARCH"] = ctx.attr.arch
   if ctx.attr.mips: # https://github.com/golang/go/issues/27260
-    env_dict["GOMIPS"] = ctx.attr.mips
-    env_dict["GOMIPS64"] = ctx.attr.mips
-    env_dict["GOMIPSLE"] = ctx.attr.mips
-    env_dict["GOMIPS64LE"] = ctx.attr.mips
+    envs+=["GOMIPS="+ctx.attr.mips]
+    envs+=["GOMIPS64="+ctx.attr.mips]
+    envs+=["GOMIPSLE="+ctx.attr.mips]
+    envs+=["GOMIPS64LE="+ctx.attr.mips]
   if ctx.attr.arm:
-    env_dict["GOARM"] = ctx.attr.arm
+    envs+=["GOARM="+ctx.attr.arm]
 
-  for key, value in env_dict.items():
-    print(key + " = " + value)
+  command = " ".join(envs) + " " + command
 
   ctx.actions.run_shell(
     outputs = [output_file],
     command = command,
     use_default_shell_env = True,
-    env = env_dict,
   )
   runfiles = ctx.runfiles(files = [output_file])
   return [DefaultInfo(executable = output_file, runfiles = runfiles)]
