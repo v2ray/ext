@@ -113,12 +113,12 @@ func genRegularTarget(goOS build.OS, goArch build.Arch) []build.Target {
 
 	if goOS == build.Linux {
 		targets = append(targets, &build.ResourceTarget{
-			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemv_v2ray")),
+			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemv", "v2ray")),
 			Target:           filepath.Join("systemv", "v2ray"),
 			FixLineSeparator: true,
 			OS:               goOS,
 		}, &build.ResourceTarget{
-			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemd_v2ray.service")),
+			Source:           build.EnvPath(filepath.Join(releaseDir, "config", "systemd", "v2ray.service")),
 			Target:           filepath.Join("systemd", "v2ray.service"),
 			FixLineSeparator: true,
 			OS:               goOS,
