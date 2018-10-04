@@ -7,7 +7,7 @@ RUN go get -u v2ray.com/ext/...
 RUN mkdir -p /usr/bin/v2ray/
 RUN go build -o /usr/bin/v2ray/v2ray v2ray.com/core/main
 RUN go build -o /usr/bin/v2ray/v2ctl v2ray.com/ext/tools/control/main
-RUN cp ${GOPATH}/v2ray.com/core/release/config/* /usr/bin/v2ray/
+RUN cp ${GOPATH}/src/v2ray.com/core/release/config/* /usr/bin/v2ray/
 
 FROM alpine
 
