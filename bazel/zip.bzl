@@ -152,7 +152,6 @@ def _map_sources(ctx, srcs, mappings):
 
 pkg_zip = rule(
     implementation = _zip_file,
-    output_to_genfiles = True,
     attrs = {
         "out": attr.output(mandatory = True),
         "srcs": attr.label_list(allow_files = True),

@@ -1,9 +1,9 @@
 SUPPORTED_MATRIX = [
   ("windows", "amd64"),
-  ("windows", "x86"),
+  ("windows", "386"),
   ("darwin", "amd64"),
   ("linux", "amd64"),
-  ("linux", "x86"),
+  ("linux", "386"),
   ("linux", "arm64"),
   ("linux", "arm"),
   ("linux", "mips64"),
@@ -12,8 +12,8 @@ SUPPORTED_MATRIX = [
   ("linux", "mipsle"),
   ("linux", "s390x"),
   ("freebsd", "amd64"),
-  ("freebsd", "x86"),
+  ("freebsd", "386"),
   ("openbsd", "amd64"),
-  ("openbsd", "x86"),
+  ("openbsd", "386"),
   ("dragonfly", "amd64"),
 ]

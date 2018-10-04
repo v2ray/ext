@@ -1,5 +1,5 @@
 def _gpg_sign_impl(ctx):
-  output_file = ctx.actions.declare_file(ctx.file.base.basename + ctx.attr.suffix, siblin = ctx.file.base)
+  output_file = ctx.actions.declare_file(ctx.file.base.basename + ctx.attr.suffix, sibling = ctx.file.base)
   command = "echo ${GPG_PASS} | gpg --pinentry-mode loopback --digest-algo SHA512 --passphrase-fd 0 --output %s --detach-sig %s" % (output_file.path, ctx.file.base.path)
   ctx.actions.run_shell(
     command = command,

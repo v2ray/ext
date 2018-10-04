@@ -13,7 +13,6 @@ def _go_command(ctx):
   options = [
     "go",
     "build",
-    "-a", # force rebuild all. see https://github.com/golang/go/issues/27236
     "-o", output_file.path,
     "-compiler", "gc",
     "-gcflags", "-trimpath=${GOPATH}/src",
