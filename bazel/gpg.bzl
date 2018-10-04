@@ -9,8 +9,7 @@ def _gpg_sign_impl(ctx):
     progress_message = "Signing binary",
     mnemonic = "gpg",
   )
-  runfiles = ctx.runfiles(files = [output_file])
-  return [DefaultInfo(executable = output_file, runfiles = runfiles)]
+  return [DefaultInfo(files = depset([output_file]))]
 
 gpg_sign = rule(
   implementation = _gpg_sign_impl,
