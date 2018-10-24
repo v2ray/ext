@@ -83,7 +83,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		content = bytes.Replace(content, []byte("context \"golang.org/x/net/context\""), []byte("\"context\""), 1)
+		content = bytes.Replace(content, []byte("\"golang.org/x/net/context\""), []byte("\"context\""), 1)
 
 		pos := bytes.Index(content, []byte("\npackage"))
 		if pos > 0 {
