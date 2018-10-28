@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/app/reverse"
 )
 
@@ -33,7 +34,7 @@ type ReverseConfig struct {
 	Portals []PortalConfig `json:"portals"`
 }
 
-func (c *ReverseConfig) Build() (*reverse.Config, error) {
+func (c *ReverseConfig) Build() (proto.Message, error) {
 	config := &reverse.Config{}
 	for _, bconfig := range c.Bridges {
 		b, err := bconfig.Build()
