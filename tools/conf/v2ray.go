@@ -72,73 +72,6 @@ func (c *SniffingConfig) Build() (*proxyman.SniffingConfig, error) {
 	}, nil
 }
 
-type InboundConnectionConfig struct {
-	Port           *PortRange      `json:"port"`
-	Listen         *Address        `json:"listen"`
-	Protocol       string          `json:"protocol"`
-	StreamSetting  *StreamConfig   `json:"streamSettings"`
-	Settings       json.RawMessage `json:"settings"`
-	Tag            string          `json:"tag"`
-	DomainOverride *StringList     `json:"domainOverride"`
-	Sniffing       *SniffingConfig `json:"sniffing"`
-}
-
-// Build implements Buildable.
-func (c *InboundConnectionConfig) Build() (*core.InboundHandlerConfig, error) {
-	if c.Port == nil {
-		return nil, newError("port is not specified in inbound config.")
-	}
-
-	receiverConfig := &proxyman.ReceiverConfig{
-		PortRange: c.Port.Build(),
-	}
-	if c.Listen != nil {
-		if c.Listen.Family().IsDomain() {
-			return nil, newError("unable to listen on domain address: ", c.Listen.Domain())
-		}
-		receiverConfig.Listen = c.Listen.Build()
-	}
-	if c.StreamSetting != nil {
-		ts, err := c.StreamSetting.Build()
-		if err != nil {
-			return nil, err
-		}
-		receiverConfig.StreamSettings = ts
-	}
-	if c.Sniffing != nil {
-		s, err := c.Sniffing.Build()
-		if err != nil {
-			return nil, newError("failed to build sniffing config").Base(err)
-		}
-		receiverConfig.SniffingSettings = s
-	}
-	if c.DomainOverride != nil {
-		kp, err := toProtocolList(*c.DomainOverride)
-		if err != nil {
-			return nil, newError("failed to parse domain override in inbound config").Base(err)
-		}
-		receiverConfig.DomainOverride = kp
-	}
-
-	jsonConfig, err := inboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
-	if err != nil {
-		return nil, newError("failed to load inbound config.").Base(err)
-	}
-	if dokodemoConfig, ok := jsonConfig.(*DokodemoConfig); ok {
-		receiverConfig.ReceiveOriginalDestination = dokodemoConfig.Redirect
-	}
-	ts, err := jsonConfig.(Buildable).Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return &core.InboundHandlerConfig{
-		Tag:              c.Tag,
-		ReceiverSettings: serial.ToTypedMessage(receiverConfig),
-		ProxySettings:    serial.ToTypedMessage(ts),
-	}, nil
-}
-
 type MuxConfig struct {
 	Enabled     bool   `json:"enabled"`
 	Concurrency uint16 `json:"concurrency"`
@@ -149,65 +82,6 @@ func (c *MuxConfig) GetConcurrency() uint16 {
 		return 8
 	}
 	return c.Concurrency
-}
-
-type OutboundConnectionConfig struct {
-	Protocol      string          `json:"protocol"`
-	SendThrough   *Address        `json:"sendThrough"`
-	StreamSetting *StreamConfig   `json:"streamSettings"`
-	ProxySettings *ProxyConfig    `json:"proxySettings"`
-	Settings      json.RawMessage `json:"settings"`
-	Tag           string          `json:"tag"`
-	MuxSettings   *MuxConfig      `json:"mux"`
-}
-
-// Build implements Buildable.
-func (c *OutboundConnectionConfig) Build() (*core.OutboundHandlerConfig, error) {
-	senderSettings := &proxyman.SenderConfig{}
-
-	if c.SendThrough != nil {
-		address := c.SendThrough
-		if address.Family().IsDomain() {
-			return nil, newError("invalid sendThrough address: " + address.String())
-		}
-		senderSettings.Via = address.Build()
-	}
-	if c.StreamSetting != nil {
-		ss, err := c.StreamSetting.Build()
-		if err != nil {
-			return nil, err
-		}
-		senderSettings.StreamSettings = ss
-	}
-	if c.ProxySettings != nil {
-		ps, err := c.ProxySettings.Build()
-		if err != nil {
-			return nil, newError("invalid outbound proxy settings").Base(err)
-		}
-		senderSettings.ProxySettings = ps
-	}
-
-	if c.MuxSettings != nil && c.MuxSettings.Enabled {
-		senderSettings.MultiplexSettings = &proxyman.MultiplexingConfig{
-			Enabled:     true,
-			Concurrency: uint32(c.MuxSettings.GetConcurrency()),
-		}
-	}
-
-	rawConfig, err := outboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
-	if err != nil {
-		return nil, newError("failed to parse outbound config").Base(err)
-	}
-	ts, err := rawConfig.(Buildable).Build()
-	if err != nil {
-		return nil, err
-	}
-
-	return &core.OutboundHandlerConfig{
-		SenderSettings: serial.ToTypedMessage(senderSettings),
-		ProxySettings:  serial.ToTypedMessage(ts),
-		Tag:            c.Tag,
-	}, nil
 }
 
 type InboundDetourAllocationConfig struct {
@@ -387,19 +261,21 @@ func (c *StatsConfig) Build() (*stats.Config, error) {
 }
 
 type Config struct {
-	Port            uint16                    `json:"port"` // Port of this Point server.
-	LogConfig       *LogConfig                `json:"log"`
-	RouterConfig    *RouterConfig             `json:"routing"`
-	DNSConfig       *DnsConfig                `json:"dns"`
-	InboundConfig   *InboundConnectionConfig  `json:"inbound"`
-	OutboundConfig  *OutboundConnectionConfig `json:"outbound"`
-	InboundDetours  []InboundDetourConfig     `json:"inboundDetour"`
-	OutboundDetours []OutboundDetourConfig    `json:"outboundDetour"`
-	Transport       *TransportConfig          `json:"transport"`
-	Policy          *PolicyConfig             `json:"policy"`
-	Api             *ApiConfig                `json:"api"`
-	Stats           *StatsConfig              `json:"stats"`
-	Reverse         *ReverseConfig            `json:"reverse"`
+	Port            uint16                 `json:"port"` // Port of this Point server. Deprecated.
+	LogConfig       *LogConfig             `json:"log"`
+	RouterConfig    *RouterConfig          `json:"routing"`
+	DNSConfig       *DnsConfig             `json:"dns"`
+	InboundConfigs  []InboundDetourConfig  `json:"inbounds`
+	OutboundConfigs []OutboundDetourConfig `json:"outbounds"`
+	InboundConfig   *InboundDetourConfig   `json:"inbound"`        // Deprecated.
+	OutboundConfig  *OutboundDetourConfig  `json:"outbound"`       // Deprecated.
+	InboundDetours  []InboundDetourConfig  `json:"inboundDetour"`  // Deprecated.
+	OutboundDetours []OutboundDetourConfig `json:"outboundDetour"` // Deprecated.
+	Transport       *TransportConfig       `json:"transport"`
+	Policy          *PolicyConfig          `json:"policy"`
+	Api             *ApiConfig             `json:"api"`
+	Stats           *StatsConfig           `json:"stats"`
+	Reverse         *ReverseConfig         `json:"reverse"`
 }
 
 func applyTransportConfig(s *StreamConfig, t *TransportConfig) {
@@ -484,31 +360,29 @@ func (c *Config) Build() (*core.Config, error) {
 		config.App = append(config.App, serial.ToTypedMessage(r))
 	}
 
-	if c.InboundConfig == nil {
-		return nil, newError("no inbound config specified")
+	var inbounds []InboundDetourConfig
+
+	if c.InboundConfig != nil {
+		inbounds = append(inbounds, *c.InboundConfig)
 	}
 
-	if c.InboundConfig.Port == nil && c.Port > 0 {
-		c.InboundConfig.Port = &PortRange{
+	if len(c.InboundDetours) > 0 {
+		inbounds = append(inbounds, c.InboundDetours...)
+	}
+
+	if len(c.InboundConfigs) > 0 {
+		inbounds = append(inbounds, c.InboundConfigs...)
+	}
+
+	// Backward compatibility.
+	if len(inbounds) > 0 && inbounds[0].PortRange == nil && c.Port > 0 {
+		inbounds[0].PortRange = &PortRange{
 			From: uint32(c.Port),
 			To:   uint32(c.Port),
 		}
 	}
 
-	if c.Transport != nil {
-		if c.InboundConfig.StreamSetting == nil {
-			c.InboundConfig.StreamSetting = &StreamConfig{}
-		}
-		applyTransportConfig(c.InboundConfig.StreamSetting, c.Transport)
-	}
-
-	ic, err := c.InboundConfig.Build()
-	if err != nil {
-		return nil, err
-	}
-	config.Inbound = append(config.Inbound, ic)
-
-	for _, rawInboundConfig := range c.InboundDetours {
+	for _, rawInboundConfig := range inbounds {
 		if c.Transport != nil {
 			if rawInboundConfig.StreamSetting == nil {
 				rawInboundConfig.StreamSetting = &StreamConfig{}
@@ -522,23 +396,21 @@ func (c *Config) Build() (*core.Config, error) {
 		config.Inbound = append(config.Inbound, ic)
 	}
 
-	if c.OutboundConfig == nil {
-		return nil, newError("no outbound config specified")
-	}
-	if c.Transport != nil {
-		if c.OutboundConfig.StreamSetting == nil {
-			c.OutboundConfig.StreamSetting = &StreamConfig{}
-		}
-		applyTransportConfig(c.OutboundConfig.StreamSetting, c.Transport)
+	var outbounds []OutboundDetourConfig
+
+	if c.OutboundConfig != nil {
+		outbounds = append(outbounds, *c.OutboundConfig)
 	}
 
-	oc, err := c.OutboundConfig.Build()
-	if err != nil {
-		return nil, err
+	if len(c.OutboundDetours) > 0 {
+		outbounds = append(outbounds, c.OutboundDetours...)
 	}
-	config.Outbound = append(config.Outbound, oc)
 
-	for _, rawOutboundConfig := range c.OutboundDetours {
+	if len(c.OutboundConfigs) > 0 {
+		outbounds = append(outbounds, c.OutboundConfigs...)
+	}
+
+	for _, rawOutboundConfig := range outbounds {
 		if c.Transport != nil {
 			if rawOutboundConfig.StreamSetting == nil {
 				rawOutboundConfig.StreamSetting = &StreamConfig{}
