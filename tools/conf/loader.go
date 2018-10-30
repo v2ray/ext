@@ -1,6 +1,9 @@
 package conf
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
 
 type ConfigCreator func() interface{}
 
@@ -38,6 +41,7 @@ func NewJSONConfigLoader(cache ConfigCreatorCache, idKey string, configKey strin
 }
 
 func (v *JSONConfigLoader) LoadWithID(raw []byte, id string) (interface{}, error) {
+	id = strings.ToLower(id)
 	config, err := v.cache.CreateConfig(id)
 	if err != nil {
 		return nil, err
