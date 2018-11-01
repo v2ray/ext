@@ -10,6 +10,8 @@ SUPPORTED_MATRIX = [
   ("linux", "mips"),
   ("linux", "mips64le"),
   ("linux", "mipsle"),
+  ("linux", "ppc64"),
+  ("linux", "ppc64le"),
   ("linux", "s390x"),
   ("freebsd", "amd64"),
   ("freebsd", "386"),
