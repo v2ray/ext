@@ -191,8 +191,9 @@ func parseDomainRule(domain string) ([]*router.Domain, error) {
 	return []*router.Domain{domainRule}, nil
 }
 
-func toCidrList(ips StringList) (router.CIDRList, error) {
-	var cidrList router.CIDRList
+func toCidrList(ips StringList) ([]*router.GeoIP, error) {
+	var geoipList []*router.GeoIP
+	var customCidrs router.CIDRList
 
 	for _, ip := range ips {
 		if strings.HasPrefix(ip, "geoip:") {
@@ -201,7 +202,13 @@ func toCidrList(ips StringList) (router.CIDRList, error) {
 			if err != nil {
 				return nil, newError("failed to load GeoIP: ", country).Base(err)
 			}
-			cidrList = append(cidrList, geoip...)
+
+			cidrList := router.CIDRList(geoip)
+			sort.Sort(&cidrList)
+			geoipList = append(geoipList, &router.GeoIP{
+				CountryCode: strings.ToUpper(country),
+				Cidr:        cidrList,
+			})
 			continue
 		}
 
@@ -217,7 +224,14 @@ func toCidrList(ips StringList) (router.CIDRList, error) {
 			if err != nil {
 				return nil, newError("failed to load IPs: ", country, " from ", filename).Base(err)
 			}
-			cidrList = append(cidrList, geoip...)
+
+			cidrList := router.CIDRList(geoip)
+			sort.Sort(&cidrList)
+			geoipList = append(geoipList, &router.GeoIP{
+				CountryCode: strings.ToUpper(filename + "_" + country),
+				Cidr:        cidrList,
+			})
+
 			continue
 		}
 
@@ -225,10 +239,17 @@ func toCidrList(ips StringList) (router.CIDRList, error) {
 		if err != nil {
 			return nil, newError("invalid IP: ", ip).Base(err)
 		}
-		cidrList = append(cidrList, ipRule)
+		customCidrs = append(customCidrs, ipRule)
 	}
 
-	return cidrList, nil
+	if len(customCidrs) > 0 {
+		sort.Sort(&customCidrs)
+		geoipList = append(geoipList, &router.GeoIP{
+			Cidr: customCidrs,
+		})
+	}
+
+	return geoipList, nil
 }
 
 func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
@@ -263,12 +284,11 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	if rawFieldRule.IP != nil {
-		cidrList, err := toCidrList(*rawFieldRule.IP)
+		geoipList, err := toCidrList(*rawFieldRule.IP)
 		if err != nil {
 			return nil, err
 		}
-		sort.Sort(&cidrList)
-		rule.Cidr = cidrList
+		rule.Geoip = geoipList
 	}
 
 	if rawFieldRule.Port != nil {
@@ -280,12 +300,11 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	if rawFieldRule.SourceIP != nil {
-		cidrList, err := toCidrList(*rawFieldRule.SourceIP)
+		geoipList, err := toCidrList(*rawFieldRule.SourceIP)
 		if err != nil {
 			return nil, err
 		}
-		sort.Sort(&cidrList)
-		rule.SourceCidr = cidrList
+		rule.SourceGeoip = geoipList
 	}
 
 	if rawFieldRule.User != nil {

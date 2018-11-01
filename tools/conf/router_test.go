@@ -65,14 +65,18 @@ func TestRouterConfig(t *testing.T) {
 						Tag: "direct",
 					},
 					{
-						Cidr: []*router.CIDR{
+						Geoip: []*router.GeoIP{
 							{
-								Ip:     []byte{10, 0, 0, 0},
-								Prefix: 8,
-							},
-							{
-								Ip:     []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-								Prefix: 128,
+								Cidr: []*router.CIDR{
+									{
+										Ip:     []byte{10, 0, 0, 0},
+										Prefix: 8,
+									},
+									{
+										Ip:     []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+										Prefix: 128,
+									},
+								},
 							},
 						},
 						Tag: "test",

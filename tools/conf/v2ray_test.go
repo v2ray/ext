@@ -119,10 +119,14 @@ func TestV2RayConfig(t *testing.T) {
 						DomainStrategy: router.Config_AsIs,
 						Rule: []*router.RoutingRule{
 							{
-								Cidr: []*router.CIDR{
+								Geoip: []*router.GeoIP{
 									{
-										Ip:     []byte{10, 0, 0, 0},
-										Prefix: 8,
+										Cidr: []*router.CIDR{
+											{
+												Ip:     []byte{10, 0, 0, 0},
+												Prefix: 8,
+											},
+										},
 									},
 								},
 								Tag: "blocked",
