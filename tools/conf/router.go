@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -190,6 +191,46 @@ func parseDomainRule(domain string) ([]*router.Domain, error) {
 	return []*router.Domain{domainRule}, nil
 }
 
+func toCidrList(ips StringList) (router.CIDRList, error) {
+	var cidrList router.CIDRList
+
+	for _, ip := range ips {
+		if strings.HasPrefix(ip, "geoip:") {
+			country := ip[6:]
+			geoip, err := loadGeoIP(strings.ToUpper(country))
+			if err != nil {
+				return nil, newError("failed to load GeoIP: ", country).Base(err)
+			}
+			cidrList = append(cidrList, geoip...)
+			continue
+		}
+
+		if strings.HasPrefix(ip, "ext:") {
+			kv := strings.Split(ip[4:], ":")
+			if len(kv) != 2 {
+				return nil, newError("invalid external resource: ", ip)
+			}
+
+			filename := kv[0]
+			country := kv[1]
+			geoip, err := loadGeoIP(strings.ToUpper(country))
+			if err != nil {
+				return nil, newError("failed to load IPs: ", country, " from ", filename).Base(err)
+			}
+			cidrList = append(cidrList, geoip...)
+			continue
+		}
+
+		ipRule, err := ParseIP(ip)
+		if err != nil {
+			return nil, newError("invalid IP: ", ip).Base(err)
+		}
+		cidrList = append(cidrList, ipRule)
+	}
+
+	return cidrList, nil
+}
+
 func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	type RawFieldRule struct {
 		RouterRule
@@ -222,39 +263,12 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	if rawFieldRule.IP != nil {
-		for _, ip := range *rawFieldRule.IP {
-			if strings.HasPrefix(ip, "geoip:") {
-				country := ip[6:]
-				geoip, err := loadGeoIP(strings.ToUpper(country))
-				if err != nil {
-					return nil, newError("failed to load GeoIP: ", country).Base(err)
-				}
-				rule.Cidr = append(rule.Cidr, geoip...)
-				continue
-			}
-
-			if strings.HasPrefix(ip, "ext:") {
-				kv := strings.Split(ip[4:], ":")
-				if len(kv) != 2 {
-					return nil, newError("invalid external resource: ", ip)
-				}
-
-				filename := kv[0]
-				country := kv[1]
-				geoip, err := loadGeoIP(strings.ToUpper(country))
-				if err != nil {
-					return nil, newError("failed to load IPs: ", country, " from ", filename).Base(err)
-				}
-				rule.Cidr = append(rule.Cidr, geoip...)
-				continue
-			}
-
-			ipRule, err := ParseIP(ip)
-			if err != nil {
-				return nil, newError("invalid IP: ", ip).Base(err)
-			}
-			rule.Cidr = append(rule.Cidr, ipRule)
+		cidrList, err := toCidrList(*rawFieldRule.IP)
+		if err != nil {
+			return nil, err
 		}
+		sort.Sort(&cidrList)
+		rule.Cidr = cidrList
 	}
 
 	if rawFieldRule.Port != nil {
