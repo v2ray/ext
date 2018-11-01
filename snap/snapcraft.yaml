@@ -1,5 +1,5 @@
 name: v2ray-core
-version: '3.50'
+version: '4.0'
 summary: An unified platform for anti-censorship.
 description: |
   V2Ray helps to build your own private network. It supports various proxy protocols such as Socks5, HTTP, VMess and Shadowsocks.
@@ -33,6 +33,10 @@ parts:
           VDIS="mipsle"
       elif [ "$ARCH" = *"mips"* ]; then
           VDIS="mips"
+      elif [[ "$ARCH" == "ppc64le" ]]; then
+          VDIS="ppc64le"
+      elif [[ "$ARCH" == "ppc64" ]]; then
+          VDIS="ppc64"
       fi
       URL="https://github.com/v2ray/v2ray-core/releases/download/v${SNAPCRAFT_PROJECT_VERSION}/v2ray-linux-${VDIS}.zip"
       curl -L -o v2ray.zip "$URL"
