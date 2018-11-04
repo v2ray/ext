@@ -75,6 +75,32 @@ func TestV2RayConfig(t *testing.T) {
 						]
 					}
 				},
+				"inbounds": [{
+					"streamSettings": {
+						"network": "ws",
+						"wsSettings": {
+							"headers": {
+								"host": "example.domain"
+							},
+							"path": ""
+						},
+						"tlsSettings": {
+							"alpn": "h2"
+						},
+						"security": "tls"
+					},
+					"protocol": "vmess",
+					"port": 443,
+					"settings": {
+						"clients": [
+							{
+								"alterId": 100,
+								"security": "aes-128-gcm",
+								"id": "0cdf8a45-303d-4fed-9780-29aa7f54175e"
+							}
+						]
+					}
+				}],
 				"outboundDetour": [
 					{
 						"tag": "blocked",
@@ -174,6 +200,56 @@ func TestV2RayConfig(t *testing.T) {
 					},
 				},
 				Inbound: []*core.InboundHandlerConfig{
+					{
+						ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
+							PortRange: &net.PortRange{
+								From: 443,
+								To:   443,
+							},
+							StreamSettings: &internet.StreamConfig{
+								ProtocolName: "websocket",
+								TransportSettings: []*internet.TransportConfig{
+									{
+										ProtocolName: "websocket",
+										Settings: serial.ToTypedMessage(&websocket.Config{
+											Header: []*websocket.Header{
+												{
+													Key:   "host",
+													Value: "example.domain",
+												},
+											},
+										}),
+									},
+									{
+										ProtocolName: "http",
+										Settings: serial.ToTypedMessage(&http.Config{
+											Path: "/test",
+										}),
+									},
+								},
+								SecurityType: "v2ray.core.transport.internet.tls.Config",
+								SecuritySettings: []*serial.TypedMessage{
+									serial.ToTypedMessage(&tls.Config{
+										NextProtocol: []string{"h2"},
+									}),
+								},
+							},
+						}),
+						ProxySettings: serial.ToTypedMessage(&inbound.Config{
+							User: []*protocol.User{
+								{
+									Level: 0,
+									Account: serial.ToTypedMessage(&vmess.Account{
+										Id:      "0cdf8a45-303d-4fed-9780-29aa7f54175e",
+										AlterId: 100,
+										SecuritySettings: &protocol.SecurityConfig{
+											Type: protocol.SecurityType_AES128_GCM,
+										},
+									}),
+								},
+							},
+						}),
+					},
 					{
 						ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
 							PortRange: &net.PortRange{

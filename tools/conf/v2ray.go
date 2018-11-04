@@ -265,7 +265,7 @@ type Config struct {
 	LogConfig       *LogConfig             `json:"log"`
 	RouterConfig    *RouterConfig          `json:"routing"`
 	DNSConfig       *DnsConfig             `json:"dns"`
-	InboundConfigs  []InboundDetourConfig  `json:"inbounds`
+	InboundConfigs  []InboundDetourConfig  `json:"inbounds"`
 	OutboundConfigs []OutboundDetourConfig `json:"outbounds"`
 	InboundConfig   *InboundDetourConfig   `json:"inbound"`        // Deprecated.
 	OutboundConfig  *OutboundDetourConfig  `json:"outbound"`       // Deprecated.
