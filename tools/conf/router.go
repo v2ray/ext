@@ -19,33 +19,45 @@ type RouterRulesConfig struct {
 }
 
 type RouterConfig struct {
-	Settings *RouterRulesConfig `json:"settings"`
+	Settings       *RouterRulesConfig `json:"settings"` // Deprecated
+	RuleList       []json.RawMessage  `json:"rules"`
+	DomainStrategy *string            `json:"domainStrategy"`
+}
+
+func (c *RouterConfig) getDomainStrategy() router.Config_DomainStrategy {
+	ds := ""
+	if c.DomainStrategy != nil {
+		ds = *c.DomainStrategy
+	} else if c.Settings != nil {
+		ds = c.Settings.DomainStrategy
+	}
+
+	switch ds {
+	case "alwaysip":
+		return router.Config_UseIp
+	case "ipifnonmatch":
+		return router.Config_IpIfNonMatch
+	case "ipondemand":
+		return router.Config_IpOnDemand
+	default:
+		return router.Config_AsIs
+	}
 }
 
 func (c *RouterConfig) Build() (*router.Config, error) {
-	if c.Settings == nil {
-		return nil, newError("Router settings is not specified.")
-	}
 	config := new(router.Config)
+	config.DomainStrategy = c.getDomainStrategy()
 
-	settings := c.Settings
-	config.DomainStrategy = router.Config_AsIs
-	config.Rule = make([]*router.RoutingRule, len(settings.RuleList))
-	domainStrategy := strings.ToLower(settings.DomainStrategy)
-	switch domainStrategy {
-	case "alwaysip":
-		config.DomainStrategy = router.Config_UseIp
-	case "ipifnonmatch":
-		config.DomainStrategy = router.Config_IpIfNonMatch
-	case "ipondemand":
-		config.DomainStrategy = router.Config_IpOnDemand
+	rawRuleList := c.RuleList
+	if c.Settings != nil {
+		rawRuleList = append(c.RuleList, c.Settings.RuleList...)
 	}
-	for idx, rawRule := range settings.RuleList {
+	for _, rawRule := range rawRuleList {
 		rule, err := ParseRule(rawRule)
 		if err != nil {
 			return nil, err
 		}
-		config.Rule[idx] = rule
+		config.Rule = append(config.Rule, rule)
 	}
 	return config, nil
 }

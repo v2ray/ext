@@ -84,5 +84,64 @@ func TestRouterConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			Input: `{
+				"domainStrategy": "AsIs",
+				"rules": [
+					{
+						"type": "field",
+						"domain": [
+							"baidu.com",
+							"qq.com"
+						],
+						"outboundTag": "direct"
+					},
+					{
+						"type": "field",
+						"ip": [
+							"10.0.0.0/8",
+							"::1/128"
+						],
+						"outboundTag": "test"
+					}
+				]
+			}`,
+			Parser: createParser(),
+			Output: &router.Config{
+				DomainStrategy: router.Config_AsIs,
+				Rule: []*router.RoutingRule{
+					{
+						Domain: []*router.Domain{
+							{
+								Type:  router.Domain_Plain,
+								Value: "baidu.com",
+							},
+							{
+								Type:  router.Domain_Plain,
+								Value: "qq.com",
+							},
+						},
+						Tag: "direct",
+					},
+					{
+						Geoip: []*router.GeoIP{
+							{
+								Cidr: []*router.CIDR{
+									{
+										Ip:     []byte{10, 0, 0, 0},
+										Prefix: 8,
+									},
+									{
+										Ip:     []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+										Prefix: 128,
+									},
+								},
+							},
+						},
+						Tag: "test",
+					},
+				},
+			},
+		},
 	})
 }
