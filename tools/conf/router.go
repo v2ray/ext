@@ -32,7 +32,7 @@ func (c *RouterConfig) getDomainStrategy() router.Config_DomainStrategy {
 		ds = c.Settings.DomainStrategy
 	}
 
-	switch ds {
+	switch strings.ToLower(ds) {
 	case "alwaysip":
 		return router.Config_UseIp
 	case "ipifnonmatch":
