@@ -155,7 +155,9 @@ func TestV2RayConfig(t *testing.T) {
 										},
 									},
 								},
-								Tag: "blocked",
+								TargetTag: &router.RoutingRule_Tag{
+									Tag: "blocked",
+								},
 							},
 						},
 					}),

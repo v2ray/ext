@@ -18,10 +18,30 @@ type RouterRulesConfig struct {
 	DomainStrategy string            `json:"domainStrategy"`
 }
 
+type BalancingRule struct {
+	Tag       string     `json:"tag"`
+	Selectors StringList `json:"selector"`
+}
+
+func (r *BalancingRule) Build() (*router.BalancingRule, error) {
+	if len(r.Tag) == 0 {
+		return nil, newError("empty balancer tag")
+	}
+	if len(r.Selectors) == 0 {
+		return nil, newError("empty selector list")
+	}
+
+	return &router.BalancingRule{
+		Tag:              r.Tag,
+		OutboundSelector: []string(r.Selectors),
+	}, nil
+}
+
 type RouterConfig struct {
 	Settings       *RouterRulesConfig `json:"settings"` // Deprecated
 	RuleList       []json.RawMessage  `json:"rules"`
 	DomainStrategy *string            `json:"domainStrategy"`
+	Balancers      []*BalancingRule   `json:"balancers"`
 }
 
 func (c *RouterConfig) getDomainStrategy() router.Config_DomainStrategy {
@@ -59,12 +79,20 @@ func (c *RouterConfig) Build() (*router.Config, error) {
 		}
 		config.Rule = append(config.Rule, rule)
 	}
+	for _, rawBalancer := range c.Balancers {
+		balancer, err := rawBalancer.Build()
+		if err != nil {
+			return nil, err
+		}
+		config.BalancingRule = append(config.BalancingRule, balancer)
+	}
 	return config, nil
 }
 
 type RouterRule struct {
 	Type        string `json:"type"`
 	OutboundTag string `json:"outboundTag"`
+	BalancerTag string `json:"balancerTag"`
 }
 
 func ParseIP(s string) (*router.CIDR, error) {
@@ -283,7 +311,17 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	rule := new(router.RoutingRule)
-	rule.Tag = rawFieldRule.OutboundTag
+	if len(rawFieldRule.OutboundTag) > 0 {
+		rule.TargetTag = &router.RoutingRule_Tag{
+			Tag: rawFieldRule.OutboundTag,
+		}
+	} else if len(rawFieldRule.BalancerTag) > 0 {
+		rule.TargetTag = &router.RoutingRule_BalancingTag{
+			BalancingTag: rawFieldRule.BalancerTag,
+		}
+	} else {
+		return nil, newError("neither outboundTag nor balancerTag is specified in routing rule")
+	}
 
 	if rawFieldRule.Domain != nil {
 		for _, domain := range *rawFieldRule.Domain {
@@ -381,7 +419,9 @@ func parseChinaIPRule(data []byte) (*router.RoutingRule, error) {
 		return nil, newError("failed to load geoip:cn").Base(err)
 	}
 	return &router.RoutingRule{
-		Tag:  rawRule.OutboundTag,
+		TargetTag: &router.RoutingRule_Tag{
+			Tag: rawRule.OutboundTag,
+		},
 		Cidr: chinaIPs,
 	}, nil
 }
@@ -397,7 +437,9 @@ func parseChinaSitesRule(data []byte) (*router.RoutingRule, error) {
 		return nil, newError("failed to load geosite:cn.").Base(err)
 	}
 	return &router.RoutingRule{
-		Tag:    rawRule.OutboundTag,
+		TargetTag: &router.RoutingRule_Tag{
+			Tag: rawRule.OutboundTag,
+		},
 		Domain: domains,
 	}, nil
 }

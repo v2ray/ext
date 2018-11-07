@@ -45,11 +45,23 @@ func TestRouterConfig(t *testing.T) {
 							"outboundTag": "test"
 						}
 					]
-				}
+				},
+				"balancers": [
+					{
+						"tag": "b1",
+						"selector": ["test"]
+					}
+				]
 			}`,
 			Parser: createParser(),
 			Output: &router.Config{
 				DomainStrategy: router.Config_AsIs,
+				BalancingRule: []*router.BalancingRule{
+					{
+						Tag:              "b1",
+						OutboundSelector: []string{"test"},
+					},
+				},
 				Rule: []*router.RoutingRule{
 					{
 						Domain: []*router.Domain{
@@ -62,7 +74,9 @@ func TestRouterConfig(t *testing.T) {
 								Value: "qq.com",
 							},
 						},
-						Tag: "direct",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "direct",
+						},
 					},
 					{
 						Geoip: []*router.GeoIP{
@@ -79,7 +93,9 @@ func TestRouterConfig(t *testing.T) {
 								},
 							},
 						},
-						Tag: "test",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "test",
+						},
 					},
 				},
 			},
@@ -124,7 +140,9 @@ func TestRouterConfig(t *testing.T) {
 								Value: "qq.com",
 							},
 						},
-						Tag: "direct",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "direct",
+						},
 					},
 					{
 						Geoip: []*router.GeoIP{
@@ -141,7 +159,9 @@ func TestRouterConfig(t *testing.T) {
 								},
 							},
 						},
-						Tag: "test",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "test",
+						},
 					},
 				},
 			},
@@ -183,7 +203,9 @@ func TestRouterConfig(t *testing.T) {
 								Value: "qq.com",
 							},
 						},
-						Tag: "direct",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "direct",
+						},
 					},
 					{
 						Geoip: []*router.GeoIP{
@@ -200,7 +222,9 @@ func TestRouterConfig(t *testing.T) {
 								},
 							},
 						},
-						Tag: "test",
+						TargetTag: &router.RoutingRule_Tag{
+							Tag: "test",
+						},
 					},
 				},
 			},
