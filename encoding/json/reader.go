@@ -96,6 +96,7 @@ func (v *Reader) Read(b []byte) (int, error) {
 		case StateComment:
 			if x == '\n' {
 				v.state = StateContent
+				p = append(p, '\n')
 			}
 		case StateSlash:
 			switch x {
@@ -107,8 +108,11 @@ func (v *Reader) Read(b []byte) (int, error) {
 				p = append(p, '/', x)
 			}
 		case StateMultilineComment:
-			if x == '*' {
+			switch x {
+			case '*':
 				v.state = StateMultilineCommentStar
+			case '\n':
+				p = append(p, '\n')
 			}
 		case StateMultilineCommentStar:
 			switch x {
@@ -116,6 +120,8 @@ func (v *Reader) Read(b []byte) (int, error) {
 				v.state = StateContent
 			case '*':
 				// Stay
+			case '\n':
+				p = append(p, '\n')
 			default:
 				v.state = StateMultilineComment
 			}

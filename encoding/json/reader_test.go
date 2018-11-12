@@ -22,7 +22,9 @@ content #comment 1
 #comment 2
 content 2`,
 			`
-content content 2`},
+content 
+
+content 2`},
 		{`content`, `content`},
 		{" ", " "},
 		{`con/*abcd*/tent`, "content"},
@@ -30,7 +32,9 @@ content content 2`},
 text // adlkhdf /*
 //comment adfkj
 text 2*/`, `
-text text 2*`},
+text 
+
+text 2*`},
 		{`"//"content`, `"//"content`},
 		{`abcd'//'abcd`, `abcd'//'abcd`},
 		{`"\""`, `"\""`},
