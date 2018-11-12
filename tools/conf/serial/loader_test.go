@@ -41,6 +41,16 @@ func TestLoaderError(t *testing.T) {
 		}`,
 			Output: "parse json config",
 		},
+		{
+			Input: `{
+				"inbounds": [{
+					"port": 1,
+					"listen": 0,
+					"protocol": "test"
+				}]
+		}`,
+			Output: "line 1 char 1",
+		},
 	}
 	for _, testCase := range testCases {
 		reader := bytes.NewReader([]byte(testCase.Input))

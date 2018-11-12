@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"v2ray.com/core"
+	"v2ray.com/core/common/errors"
 	json_reader "v2ray.com/ext/encoding/json"
 	"v2ray.com/ext/tools/conf"
 )
@@ -48,7 +49,8 @@ func LoadJSONConfig(reader io.Reader) (*core.Config, error) {
 
 	if err := decoder.Decode(jsonConfig); err != nil {
 		var pos *offset
-		switch tErr := err.(type) {
+		cause := errors.Cause(err)
+		switch tErr := cause.(type) {
 		case *json.SyntaxError:
 			pos = findOffset(jsonContent.Bytes(), int(tErr.Offset))
 		case *json.UnmarshalTypeError:

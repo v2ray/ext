@@ -43,7 +43,7 @@ type Address struct {
 func (v *Address) UnmarshalJSON(data []byte) error {
 	var rawStr string
 	if err := json.Unmarshal(data, &rawStr); err != nil {
-		return err
+		return newError("invalid address: ", string(data)).Base(err)
 	}
 	v.Address = v2net.ParseAddress(rawStr)
 
