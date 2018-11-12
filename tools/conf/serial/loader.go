@@ -23,14 +23,14 @@ func findOffset(b []byte, o int) *offset {
 	line := 1
 	char := 0
 	for i, x := range b {
+		if i == o {
+			break
+		}
 		if x == '\n' {
 			line++
 			char = 0
 		} else {
 			char++
-		}
-		if i == o {
-			break
 		}
 	}
 

@@ -21,7 +21,7 @@ func TestLoaderError(t *testing.T) {
 					"loglevel": "info"
 				}
 		}`,
-			Output: "line 4 char 7",
+			Output: "line 4 char 6",
 		},
 		{
 			Input: `{
@@ -30,7 +30,7 @@ func TestLoaderError(t *testing.T) {
 					"loglevel": "info",
 				}
 		}`,
-			Output: "line 6 char 0",
+			Output: "line 5 char 5",
 		},
 		{
 			Input: `{
