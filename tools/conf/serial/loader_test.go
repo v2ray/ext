@@ -57,7 +57,7 @@ func TestLoaderError(t *testing.T) {
 		_, err := serial.LoadJSONConfig(reader)
 		errString := err.Error()
 		if !strings.Contains(errString, testCase.Output) {
-			t.Error("unexpected output from json: ", testCase.Input, ". expected ", testCase.Output, ", but actualy ", errString)
+			t.Error("unexpected output from json: ", testCase.Input, ". expected ", testCase.Output, ", but actually ", errString)
 		}
 	}
 }
