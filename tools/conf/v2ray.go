@@ -146,6 +146,15 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 		receiverSettings.Listen = c.ListenOn.Build()
 	}
 	if c.Allocation != nil {
+		concurrency := -1
+		if c.Allocation.Concurrency != nil && c.Allocation.Strategy == "random" {
+			concurrency = int(*c.Allocation.Concurrency)
+		}
+		portRange := int(c.PortRange.To - c.PortRange.From + 1)
+		if concurrency >= 0 && concurrency >= portRange {
+			return nil, newError("not enough ports. concurrency = ", concurrency, " ports: ", c.PortRange.From, " - ", c.PortRange.To)
+		}
+
 		as, err := c.Allocation.Build()
 		if err != nil {
 			return nil, err

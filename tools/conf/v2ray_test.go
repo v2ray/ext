@@ -90,7 +90,11 @@ func TestV2RayConfig(t *testing.T) {
 						"security": "tls"
 					},
 					"protocol": "vmess",
-					"port": 443,
+					"port": "443-500",
+					"allocate": {
+						"strategy": "random",
+						"concurrency": 3
+					},
 					"settings": {
 						"clients": [
 							{
@@ -256,7 +260,13 @@ func TestV2RayConfig(t *testing.T) {
 						ReceiverSettings: serial.ToTypedMessage(&proxyman.ReceiverConfig{
 							PortRange: &net.PortRange{
 								From: 443,
-								To:   443,
+								To:   500,
+							},
+							AllocationStrategy: &proxyman.AllocationStrategy{
+								Type: proxyman.AllocationStrategy_Random,
+								Concurrency: &proxyman.AllocationStrategy_AllocationStrategyConcurrency{
+									Value: 3,
+								},
 							},
 							StreamSettings: &internet.StreamConfig{
 								ProtocolName: "websocket",
