@@ -35,7 +35,7 @@ func (c *NameServerConfig) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	return newError("failed to parse name server")
+	return newError("failed to parse name server: ", string(data))
 }
 
 func toDomainMatchingType(t router.Domain_Type) dns.DomainMatchingType {
