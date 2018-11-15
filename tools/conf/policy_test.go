@@ -3,13 +3,11 @@ package conf_test
 import (
 	"testing"
 
-	. "v2ray.com/ext/assert"
+	"v2ray.com/core/common"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestBufferSize(t *testing.T) {
-	assert := With(t)
-
 	cases := []struct {
 		Input  int32
 		Output int32
@@ -34,9 +32,9 @@ func TestBufferSize(t *testing.T) {
 			BufferSize: &bs,
 		}
 		p, err := pConf.Build()
-		assert(err, IsNil)
-
-		assert(p.Buffer.Connection, Equals, int32(c.Output))
+		common.Must(err)
+		if p.Buffer.Connection != c.Output {
+			t.Error("expected buffer size ", c.Output, " but got ", p.Buffer.Connection)
+		}
 	}
-
 }
