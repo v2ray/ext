@@ -96,7 +96,7 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 	config := new(dns.Config)
 
 	if c.ClientIP != nil {
-		if !c.ClientIP.Family().IsIPv4() && !c.ClientIP.Family().IsIPv6() {
+		if !c.ClientIP.Family().IsIP() {
 			return nil, newError("not an IP address:", c.ClientIP.String())
 		}
 		config.ClientIp = []byte(c.ClientIP.IP())
