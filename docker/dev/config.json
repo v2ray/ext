@@ -4,7 +4,7 @@
     "error": "/var/log/v2ray/error.log",
     "loglevel": "warning"
   },
-  "inbound": {
+  "inbounds": [{
     "port": 8000,
     "protocol": "vmess",
     "settings": {
@@ -16,9 +16,9 @@
         }
       ]
     }
-  },
-  "outbound": {
+  }],
+  "outbounds": [{
     "protocol": "freedom",
     "settings": {}
-  }
+  }]
 }
