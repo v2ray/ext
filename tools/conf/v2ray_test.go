@@ -108,8 +108,7 @@ func TestV2RayConfig(t *testing.T) {
 				"outboundDetour": [
 					{
 						"tag": "blocked",
-						"protocol": "blackhole",
-						"settings": {}
+						"protocol": "blackhole"
 					}
 				],
 				"routing": {

@@ -68,10 +68,12 @@ func (v *JSONConfigLoader) Load(raw []byte) (interface{}, string, error) {
 	rawConfig := json.RawMessage(raw)
 	if len(v.configKey) > 0 {
 		configValue, found := obj[v.configKey]
-		if !found {
-			return nil, "", newError(v.configKey, " not found in JSON content").AtError()
+		if found {
+			rawConfig = configValue
+		} else {
+			// Default to empty json object.
+			rawConfig = json.RawMessage([]byte("{}"))
 		}
-		rawConfig = configValue
 	}
 	config, err := v.LoadWithID([]byte(rawConfig), id)
 	if err != nil {

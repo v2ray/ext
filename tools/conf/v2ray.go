@@ -122,7 +122,7 @@ type InboundDetourConfig struct {
 	Protocol       string                         `json:"protocol"`
 	PortRange      *PortRange                     `json:"port"`
 	ListenOn       *Address                       `json:"listen"`
-	Settings       json.RawMessage                `json:"settings"`
+	Settings       *json.RawMessage               `json:"settings"`
 	Tag            string                         `json:"tag"`
 	Allocation     *InboundDetourAllocationConfig `json:"allocate"`
 	StreamSetting  *StreamConfig                  `json:"streamSettings"`
@@ -183,7 +183,11 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 		receiverSettings.DomainOverride = kp
 	}
 
-	rawConfig, err := inboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
+	settings := []byte("{}")
+	if c.Settings != nil {
+		settings = ([]byte)(*c.Settings)
+	}
+	rawConfig, err := inboundConfigLoader.LoadWithID(settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to load inbound detour config.").Base(err)
 	}
@@ -203,13 +207,13 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 }
 
 type OutboundDetourConfig struct {
-	Protocol      string          `json:"protocol"`
-	SendThrough   *Address        `json:"sendThrough"`
-	Tag           string          `json:"tag"`
-	Settings      json.RawMessage `json:"settings"`
-	StreamSetting *StreamConfig   `json:"streamSettings"`
-	ProxySettings *ProxyConfig    `json:"proxySettings"`
-	MuxSettings   *MuxConfig      `json:"mux"`
+	Protocol      string           `json:"protocol"`
+	SendThrough   *Address         `json:"sendThrough"`
+	Tag           string           `json:"tag"`
+	Settings      *json.RawMessage `json:"settings"`
+	StreamSetting *StreamConfig    `json:"streamSettings"`
+	ProxySettings *ProxyConfig     `json:"proxySettings"`
+	MuxSettings   *MuxConfig       `json:"mux"`
 }
 
 // Build implements Buildable.
@@ -247,7 +251,11 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 		}
 	}
 
-	rawConfig, err := outboundConfigLoader.LoadWithID(c.Settings, c.Protocol)
+	settings := []byte("{}")
+	if c.Settings != nil {
+		settings = ([]byte)(*c.Settings)
+	}
+	rawConfig, err := outboundConfigLoader.LoadWithID(settings, c.Protocol)
 	if err != nil {
 		return nil, newError("failed to parse to outbound detour config.").Base(err)
 	}
