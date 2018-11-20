@@ -75,8 +75,8 @@ func TestArrayNetworkList(t *testing.T) {
 	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert(nlist.HasNetwork(net.Network_TCP), IsTrue)
-	assert(nlist.HasNetwork(net.Network_UDP), IsFalse)
+	assert(net.HasNetwork(nlist, net.Network_TCP), IsTrue)
+	assert(net.HasNetwork(nlist, net.Network_UDP), IsFalse)
 }
 
 func TestStringNetworkList(t *testing.T) {
@@ -87,8 +87,8 @@ func TestStringNetworkList(t *testing.T) {
 	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert(nlist.HasNetwork(net.Network_TCP), IsTrue)
-	assert(nlist.HasNetwork(net.Network_UDP), IsFalse)
+	assert(net.HasNetwork(nlist, net.Network_TCP), IsTrue)
+	assert(net.HasNetwork(nlist, net.Network_UDP), IsFalse)
 }
 
 func TestInvalidNetworkJson(t *testing.T) {
