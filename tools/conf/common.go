@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	v2net "v2ray.com/core/common/net"
+	"v2ray.com/core/common/net"
 	"v2ray.com/core/common/protocol"
 )
 
@@ -37,7 +37,7 @@ func (v *StringList) UnmarshalJSON(data []byte) error {
 }
 
 type Address struct {
-	v2net.Address
+	net.Address
 }
 
 func (v *Address) UnmarshalJSON(data []byte) error {
@@ -45,19 +45,26 @@ func (v *Address) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &rawStr); err != nil {
 		return newError("invalid address: ", string(data)).Base(err)
 	}
-	v.Address = v2net.ParseAddress(rawStr)
+	v.Address = net.ParseAddress(rawStr)
 
 	return nil
 }
 
-func (v *Address) Build() *v2net.IPOrDomain {
-	return v2net.NewIPOrDomain(v.Address)
+func (v *Address) Build() *net.IPOrDomain {
+	return net.NewIPOrDomain(v.Address)
 }
 
 type Network string
 
-func (v Network) Build() v2net.Network {
-	return v2net.ParseNetwork(string(v))
+func (v Network) Build() net.Network {
+	switch strings.ToLower(string(v)) {
+	case "tcp":
+		return net.Network_TCP
+	case "udp":
+		return net.Network_UDP
+	default:
+		return net.Network_Unknown
+	}
 }
 
 type NetworkList []Network
@@ -83,34 +90,34 @@ func (v *NetworkList) UnmarshalJSON(data []byte) error {
 	return newError("unknown format of a string list: " + string(data))
 }
 
-func (v *NetworkList) Build() *v2net.NetworkList {
+func (v *NetworkList) Build() *net.NetworkList {
 	if v == nil {
-		return &v2net.NetworkList{
-			Network: []v2net.Network{v2net.Network_TCP},
+		return &net.NetworkList{
+			Network: []net.Network{net.Network_TCP},
 		}
 	}
 
-	list := new(v2net.NetworkList)
+	list := new(net.NetworkList)
 	for _, network := range *v {
 		list.Network = append(list.Network, network.Build())
 	}
 	return list
 }
 
-func parseIntPort(data []byte) (v2net.Port, error) {
+func parseIntPort(data []byte) (net.Port, error) {
 	var intPort uint32
 	err := json.Unmarshal(data, &intPort)
 	if err != nil {
-		return v2net.Port(0), err
+		return net.Port(0), err
 	}
-	return v2net.PortFromInt(intPort)
+	return net.PortFromInt(intPort)
 }
 
-func parseStringPort(data []byte) (v2net.Port, v2net.Port, error) {
+func parseStringPort(data []byte) (net.Port, net.Port, error) {
 	var s string
 	err := json.Unmarshal(data, &s)
 	if err != nil {
-		return v2net.Port(0), v2net.Port(0), err
+		return net.Port(0), net.Port(0), err
 	}
 	if strings.HasPrefix(s, "env:") {
 		s = s[4:]
@@ -119,20 +126,20 @@ func parseStringPort(data []byte) (v2net.Port, v2net.Port, error) {
 
 	pair := strings.SplitN(s, "-", 2)
 	if len(pair) == 0 {
-		return v2net.Port(0), v2net.Port(0), newError("Config: Invalid port range: ", s)
+		return net.Port(0), net.Port(0), newError("Config: Invalid port range: ", s)
 	}
 	if len(pair) == 1 {
-		port, err := v2net.PortFromString(pair[0])
+		port, err := net.PortFromString(pair[0])
 		return port, port, err
 	}
 
-	fromPort, err := v2net.PortFromString(pair[0])
+	fromPort, err := net.PortFromString(pair[0])
 	if err != nil {
-		return v2net.Port(0), v2net.Port(0), err
+		return net.Port(0), net.Port(0), err
 	}
-	toPort, err := v2net.PortFromString(pair[1])
+	toPort, err := net.PortFromString(pair[1])
 	if err != nil {
-		return v2net.Port(0), v2net.Port(0), err
+		return net.Port(0), net.Port(0), err
 	}
 	return fromPort, toPort, nil
 }
@@ -142,8 +149,8 @@ type PortRange struct {
 	To   uint32
 }
 
-func (v *PortRange) Build() *v2net.PortRange {
-	return &v2net.PortRange{
+func (v *PortRange) Build() *net.PortRange {
+	return &net.PortRange{
 		From: v.From,
 		To:   v.To,
 	}

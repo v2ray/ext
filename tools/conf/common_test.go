@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	v2net "v2ray.com/core/common/net"
+	"v2ray.com/core/common/net"
 	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
@@ -64,7 +64,7 @@ func TestStringNetwork(t *testing.T) {
 	var network Network
 	err := json.Unmarshal([]byte(`"tcp"`), &network)
 	assert(err, IsNil)
-	assert(network.Build() == v2net.Network_TCP, IsTrue)
+	assert(network.Build() == net.Network_TCP, IsTrue)
 }
 
 func TestArrayNetworkList(t *testing.T) {
@@ -75,8 +75,8 @@ func TestArrayNetworkList(t *testing.T) {
 	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert(nlist.HasNetwork(v2net.ParseNetwork("tcp")), IsTrue)
-	assert(nlist.HasNetwork(v2net.ParseNetwork("udp")), IsFalse)
+	assert(nlist.HasNetwork(net.Network_TCP), IsTrue)
+	assert(nlist.HasNetwork(net.Network_UDP), IsFalse)
 }
 
 func TestStringNetworkList(t *testing.T) {
@@ -87,8 +87,8 @@ func TestStringNetworkList(t *testing.T) {
 	assert(err, IsNil)
 
 	nlist := list.Build()
-	assert(nlist.HasNetwork(v2net.ParseNetwork("tcp")), IsTrue)
-	assert(nlist.HasNetwork(v2net.ParseNetwork("udp")), IsFalse)
+	assert(nlist.HasNetwork(net.Network_TCP), IsTrue)
+	assert(nlist.HasNetwork(net.Network_UDP), IsFalse)
 }
 
 func TestInvalidNetworkJson(t *testing.T) {
