@@ -346,7 +346,7 @@ func parseFieldRule(msg json.RawMessage) (*router.RoutingRule, error) {
 	}
 
 	if rawFieldRule.Network != nil {
-		rule.NetworkList = rawFieldRule.Network.Build()
+		rule.Networks = rawFieldRule.Network.Build()
 	}
 
 	if rawFieldRule.SourceIP != nil {

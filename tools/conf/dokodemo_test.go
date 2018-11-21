@@ -30,10 +30,8 @@ func TestDokodemoConfig(t *testing.T) {
 						Ip: []byte{8, 8, 8, 8},
 					},
 				},
-				Port: 53,
-				NetworkList: &net.NetworkList{
-					Network: []net.Network{net.Network_TCP},
-				},
+				Port:           53,
+				Networks:       []net.Network{net.Network_TCP},
 				Timeout:        10,
 				FollowRedirect: true,
 				UserLevel:      1,

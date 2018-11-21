@@ -20,7 +20,7 @@ func (v *DokodemoConfig) Build() (proto.Message, error) {
 		config.Address = v.Host.Build()
 	}
 	config.Port = uint32(v.PortValue)
-	config.NetworkList = v.NetworkList.Build()
+	config.Networks = v.NetworkList.Build()
 	config.Timeout = v.TimeoutValue
 	config.FollowRedirect = v.Redirect
 	config.UserLevel = v.UserLevel

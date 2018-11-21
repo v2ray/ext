@@ -44,7 +44,7 @@ type ShadowsocksServerConfig struct {
 func (v *ShadowsocksServerConfig) Build() (proto.Message, error) {
 	config := new(shadowsocks.ServerConfig)
 	config.UdpEnabled = v.UDP
-	config.Network = v.NetworkList.Build().Network
+	config.Network = v.NetworkList.Build()
 
 	if len(v.Password) == 0 {
 		return nil, newError("Shadowsocks password is not specified.")

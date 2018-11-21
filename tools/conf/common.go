@@ -90,16 +90,14 @@ func (v *NetworkList) UnmarshalJSON(data []byte) error {
 	return newError("unknown format of a string list: " + string(data))
 }
 
-func (v *NetworkList) Build() *net.NetworkList {
+func (v *NetworkList) Build() []net.Network {
 	if v == nil {
-		return &net.NetworkList{
-			Network: []net.Network{net.Network_TCP},
-		}
+		return []net.Network{net.Network_TCP}
 	}
 
-	list := new(net.NetworkList)
+	list := make([]net.Network, 0, len(*v))
 	for _, network := range *v {
-		list.Network = append(list.Network, network.Build())
+		list = append(list, network.Build())
 	}
 	return list
 }
