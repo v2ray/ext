@@ -18,13 +18,14 @@ def _go_command(ctx):
     "-gcflags", "-trimpath=${GOPATH}/src",
     "-asmflags", "-trimpath=${GOPATH}/src",
     "-ldflags", "'%s'" % ld_flags,
+    "-buildmode", ctx.attr.buildmode,
     pkg,
   ]
 
   command = " ".join(options)
 
   envs = [
-    "CGO_ENABLED=0",
+    "CGO_ENABLED="+ctx.attr.cgo_enabled,
     "GOOS="+ctx.attr.os,
     "GOARCH="+ctx.attr.arch
   ]
@@ -58,6 +59,8 @@ foreign_go_binary = rule(
     'mips': attr.string(),
     'arm': attr.string(),
     'ld': attr.string(),
+    'cgo_enabled': attr.string(default='0'),
+    'buildmode': attr.string(default='default'),
   },
   executable = True,
 )
