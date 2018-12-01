@@ -166,10 +166,6 @@ func loadIP(filename, country string) ([]*router.CIDR, error) {
 	return nil, newError("country not found: " + country)
 }
 
-func loadGeoSite(country string) ([]*router.Domain, error) {
-	return loadSite("geosite.dat", country)
-}
-
 func loadSite(filename, country string) ([]*router.Domain, error) {
 	geositeBytes, err := sysio.ReadAsset(filename)
 	if err != nil {
@@ -189,10 +185,69 @@ func loadSite(filename, country string) ([]*router.Domain, error) {
 	return nil, newError("country not found: " + country)
 }
 
+type AttributeMatcher interface {
+	Match(*router.Domain) bool
+}
+
+type BooleanMatcher string
+
+func (m BooleanMatcher) Match(domain *router.Domain) bool {
+	for _, attr := range domain.Attribute {
+		if attr.Key == string(m) {
+			return true
+		}
+	}
+	return false
+}
+
+type AttributeList struct {
+	matcher []AttributeMatcher
+}
+
+func (al *AttributeList) Match(domain *router.Domain) bool {
+	for _, matcher := range al.matcher {
+		if matcher.Match(domain) {
+			return true
+		}
+	}
+	return false
+}
+
+func parseAttrs(attrs []string) *AttributeList {
+	al := new(AttributeList)
+	for _, attr := range attrs {
+		lc := strings.ToLower(attr)
+		al.matcher = append(al.matcher, BooleanMatcher(lc))
+	}
+	return al
+}
+
+func loadGeositeWithAttr(file string, siteWithAttr string) ([]*router.Domain, error) {
+	parts := strings.Split(siteWithAttr, "@")
+	if len(parts) == 0 {
+		return nil, newError("empty site")
+	}
+	country := strings.ToUpper(parts[0])
+	attrs := parseAttrs(parts[1:])
+	domains, err := loadSite(file, country)
+	if err != nil {
+		return nil, err
+	}
+
+	filteredDomains := make([]*router.Domain, 0, len(domains))
+	for _, domain := range domains {
+		if attrs.Match(domain) {
+			filteredDomains = append(filteredDomains, domain)
+		}
+	}
+
+	return filteredDomains, nil
+}
+
 func parseDomainRule(domain string) ([]*router.Domain, error) {
 	if strings.HasPrefix(domain, "geosite:") {
 		country := strings.ToUpper(domain[8:])
-		domains, err := loadGeoSite(country)
+		domains, err := loadGeositeWithAttr("geosite.dat", country)
 		if err != nil {
 			return nil, newError("failed to load geosite: ", country).Base(err)
 		}
@@ -205,8 +260,8 @@ func parseDomainRule(domain string) ([]*router.Domain, error) {
 			return nil, newError("invalid external resource: ", domain)
 		}
 		filename := kv[0]
-		country := strings.ToUpper(kv[1])
-		domains, err := loadSite(filename, country)
+		country := kv[1]
+		domains, err := loadGeositeWithAttr(filename, country)
 		if err != nil {
 			return nil, newError("failed to load external sites: ", country, " from ", filename).Base(err)
 		}
@@ -432,7 +487,7 @@ func parseChinaSitesRule(data []byte) (*router.RoutingRule, error) {
 	if err != nil {
 		return nil, newError("invalid router rule").Base(err).AtError()
 	}
-	domains, err := loadGeoSite("CN")
+	domains, err := loadGeositeWithAttr("geosite.dat", "CN")
 	if err != nil {
 		return nil, newError("failed to load geosite:cn.").Base(err)
 	}
