@@ -15,8 +15,8 @@ def _go_command(ctx):
     "build",
     "-o", output_file.path,
     "-compiler", "gc",
-    "-gcflags", "-trimpath=${GOPATH}/src",
-    "-asmflags", "-trimpath=${GOPATH}/src",
+    "-gcflags", '"all=-trimpath=${GOPATH}/src"',
+    "-asmflags", '"all=-trimpath=${GOPATH}/src"',
     "-ldflags", "'%s'" % ld_flags,
     pkg,
   ]
@@ -26,7 +26,8 @@ def _go_command(ctx):
   envs = [
     "CGO_ENABLED=0",
     "GOOS="+ctx.attr.os,
-    "GOARCH="+ctx.attr.arch
+    "GOARCH="+ctx.attr.arch,
+    "GOROOT_FINAL=/go"
   ]
   
   if ctx.attr.mips: # https://github.com/golang/go/issues/27260
