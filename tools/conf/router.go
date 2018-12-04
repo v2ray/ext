@@ -206,11 +206,15 @@ type AttributeList struct {
 
 func (al *AttributeList) Match(domain *router.Domain) bool {
 	for _, matcher := range al.matcher {
-		if matcher.Match(domain) {
-			return true
+		if !matcher.Match(domain) {
+			return false
 		}
 	}
-	return false
+	return true
+}
+
+func (al *AttributeList) IsEmpty() bool {
+	return len(al.matcher) == 0
 }
 
 func parseAttrs(attrs []string) *AttributeList {
@@ -232,6 +236,10 @@ func loadGeositeWithAttr(file string, siteWithAttr string) ([]*router.Domain, er
 	domains, err := loadSite(file, country)
 	if err != nil {
 		return nil, err
+	}
+
+	if attrs.IsEmpty() {
+		return domains, nil
 	}
 
 	filteredDomains := make([]*router.Domain, 0, len(domains))
