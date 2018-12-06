@@ -1,6 +1,7 @@
 package control
 
 import (
+	"context"
 	"crypto/x509"
 	"encoding/json"
 	"flag"
@@ -76,11 +77,11 @@ func (c *CertificateCommand) writeFile(content []byte, name string) error {
 
 func (c *CertificateCommand) printFile(certificate *cert.Certificate, name string) error {
 	certPEM, keyPEM := certificate.ToPEM()
-	return task.Run(task.Parallel(func() error {
+	return task.Run(context.Background(), func() error {
 		return c.writeFile(certPEM, name+"_cert.pem")
 	}, func() error {
 		return c.writeFile(keyPEM, name+"_key.pem")
-	}))()
+	})
 }
 
 func (c *CertificateCommand) Execute(args []string) error {
