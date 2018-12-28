@@ -2,15 +2,26 @@ package conf_test
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/golang/protobuf/proto"
 	"v2ray.com/core/app/dns"
+	"v2ray.com/core/common"
 	"v2ray.com/core/common/net"
+	"v2ray.com/core/common/platform"
+	"v2ray.com/ext/sysio"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestDnsConfigParsing(t *testing.T) {
+	geositePath := platform.GetAssetLocation("geosite.dat")
+	common.Must(sysio.CopyFile(geositePath, filepath.Join(os.Getenv("GOPATH"), "src", "v2ray.com", "core", "release", "config", "geosite.dat")))
+	defer func() {
+		os.Remove(geositePath)
+	}()
+
 	parserCreator := func() func(string) (proto.Message, error) {
 		return func(s string) (proto.Message, error) {
 			config := new(DnsConfig)
@@ -30,7 +41,8 @@ func TestDnsConfigParsing(t *testing.T) {
 					"domains": ["domain:v2ray.com"]
 				}],
 				"hosts": {
-					"v2ray.com": "127.0.0.1"
+					"v2ray.com": "127.0.0.1",
+					"geosite:tld-cn": "10.0.0.1"
 				},
 				"clientIp": "10.0.0.1"
 			}`,
@@ -60,6 +72,16 @@ func TestDnsConfigParsing(t *testing.T) {
 						Type:   dns.DomainMatchingType_Full,
 						Domain: "v2ray.com",
 						Ip:     [][]byte{{127, 0, 0, 1}},
+					},
+					{
+						Type:   dns.DomainMatchingType_Subdomain,
+						Domain: "cn",
+						Ip:     [][]byte{{10, 0, 0, 1}},
+					},
+					{
+						Type:   dns.DomainMatchingType_Subdomain,
+						Domain: "xn--fiqs8s",
+						Ip:     [][]byte{{10, 0, 0, 1}},
 					},
 				},
 				ClientIp: []byte{10, 0, 0, 1},
