@@ -84,6 +84,13 @@ func (c *NameServerConfig) Build() (*dns.NameServer, error) {
 	}, nil
 }
 
+var typeMap = map[router.Domain_Type]dns.DomainMatchingType{
+	router.Domain_Full:   dns.DomainMatchingType_Full,
+	router.Domain_Domain: dns.DomainMatchingType_Subdomain,
+	router.Domain_Plain:  dns.DomainMatchingType_Keyword,
+	router.Domain_Regex:  dns.DomainMatchingType_Regex,
+}
+
 // DnsConfig is a JSON serializable object for dns.Config.
 type DnsConfig struct {
 	Servers  []*NameServerConfig `json:"servers"`
@@ -116,18 +123,34 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 				return nil, newError("domain is not expected in DNS hosts: ", ip.Domain())
 			}
 
-			mapping := &dns.Config_HostMapping{
-				Ip: [][]byte{[]byte(ip.IP())},
-			}
+			var mappings []*dns.Config_HostMapping
 			if strings.HasPrefix(domain, "domain:") {
-				mapping.Type = dns.DomainMatchingType_Subdomain
-				mapping.Domain = domain[7:]
+				mappings = append(mappings, &dns.Config_HostMapping{
+					Type:   dns.DomainMatchingType_Subdomain,
+					Domain: domain[7:],
+					Ip:     [][]byte{[]byte(ip.IP())},
+				})
+			} else if strings.HasPrefix(domain, "geosite:") {
+				domains, err := loadGeositeWithAttr("geosite.dat", strings.ToUpper(domain[8:]))
+				if err != nil {
+					return nil, newError("invalid geosite settings: ", domain).Base(err)
+				}
+				for _, d := range domains {
+					mappings = append(mappings, &dns.Config_HostMapping{
+						Type:   typeMap[d.Type],
+						Domain: d.Value,
+						Ip:     [][]byte{[]byte(ip.IP())},
+					})
+				}
 			} else {
-				mapping.Type = dns.DomainMatchingType_Full
-				mapping.Domain = domain
+				mappings = append(mappings, &dns.Config_HostMapping{
+					Type:   dns.DomainMatchingType_Full,
+					Domain: domain,
+					Ip:     [][]byte{[]byte(ip.IP())},
+				})
 			}
 
-			config.StaticHosts = append(config.StaticHosts, mapping)
+			config.StaticHosts = append(config.StaticHosts, mappings...)
 		}
 	}
 
