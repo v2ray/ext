@@ -119,6 +119,16 @@ func callStatsService(conn *grpc.ClientConn, method string, request string) (str
 			return "", err
 		}
 		return proto.MarshalTextString(resp), nil
+	case "querystats":
+		r := &statsService.QueryStatsRequest{}
+		if err := proto.UnmarshalText(request, r); err != nil {
+			return "", err
+		}
+		resp, err := client.QueryStats(context.Background(), r)
+		if err != nil {
+			return "", err
+		}
+		return proto.MarshalTextString(resp), nil
 	default:
 		return "", errors.New("Unknown method: " + method)
 	}
