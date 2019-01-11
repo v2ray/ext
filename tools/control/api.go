@@ -30,6 +30,11 @@ func (c *ApiCommand) Description() Description {
 			"The following methods are currently supported:",
 			"\tLoggerService.RestartLogger",
 			"\tStatsService.GetStats",
+			"\tStatsService.QueryStats",
+			"Examples:",
+			"v2ctl api --server=127.0.0.1:8080 LoggerService.RestartLogger '' ",
+			"v2ctl api --server=127.0.0.1:8080 StatsService.QueryStats 'pattern: \"\" reset: false'",
+			"v2ctl api --server=127.0.0.1:8080 StatsService.GetStats 'name: \"inbound>>>statin>>>traffic>>>downlink\" reset: false'",
 		},
 	}
 }
