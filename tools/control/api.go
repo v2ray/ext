@@ -30,6 +30,11 @@ func (c *ApiCommand) Description() Description {
 			"The following methods are currently supported:",
 			"\tLoggerService.RestartLogger",
 			"\tStatsService.GetStats",
+			"\tStatsService.QueryStats",
+			"Examples:",
+			"v2ctl api --server=127.0.0.1:8080 LoggerService.RestartLogger '' ",
+			"v2ctl api --server=127.0.0.1:8080 StatsService.QueryStats 'pattern: \"\" reset: false'",
+			"v2ctl api --server=127.0.0.1:8080 StatsService.GetStats 'name: \"inbound>>>statin>>>traffic>>>downlink\" reset: false'",
 		},
 	}
 }
@@ -115,6 +120,16 @@ func callStatsService(conn *grpc.ClientConn, method string, request string) (str
 			return "", err
 		}
 		resp, err := client.GetStats(context.Background(), r)
+		if err != nil {
+			return "", err
+		}
+		return proto.MarshalTextString(resp), nil
+	case "querystats":
+		r := &statsService.QueryStatsRequest{}
+		if err := proto.UnmarshalText(request, r); err != nil {
+			return "", err
+		}
+		resp, err := client.QueryStats(context.Background(), r)
 		if err != nil {
 			return "", err
 		}
