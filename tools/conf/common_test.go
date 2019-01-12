@@ -5,38 +5,41 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+
+	"v2ray.com/core/common"
 	"v2ray.com/core/common/net"
 	. "v2ray.com/ext/assert"
 	. "v2ray.com/ext/tools/conf"
 )
 
 func TestStringListUnmarshalError(t *testing.T) {
-	assert := With(t)
-
 	rawJson := `1234`
 	list := new(StringList)
 	err := json.Unmarshal([]byte(rawJson), list)
-	assert(err, IsNotNil)
+	if err == nil {
+		t.Error("expected error, but got nil")
+	}
 }
 
 func TestStringListLen(t *testing.T) {
-	assert := With(t)
-
 	rawJson := `"a, b, c, d"`
-	list := new(StringList)
-	err := json.Unmarshal([]byte(rawJson), list)
-	assert(err, IsNil)
-	assert(list.Len(), Equals, 4)
+	var list StringList
+	err := json.Unmarshal([]byte(rawJson), &list)
+	common.Must(err)
+	if r := cmp.Diff([]string(list), []string{"a", " b", " c", " d"}); r != "" {
+		t.Error(r)
+	}
 }
 
 func TestIPParsing(t *testing.T) {
-	assert := With(t)
-
 	rawJson := "\"8.8.8.8\""
 	var address Address
 	err := json.Unmarshal([]byte(rawJson), &address)
-	assert(err, IsNil)
-	assert([]byte(address.IP()), Equals, []byte{8, 8, 8, 8})
+	common.Must(err)
+	if r := cmp.Diff(address.IP(), net.IP{8, 8, 8, 8}); r != "" {
+		t.Error(r)
+	}
 }
 
 func TestDomainParsing(t *testing.T) {
