@@ -96,11 +96,14 @@ type DnsConfig struct {
 	Servers  []*NameServerConfig `json:"servers"`
 	Hosts    map[string]*Address `json:"hosts"`
 	ClientIP *Address            `json:"clientIp"`
+	Tag      string              `json:"tag"`
 }
 
 // Build implements Buildable
 func (c *DnsConfig) Build() (*dns.Config, error) {
-	config := new(dns.Config)
+	config := &dns.Config{
+		Tag: c.Tag,
+	}
 
 	if c.ClientIP != nil {
 		if !c.ClientIP.Family().IsIP() {
