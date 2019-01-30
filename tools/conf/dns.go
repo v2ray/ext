@@ -99,6 +99,18 @@ type DnsConfig struct {
 	Tag      string              `json:"tag"`
 }
 
+func getHostMapping(addr *Address) *dns.Config_HostMapping {
+	if addr.Family().IsIP() {
+		return &dns.Config_HostMapping{
+			Ip: [][]byte{[]byte(addr.IP())},
+		}
+	} else {
+		return &dns.Config_HostMapping{
+			ProxiedDomain: addr.Domain(),
+		}
+	}
+}
+
 // Build implements Buildable
 func (c *DnsConfig) Build() (*dns.Config, error) {
 	config := &dns.Config{
@@ -121,36 +133,32 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 	}
 
 	if c.Hosts != nil {
-		for domain, ip := range c.Hosts {
-			if ip.Family() == net.AddressFamilyDomain {
-				return nil, newError("domain is not expected in DNS hosts: ", ip.Domain())
-			}
-
+		for domain, addr := range c.Hosts {
 			var mappings []*dns.Config_HostMapping
 			if strings.HasPrefix(domain, "domain:") {
-				mappings = append(mappings, &dns.Config_HostMapping{
-					Type:   dns.DomainMatchingType_Subdomain,
-					Domain: domain[7:],
-					Ip:     [][]byte{[]byte(ip.IP())},
-				})
+				mapping := getHostMapping(addr)
+				mapping.Type = dns.DomainMatchingType_Subdomain
+				mapping.Domain = domain[7:]
+
+				mappings = append(mappings, mapping)
 			} else if strings.HasPrefix(domain, "geosite:") {
 				domains, err := loadGeositeWithAttr("geosite.dat", strings.ToUpper(domain[8:]))
 				if err != nil {
 					return nil, newError("invalid geosite settings: ", domain).Base(err)
 				}
 				for _, d := range domains {
-					mappings = append(mappings, &dns.Config_HostMapping{
-						Type:   typeMap[d.Type],
-						Domain: d.Value,
-						Ip:     [][]byte{[]byte(ip.IP())},
-					})
+					mapping := getHostMapping(addr)
+					mapping.Type = typeMap[d.Type]
+					mapping.Domain = d.Value
+
+					mappings = append(mappings, mapping)
 				}
 			} else {
-				mappings = append(mappings, &dns.Config_HostMapping{
-					Type:   dns.DomainMatchingType_Full,
-					Domain: domain,
-					Ip:     [][]byte{[]byte(ip.IP())},
-				})
+				mapping := getHostMapping(addr)
+				mapping.Type = dns.DomainMatchingType_Full
+				mapping.Domain = domain
+
+				mappings = append(mappings, mapping)
 			}
 
 			config.StaticHosts = append(config.StaticHosts, mappings...)

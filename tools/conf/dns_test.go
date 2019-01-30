@@ -42,7 +42,8 @@ func TestDnsConfigParsing(t *testing.T) {
 				}],
 				"hosts": {
 					"v2ray.com": "127.0.0.1",
-					"geosite:tld-cn": "10.0.0.1"
+					"geosite:tld-cn": "10.0.0.1",
+					"domain:example.com": "google.com"
 				},
 				"clientIp": "10.0.0.1"
 			}`,
@@ -82,6 +83,11 @@ func TestDnsConfigParsing(t *testing.T) {
 						Type:   dns.DomainMatchingType_Subdomain,
 						Domain: "xn--fiqs8s",
 						Ip:     [][]byte{{10, 0, 0, 1}},
+					},
+					{
+						Type:          dns.DomainMatchingType_Subdomain,
+						Domain:        "example.com",
+						ProxiedDomain: "google.com",
 					},
 				},
 				ClientIp: []byte{10, 0, 0, 1},
