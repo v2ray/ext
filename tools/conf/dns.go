@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 
 	"v2ray.com/core/app/dns"
@@ -132,8 +133,14 @@ func (c *DnsConfig) Build() (*dns.Config, error) {
 		config.NameServer = append(config.NameServer, ns)
 	}
 
-	if c.Hosts != nil {
-		for domain, addr := range c.Hosts {
+	if c.Hosts != nil && len(c.Hosts) > 0 {
+		domains := make([]string, 0, len(c.Hosts))
+		for domain := range c.Hosts {
+			domains = append(domains, domain)
+		}
+		sort.Strings(domains)
+		for _, domain := range domains {
+			addr := c.Hosts[domain]
 			var mappings []*dns.Config_HostMapping
 			if strings.HasPrefix(domain, "domain:") {
 				mapping := getHostMapping(addr)

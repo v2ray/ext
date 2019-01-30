@@ -70,9 +70,9 @@ func TestDnsConfigParsing(t *testing.T) {
 				},
 				StaticHosts: []*dns.Config_HostMapping{
 					{
-						Type:   dns.DomainMatchingType_Full,
-						Domain: "v2ray.com",
-						Ip:     [][]byte{{127, 0, 0, 1}},
+						Type:          dns.DomainMatchingType_Subdomain,
+						Domain:        "example.com",
+						ProxiedDomain: "google.com",
 					},
 					{
 						Type:   dns.DomainMatchingType_Subdomain,
@@ -85,9 +85,9 @@ func TestDnsConfigParsing(t *testing.T) {
 						Ip:     [][]byte{{10, 0, 0, 1}},
 					},
 					{
-						Type:          dns.DomainMatchingType_Subdomain,
-						Domain:        "example.com",
-						ProxiedDomain: "google.com",
+						Type:   dns.DomainMatchingType_Full,
+						Domain: "v2ray.com",
+						Ip:     [][]byte{{127, 0, 0, 1}},
 					},
 				},
 				ClientIp: []byte{10, 0, 0, 1},
