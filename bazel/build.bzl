@@ -18,6 +18,7 @@ def _go_command(ctx):
     "-gcflags", '"all=-trimpath=${GOPATH}/src"',
     "-asmflags", '"all=-trimpath=${GOPATH}/src"',
     "-ldflags", "'%s'" % ld_flags,
+    "-tags", "'%s'" % ctx.attr.gotags,
     pkg,
   ]
 
@@ -59,6 +60,7 @@ foreign_go_binary = rule(
     'mips': attr.string(),
     'arm': attr.string(),
     'ld': attr.string(),
+    'gotags': attr.string(),
   },
   executable = True,
 )

@@ -13,6 +13,7 @@ def gen_targets(matrix):
       output = output,
       os = os,
       arch = arch,
+      gotags = "confonly",
     )
 
     gpg_sign(
@@ -29,6 +30,7 @@ def gen_targets(matrix):
         os = os,
         arch = arch,
         mips = "softfloat",
+        gotags = "confonly",
       )
 
       gpg_sign(
@@ -45,6 +47,7 @@ def gen_targets(matrix):
         os = os,
         arch = arch,
         arm = "7",
+        gotags = "confonly",
       )
 
       gpg_sign(
