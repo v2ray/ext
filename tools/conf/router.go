@@ -2,7 +2,6 @@ package conf
 
 import (
 	"encoding/json"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -296,7 +295,7 @@ func parseDomainRule(domain string) ([]*router.Domain, error) {
 
 func toCidrList(ips StringList) ([]*router.GeoIP, error) {
 	var geoipList []*router.GeoIP
-	var customCidrs router.CIDRList
+	var customCidrs []*router.CIDR
 
 	for _, ip := range ips {
 		if strings.HasPrefix(ip, "geoip:") {
@@ -306,11 +305,9 @@ func toCidrList(ips StringList) ([]*router.GeoIP, error) {
 				return nil, newError("failed to load GeoIP: ", country).Base(err)
 			}
 
-			cidrList := router.CIDRList(geoip)
-			sort.Sort(&cidrList)
 			geoipList = append(geoipList, &router.GeoIP{
 				CountryCode: strings.ToUpper(country),
-				Cidr:        cidrList,
+				Cidr:        geoip,
 			})
 			continue
 		}
@@ -328,11 +325,9 @@ func toCidrList(ips StringList) ([]*router.GeoIP, error) {
 				return nil, newError("failed to load IPs: ", country, " from ", filename).Base(err)
 			}
 
-			cidrList := router.CIDRList(geoip)
-			sort.Sort(&cidrList)
 			geoipList = append(geoipList, &router.GeoIP{
 				CountryCode: strings.ToUpper(filename + "_" + country),
-				Cidr:        cidrList,
+				Cidr:        geoip,
 			})
 
 			continue
@@ -346,7 +341,6 @@ func toCidrList(ips StringList) ([]*router.GeoIP, error) {
 	}
 
 	if len(customCidrs) > 0 {
-		sort.Sort(&customCidrs)
 		geoipList = append(geoipList, &router.GeoIP{
 			Cidr: customCidrs,
 		})
