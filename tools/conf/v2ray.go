@@ -120,15 +120,17 @@ func (c *InboundDetourAllocationConfig) Build() (*proxyman.AllocationStrategy, e
 }
 
 type InboundDetourConfig struct {
-	Protocol       string                         `json:"protocol"`
-	PortRange      *PortRange                     `json:"port"`
-	ListenOn       *Address                       `json:"listen"`
-	Settings       *json.RawMessage               `json:"settings"`
-	Tag            string                         `json:"tag"`
-	Allocation     *InboundDetourAllocationConfig `json:"allocate"`
-	StreamSetting  *StreamConfig                  `json:"streamSettings"`
-	DomainOverride *StringList                    `json:"domainOverride"`
-	SniffingConfig *SniffingConfig                `json:"sniffing"`
+	Protocol        string                         `json:"protocol"`
+	SendProtocol    string                         `json:"sendProtocol"`
+	ReceiveProtocol string                         `json:"receiveProtocol"`
+	PortRange       *PortRange                     `json:"port"`
+	ListenOn        *Address                       `json:"listen"`
+	Settings        *json.RawMessage               `json:"settings"`
+	Tag             string                         `json:"tag"`
+	Allocation      *InboundDetourAllocationConfig `json:"allocate"`
+	StreamSetting   *StreamConfig                  `json:"streamSettings"`
+	DomainOverride  *StringList                    `json:"domainOverride"`
+	SniffingConfig  *SniffingConfig                `json:"sniffing"`
 }
 
 // Build implements Buildable.
@@ -188,7 +190,7 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 	if c.Settings != nil {
 		settings = ([]byte)(*c.Settings)
 	}
-	rawConfig, err := inboundConfigLoader.LoadWithID(settings, c.Protocol)
+	rawConfig, err := inboundConfigLoader.LoadWithID(settings, c.SendProtocol)
 	if err != nil {
 		return nil, newError("failed to load inbound detour config.").Base(err)
 	}
@@ -208,13 +210,15 @@ func (c *InboundDetourConfig) Build() (*core.InboundHandlerConfig, error) {
 }
 
 type OutboundDetourConfig struct {
-	Protocol      string           `json:"protocol"`
-	SendThrough   *Address         `json:"sendThrough"`
-	Tag           string           `json:"tag"`
-	Settings      *json.RawMessage `json:"settings"`
-	StreamSetting *StreamConfig    `json:"streamSettings"`
-	ProxySettings *ProxyConfig     `json:"proxySettings"`
-	MuxSettings   *MuxConfig       `json:"mux"`
+	Protocol        string           `json:"protocol"`
+	SendProtocol    string           `json:"sendProtocol"`
+	ReceiveProtocol string           `json:"receiveProtocol"`
+	SendThrough     *Address         `json:"sendThrough"`
+	Tag             string           `json:"tag"`
+	Settings        *json.RawMessage `json:"settings"`
+	StreamSetting   *StreamConfig    `json:"streamSettings"`
+	ProxySettings   *ProxyConfig     `json:"proxySettings"`
+	MuxSettings     *MuxConfig       `json:"mux"`
 }
 
 // Build implements Buildable.
@@ -256,7 +260,7 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 	if c.Settings != nil {
 		settings = ([]byte)(*c.Settings)
 	}
-	rawConfig, err := outboundConfigLoader.LoadWithID(settings, c.Protocol)
+	rawConfig, err := outboundConfigLoader.LoadWithID(settings, c.SendProtocol)
 	if err != nil {
 		return nil, newError("failed to parse to outbound detour config.").Base(err)
 	}
@@ -406,6 +410,13 @@ func (c *Config) Build() (*core.Config, error) {
 				rawInboundConfig.StreamSetting = &StreamConfig{}
 			}
 			applyTransportConfig(rawInboundConfig.StreamSetting, c.Transport)
+
+			if rawInboundConfig.SendProtocol == "" {
+				rawInboundConfig.SendProtocol = rawInboundConfig.Protocol
+			}
+			if rawInboundConfig.ReceiveProtocol == "" {
+				rawInboundConfig.ReceiveProtocol = rawInboundConfig.SendProtocol
+			}
 		}
 		ic, err := rawInboundConfig.Build()
 		if err != nil {
@@ -434,6 +445,13 @@ func (c *Config) Build() (*core.Config, error) {
 				rawOutboundConfig.StreamSetting = &StreamConfig{}
 			}
 			applyTransportConfig(rawOutboundConfig.StreamSetting, c.Transport)
+
+			if rawOutboundConfig.SendProtocol == "" {
+				rawOutboundConfig.SendProtocol = rawOutboundConfig.Protocol
+			}
+			if rawOutboundConfig.ReceiveProtocol == "" {
+				rawOutboundConfig.ReceiveProtocol = rawOutboundConfig.SendProtocol
+			}
 		}
 		oc, err := rawOutboundConfig.Build()
 		if err != nil {
