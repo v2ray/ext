@@ -16,6 +16,7 @@ import (
 	"v2ray.com/core/common/protocol"
 	"v2ray.com/core/common/serial"
 	"v2ray.com/core/proxy/blackhole"
+	dns_proxy "v2ray.com/core/proxy/dns"
 	"v2ray.com/core/proxy/freedom"
 	"v2ray.com/core/proxy/vmess"
 	"v2ray.com/core/proxy/vmess/inbound"
@@ -109,6 +110,9 @@ func TestV2RayConfig(t *testing.T) {
 					{
 						"tag": "blocked",
 						"protocol": "blackhole"
+					},
+					{
+						"protocol": "dns"
 					}
 				],
 				"routing": {
@@ -202,6 +206,22 @@ func TestV2RayConfig(t *testing.T) {
 							},
 						}),
 						ProxySettings: serial.ToTypedMessage(&blackhole.Config{}),
+					},
+					{
+						SenderSettings: serial.ToTypedMessage(&proxyman.SenderConfig{
+							StreamSettings: &internet.StreamConfig{
+								ProtocolName: "tcp",
+								TransportSettings: []*internet.TransportConfig{
+									{
+										ProtocolName: "http",
+										Settings: serial.ToTypedMessage(&http.Config{
+											Path: "/test",
+										}),
+									},
+								},
+							},
+						}),
+						ProxySettings: serial.ToTypedMessage(&dns_proxy.Config{}),
 					},
 				},
 				Inbound: []*core.InboundHandlerConfig{
