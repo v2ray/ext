@@ -410,14 +410,15 @@ func (c *Config) Build() (*core.Config, error) {
 				rawInboundConfig.StreamSetting = &StreamConfig{}
 			}
 			applyTransportConfig(rawInboundConfig.StreamSetting, c.Transport)
-
-			if rawInboundConfig.SendProtocol == "" {
-				rawInboundConfig.SendProtocol = rawInboundConfig.Protocol
-			}
-			if rawInboundConfig.ReceiveProtocol == "" {
-				rawInboundConfig.ReceiveProtocol = rawInboundConfig.SendProtocol
-			}
 		}
+
+		if rawInboundConfig.SendProtocol == "" {
+			rawInboundConfig.SendProtocol = rawInboundConfig.Protocol
+		}
+		if rawInboundConfig.ReceiveProtocol == "" {
+			rawInboundConfig.ReceiveProtocol = rawInboundConfig.SendProtocol
+		}
+
 		ic, err := rawInboundConfig.Build()
 		if err != nil {
 			return nil, err
@@ -445,14 +446,15 @@ func (c *Config) Build() (*core.Config, error) {
 				rawOutboundConfig.StreamSetting = &StreamConfig{}
 			}
 			applyTransportConfig(rawOutboundConfig.StreamSetting, c.Transport)
-
-			if rawOutboundConfig.SendProtocol == "" {
-				rawOutboundConfig.SendProtocol = rawOutboundConfig.Protocol
-			}
-			if rawOutboundConfig.ReceiveProtocol == "" {
-				rawOutboundConfig.ReceiveProtocol = rawOutboundConfig.SendProtocol
-			}
 		}
+
+		if rawOutboundConfig.SendProtocol == "" {
+			rawOutboundConfig.SendProtocol = rawOutboundConfig.Protocol
+		}
+		if rawOutboundConfig.ReceiveProtocol == "" {
+			rawOutboundConfig.ReceiveProtocol = rawOutboundConfig.SendProtocol
+		}
+
 		oc, err := rawOutboundConfig.Build()
 		if err != nil {
 			return nil, err
