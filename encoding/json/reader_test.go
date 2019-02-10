@@ -5,13 +5,13 @@ import (
 	"io"
 	"testing"
 
-	. "v2ray.com/ext/assert"
+	"github.com/google/go-cmp/cmp"
+
+	"v2ray.com/core/common"
 	. "v2ray.com/ext/encoding/json"
 )
 
 func TestReader(t *testing.T) {
-	assert := With(t)
-
 	data := []struct {
 		input  string
 		output string
@@ -48,14 +48,14 @@ text 2*`},
 
 		actual := make([]byte, 1024)
 		n, err := reader.Read(actual)
-		assert(err, IsNil)
-		assert(string(actual[:n]), Equals, testCase.output)
+		common.Must(err)
+		if r := cmp.Diff(string(actual[:n]), testCase.output); r != "" {
+			t.Error(r)
+		}
 	}
 }
 
 func TestReader1(t *testing.T) {
-	assert := With(t)
-
 	type dataStruct struct {
 		input  string
 		output string
@@ -80,15 +80,17 @@ func TestReader1(t *testing.T) {
 		var n int
 		var err error
 		for n, err = reader.Read(buf); err == nil; n, err = reader.Read(buf) {
-			assert(n, AtMost, len(buf))
+			if n > len(buf) {
+				t.Error("n: ", n)
+			}
 			target = append(target, buf[:n]...)
 			buf = make([]byte, bufLen)
 		}
-		if err == io.EOF {
-			assert(string(target), Equals, testCase.output)
-		} else {
-			assert(err, IsNil)
-			assert(string(target), Equals, testCase.output)
+		if err != nil && err != io.EOF {
+			t.Error("error: ", err)
+		}
+		if string(target) != testCase.output {
+			t.Error("got ", string(target), " want ", testCase.output)
 		}
 	}
 
