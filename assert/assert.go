@@ -1,0 +1,3 @@
+package assert
+
+func NotUsedAnyMore() {}
