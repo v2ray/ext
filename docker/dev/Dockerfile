@@ -4,8 +4,8 @@ MAINTAINER admin@v2ray.com
 
 RUN go get -u v2ray.com/core/...
 RUN mkdir -p /usr/bin/v2ray/
-RUN go build -o /usr/bin/v2ray/v2ray v2ray.com/core/main
-RUN go build -o /usr/bin/v2ray/v2ctl v2ray.com/core/infra/control/main
+RUN CGO_ENABLED=0 go build -o /usr/bin/v2ray/v2ray v2ray.com/core/main
+RUN CGO_ENABLED=0 go build -o /usr/bin/v2ray/v2ctl v2ray.com/core/infra/control/main
 RUN cp -r ${GOPATH}/src/v2ray.com/core/release/config/* /usr/bin/v2ray/
 
 FROM alpine
