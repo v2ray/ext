@@ -1,27 +1,27 @@
-FROM ubuntu:latest as builder
+FROM alpine:3.11 AS downloader
 
-RUN apt-get update
-RUN apt-get install curl -y
-RUN curl -L -o /tmp/go.sh https://install.direct/go.sh
-RUN chmod +x /tmp/go.sh
-RUN /tmp/go.sh
+RUN apk add -U --no-cache curl
 
-FROM alpine:latest
+WORKDIR /etc/v2ray
+# Configurable arguments defined at build time. User can override them by docker build --build-arg ARG_NAME=ARG_VALUE
+# Default OS type = linux
+ARG OS=linux
+# Default architecture = 64
+ARG ARCH=64
+# Download and unpack latest release from official github release
+RUN V2RAY_FILE=v2ray-${OS}-${ARCH}.zip \
+    VERSION=$(curl -s https://github.com/v2ray/v2ray-core/releases/latest |grep -oE '\d\.\d+\.\d+') \
+    && echo "Got latest version = ${VERSION}, file = ${V2RAY_FILE}" \
+    && curl -Lo $V2RAY_FILE https://github.com/v2ray/v2ray-core/releases/download/v${VERSION}/$V2RAY_FILE \
+    && unzip $V2RAY_FILE \
+    && rm $V2RAY_FILE
 
-LABEL maintainer "Darian Raymond <admin@v2ray.com>"
-
-COPY --from=builder /usr/bin/v2ray/v2ray /usr/bin/v2ray/
-COPY --from=builder /usr/bin/v2ray/v2ctl /usr/bin/v2ray/
-COPY --from=builder /usr/bin/v2ray/geoip.dat /usr/bin/v2ray/
-COPY --from=builder /usr/bin/v2ray/geosite.dat /usr/bin/v2ray/
+# Use distroless as minimal base image to package the executable binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+# Note: Use gcr.azk8s.cn as repo-mirror if gcr.io is blocked by China GFW.
+FROM gcr.io/distroless/static:latest
+WORKDIR /etc/v2ray
+COPY --from=downloader /etc/v2ray .
 COPY config.json /etc/v2ray/config.json
-
-RUN set -ex && \
-    apk --no-cache add ca-certificates && \
-    mkdir /var/log/v2ray/ &&\
-    chmod +x /usr/bin/v2ray/v2ctl && \
-    chmod +x /usr/bin/v2ray/v2ray
-
-ENV PATH /usr/bin/v2ray:$PATH
-
-CMD ["v2ray", "-config=/etc/v2ray/config.json"]
+ENTRYPOINT ["/etc/v2ray/v2ray"]
+CMD ["-config=/etc/v2ray/config.json"]
