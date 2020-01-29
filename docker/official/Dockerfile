@@ -24,5 +24,5 @@ LABEL maintainer "Darian Raymond <admin@v2ray.com>"
 WORKDIR /etc/v2ray
 COPY --from=downloader /etc/v2ray .
 COPY config.json /etc/v2ray/config.json
-ENTRYPOINT ["/etc/v2ray/v2ray"]
-CMD ["-config=/etc/v2ray/config.json"]
+ENV PATH /etc/v2ray:$PATH
+CMD ["v2ray", "-config=/etc/v2ray/config.json"]
