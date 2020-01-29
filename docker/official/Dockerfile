@@ -20,6 +20,7 @@ RUN V2RAY_FILE=v2ray-${OS}-${ARCH}.zip \
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 # Note: Use gcr.azk8s.cn as repo-mirror if gcr.io is blocked by China GFW.
 FROM gcr.io/distroless/static:latest
+LABEL maintainer "Darian Raymond <admin@v2ray.com>"
 WORKDIR /etc/v2ray
 COPY --from=downloader /etc/v2ray .
 COPY config.json /etc/v2ray/config.json
