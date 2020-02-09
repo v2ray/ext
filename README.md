@@ -10,3 +10,7 @@
 [6]: https://codebeat.co/projects/github-com-v2ray-ext-master "CodeBeat status"
 
 More utilities
+
+======
+
+Docker moved to https://github.com/v2fly/docker
