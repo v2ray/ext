@@ -25,3 +25,4 @@ RUN set -ex && \
 ENV PATH /usr/bin/v2ray:$PATH
 
 CMD ["v2ray", "-config=/etc/v2ray/config.json"]
+ENTRYPOINT ["v2ray", "-config=/etc/v2ray/config.json"]
